@@ -255,6 +255,9 @@ export class WorldScene extends Phaser.Scene {
 
   private spawnNPCs(): void {
     GUESTS.forEach((guest, i) => {
+      // Skip the player entry — it has no NPC sprite and causes a black box
+      if (guest.id === 'player') return;
+
       const container = this.add.container(guest.px, guest.py);
 
       // Use AI-generated sprite if available, fall back to procedural
@@ -325,6 +328,7 @@ export class WorldScene extends Phaser.Scene {
     bg.fillRect(boxX, boxY, boxW, boxH);
     bg.lineStyle(4, 0x000000, 1);
     bg.strokeRect(boxX, boxY, boxW, boxH);
+    bg.setScrollFactor(0);
 
     const portraitBg = this.add.graphics();
     portraitBg.fillStyle(0x202040, 1);
@@ -332,16 +336,19 @@ export class WorldScene extends Phaser.Scene {
     portraitBg.lineStyle(2, 0x000000, 1);
     portraitBg.strokeRect(boxX + 8, boxY + 8, 40, 40);
     portraitBg.setName('portraitBg');
+    portraitBg.setScrollFactor(0);
 
     const sep = this.add.graphics();
     sep.lineStyle(1, 0x000000, 0.3);
     sep.lineBetween(boxX + 56, boxY + 55, boxX + boxW - 8, boxY + 55);
+    sep.setScrollFactor(0);
 
     const bottomBar = this.add.graphics();
     bottomBar.fillStyle(0xF0F0F0, 1);
     bottomBar.fillRect(boxX + 1, boxY + boxH - 22, boxW - 2, 21);
     bottomBar.lineStyle(1, 0x000000, 0.2);
     bottomBar.lineBetween(boxX + 1, boxY + boxH - 22, boxX + boxW - 1, boxY + boxH - 22);
+    bottomBar.setScrollFactor(0);
 
     const nameText = this.add.text(boxX + 56, boxY + 10, '', {
       fontFamily: '"Press Start 2P", monospace',
@@ -351,6 +358,7 @@ export class WorldScene extends Phaser.Scene {
     });
     nameText.setName('nameText');
     nameText.setDepth(101);
+    nameText.setScrollFactor(0);
 
     const titleText = this.add.text(boxX + 56, boxY + 26, '', {
       fontFamily: '"Press Start 2P", monospace',
@@ -360,6 +368,7 @@ export class WorldScene extends Phaser.Scene {
     });
     titleText.setName('titleText');
     titleText.setDepth(101);
+    titleText.setScrollFactor(0);
 
     const bodyText = this.add.text(boxX + 56, boxY + 58, '', {
       fontFamily: '"Press Start 2P", monospace',
@@ -370,6 +379,7 @@ export class WorldScene extends Phaser.Scene {
     });
     bodyText.setName('bodyText');
     bodyText.setDepth(101);
+    bodyText.setScrollFactor(0);
 
     const hintText = this.add.text(boxX + 8, boxY + boxH - 16, 'SPACE to battle  \u2022  Walk away to cancel', {
       fontFamily: '"Press Start 2P", monospace',
@@ -379,6 +389,7 @@ export class WorldScene extends Phaser.Scene {
     });
     hintText.setName('hintText');
     hintText.setDepth(101);
+    hintText.setScrollFactor(0);
 
     const arrowText = this.add.text(boxX + boxW - 14, boxY + boxH - 16, '\u25BC', {
       fontFamily: 'monospace',
@@ -386,12 +397,14 @@ export class WorldScene extends Phaser.Scene {
       color: '#444444',
     });
     arrowText.setDepth(101);
+    arrowText.setScrollFactor(0);
 
     const portraitSprite = this.add.image(boxX + 28, boxY + 28, 'npc_ai_0');
     portraitSprite.setOrigin(0.5);
     portraitSprite.setDisplaySize(40, 40);
     portraitSprite.setName('portraitSprite');
     portraitSprite.setDepth(101);
+    portraitSprite.setScrollFactor(0);
 
     this.dialogueBox.add([bg, portraitBg, sep, bottomBar, nameText, titleText, bodyText, hintText, arrowText, portraitSprite]);
   }
@@ -647,6 +660,11 @@ export class WorldScene extends Phaser.Scene {
   update(_time: number, delta: number): void {
     if (this.scene.isActive('BattleScene')) return;
     if (!this.gameReady) return;
+
+    // Update player name label every frame so it follows the player
+    if (this.playerNameLabel && this.player) {
+      this.playerNameLabel.setPosition(this.player.x, this.player.y - 52);
+    }
 
     // Default velocity to zero; movement code below sets it appropriately
     this.player.setVelocity(0);
