@@ -349,109 +349,102 @@ export class WorldScene extends Phaser.Scene {
     const dlgWidth = canvasRect.width;
     const dlgBottom = window.innerHeight - (canvas ? canvas.getBoundingClientRect().bottom : 0);
 
+    // LennyRPG-style dialogue box
     const overlay = document.createElement('div');
     overlay.style.cssText = `
       position: fixed;
-      left: ${dlgLeft + 10}px;
-      width: ${dlgWidth - 20}px;
-      bottom: ${dlgBottom + 10}px;
-      height: 160px;
+      left: ${dlgLeft}px;
+      width: ${dlgWidth}px;
+      bottom: ${dlgBottom}px;
+      height: 170px;
       background: #ffffff;
-      border: 4px solid #000000;
+      border: 5px solid #000000;
       font-family: "Press Start 2P", monospace;
       z-index: 500;
       box-sizing: border-box;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
     `;
 
-    // Portrait area
+    // Inner layout: portrait left, text right
+    const inner = document.createElement('div');
+    inner.style.cssText = `display: flex; align-items: flex-start; padding: 12px 14px 8px 12px; height: 120px;`;
+
+    // Portrait thumbnail
     const portrait = document.createElement('div');
     portrait.style.cssText = `
-      position: absolute;
-      left: 8px;
-      top: 8px;
-      width: 40px;
-      height: 40px;
-      background: #202040;
-      border: 2px solid #000000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      width: 52px; height: 52px; min-width: 52px;
+      background: #e8e8e8;
+      border: 2px solid #000;
       overflow: hidden;
-      flex-shrink: 0;
+      image-rendering: pixelated;
+      margin-right: 14px;
     `;
     if (portraitSrc) {
       const img = document.createElement('img');
       img.src = portraitSrc;
-      img.style.cssText = `width: 40px; height: 40px; object-fit: contain; image-rendering: pixelated;`;
+      img.style.cssText = `width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated;`;
       portrait.appendChild(img);
     }
 
-    // Text area
-    const textArea = document.createElement('div');
-    textArea.style.cssText = `
-      position: absolute;
-      left: 56px;
-      top: 10px;
-      right: 8px;
-      bottom: 26px;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      overflow: hidden;
-    `;
+    // Right side: name + title + separator + body
+    const right = document.createElement('div');
+    right.style.cssText = `display: flex; flex-direction: column; flex: 1; overflow: hidden;`;
 
     const nameEl = document.createElement('div');
-    nameEl.style.cssText = `font-size: 8px; color: #000000; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;`;
-    nameEl.textContent = guest.name;
+    nameEl.style.cssText = `font-size: 10px; font-weight: bold; color: #000000; white-space: nowrap; letter-spacing: 1px; margin-bottom: 4px;`;
+    nameEl.textContent = guest.name.toUpperCase();
 
     const titleEl = document.createElement('div');
-    titleEl.style.cssText = `font-size: 6px; color: #444466; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;`;
+    titleEl.style.cssText = `font-size: 6px; color: #555555; white-space: nowrap; margin-bottom: 8px;`;
     titleEl.textContent = guest.title;
 
-    const sep = document.createElement('div');
-    sep.style.cssText = `height: 1px; background: rgba(0,0,0,0.3); margin: 6px 0 6px 0;`;
+    const sep = document.createElement('hr');
+    sep.style.cssText = `border: none; border-top: 1px solid #000; margin: 0 0 8px 0;`;
 
     const bodyEl = document.createElement('div');
-    bodyEl.style.cssText = `font-size: 6px; color: #111111; line-height: 2;`;
-    bodyEl.textContent = `${guest.name} wants to test your knowledge!`;
+    bodyEl.style.cssText = `font-size: 7px; color: #000000; line-height: 1.8;`;
+    bodyEl.textContent = `${guest.name.split(' ')[0]} has a challenge for you!`;
 
-    textArea.appendChild(nameEl);
-    textArea.appendChild(titleEl);
-    textArea.appendChild(sep);
-    textArea.appendChild(bodyEl);
+    right.appendChild(nameEl);
+    right.appendChild(titleEl);
+    right.appendChild(sep);
+    right.appendChild(bodyEl);
 
-    // Bottom bar
+    inner.appendChild(portrait);
+    inner.appendChild(right);
+
+    // Bottom bar with SPACE pill
     const bottomBar = document.createElement('div');
     bottomBar.style.cssText = `
-      position: absolute;
-      left: 1px;
-      right: 1px;
-      bottom: 1px;
-      height: 21px;
-      background: #f0f0f0;
-      border-top: 1px solid rgba(0,0,0,0.2);
+      border-top: 2px solid #000;
+      height: 34px;
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      padding: 0 8px;
+      padding: 0 12px;
+      gap: 8px;
     `;
 
-    const hintEl = document.createElement('div');
-    hintEl.style.cssText = `font-size: 5px; color: #666666;`;
-    hintEl.textContent = 'SPACE to battle  \u2022  Walk away to cancel';
+    const spacePill = document.createElement('span');
+    spacePill.style.cssText = `
+      background: #000; color: #fff;
+      font-family: "Press Start 2P", monospace;
+      font-size: 6px; padding: 3px 6px;
+      border-radius: 2px;
+    `;
+    spacePill.textContent = 'SPACE';
 
-    const arrowEl = document.createElement('div');
-    arrowEl.style.cssText = `font-size: 8px; color: #444444; font-family: monospace;`;
-    arrowEl.textContent = '\u25BC';
+    const hintEl = document.createElement('span');
+    hintEl.style.cssText = `font-size: 6px; color: #333333;`;
+    hintEl.textContent = 'to battle  •  Walk away to cancel';
 
+    const arrowEl = document.createElement('span');
+    arrowEl.style.cssText = `margin-left: auto; font-size: 10px; color: #000;`;
+    arrowEl.textContent = '▼';
+
+    bottomBar.appendChild(spacePill);
     bottomBar.appendChild(hintEl);
     bottomBar.appendChild(arrowEl);
 
-    overlay.appendChild(portrait);
-    overlay.appendChild(textArea);
+    overlay.appendChild(inner);
     overlay.appendChild(bottomBar);
     document.body.appendChild(overlay);
     this.dialogueOverlay = overlay;
