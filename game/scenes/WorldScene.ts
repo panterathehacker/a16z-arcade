@@ -325,21 +325,28 @@ export class WorldScene extends Phaser.Scene {
     const guestIndex = GUESTS.findIndex(g => g.id === guest.id);
 
     // Resolve portrait: prefer canvas-rendered sprite texture, fall back to PNG path
-    let portraitSrc = '';
+    let portraitSrc = `/assets/sprites/guests/${guest.id}.png`;
+    // Try to get data URL directly from Phaser texture for reliable rendering
     const aiKey = `npc_ai_${guestIndex}`;
-    const npcKey = `npc_${guestIndex}`;
-    const texKey = this.textures.exists(aiKey) ? aiKey : (this.textures.exists(npcKey) ? npcKey : '');
+    const texKey = this.textures.exists(aiKey) ? aiKey : '';
     if (texKey) {
       try {
         const frame = this.textures.getFrame(texKey);
-        if (frame && frame.source && frame.source.image) {
-          const src = frame.source.image as HTMLImageElement | HTMLCanvasElement;
-          portraitSrc = (src as HTMLImageElement).src || (src as HTMLCanvasElement).toDataURL?.() || '';
+        const src = frame?.source?.image as HTMLImageElement | HTMLCanvasElement | null;
+        if (src) {
+          // Create a canvas to extract the image as data URL
+          const tmpCanvas = document.createElement('canvas');
+          tmpCanvas.width = frame.realWidth;
+          tmpCanvas.height = frame.realHeight;
+          const tmpCtx = tmpCanvas.getContext('2d');
+          if (tmpCtx && src) {
+            tmpCtx.drawImage(src as CanvasImageSource, 
+              frame.cutX, frame.cutY, frame.realWidth, frame.realHeight,
+              0, 0, frame.realWidth, frame.realHeight);
+            portraitSrc = tmpCanvas.toDataURL('image/png');
+          }
         }
-      } catch (_) { /* ignore */ }
-    }
-    if (!portraitSrc && guest.id) {
-      portraitSrc = `/assets/sprites/guests/${guest.id}.png`;
+      } catch (_) { /* fallback to URL */ }
     }
 
     // Position dialogue inside the game canvas
