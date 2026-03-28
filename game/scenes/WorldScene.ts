@@ -21,13 +21,14 @@ const T_SIGN    = 10;
 const T_FLOOR   = 11;
 const T_FLOWER  = 12;
 const T_DOOR    = 13;
+const T_STONE   = 14;
 
 type TileMap = number[][];
 
 export class WorldScene extends Phaser.Scene {
   private player!: Phaser.GameObjects.Image;
-  private playerTileX = 20;
-  private playerTileY = 26;
+  private playerTileX = 10;
+  private playerTileY = 15;
   private playerDir = 'down';
   private moveTimer = 0;
   private MOVE_DELAY = 150;
@@ -227,64 +228,70 @@ export class WorldScene extends Phaser.Scene {
       this.tileMap[y][MAP_W - 2] = T_TREE;
     }
 
-    // ── Main paths ──
-    // Horizontal road across middle
+    // ── Main horizontal road (row 8) ──
     for (let x = 2; x < MAP_W - 2; x++) {
-      this.tileMap[16][x] = T_DIRT;
-      this.tileMap[17][x] = T_DIRT;
+      this.tileMap[8][x] = T_DIRT;
+      this.tileMap[9][x] = T_DIRT;
     }
-    // Vertical road
+
+    // ── Second horizontal road (row 21) ──
+    for (let x = 2; x < MAP_W - 2; x++) {
+      this.tileMap[21][x] = T_DIRT;
+      this.tileMap[22][x] = T_DIRT;
+    }
+
+    // ── Vertical road connecting the two horizontal roads (cols 19-20) ──
     for (let y = 2; y < MAP_H - 2; y++) {
       this.tileMap[y][19] = T_DIRT;
       this.tileMap[y][20] = T_DIRT;
     }
-    // Extra horizontal path in lower half
-    for (let x = 2; x < MAP_W - 2; x++) {
-      this.tileMap[24][x] = T_DIRT;
-      this.tileMap[25][x] = T_DIRT;
-    }
 
-    // ── Buildings (top-down Pokémon D/P style) ──
-    // Each building: ROOF rows on top, then 1 row WALL (facade), door at bottom-center
-    // Building 1: upper-left area (x=3, y=4, w=6, h=4) — dark roof
-    this.placeBuildingDP(3,  4, 6, 4, false);
-    // Building 2: upper area center-left (x=12, y=4, w=6, h=4) — dark roof
-    this.placeBuildingDP(12, 4, 6, 4, false);
-    // Building 3: upper area center-right (x=22, y=4, w=6, h=4) — dark roof
-    this.placeBuildingDP(22, 4, 6, 4, false);
-    // PokéCenter: upper-right (x=31, y=4, w=6, h=4) — red roof
-    this.placeBuildingDP(31, 4, 6, 4, true);
+    // ── Buildings — top zone (rows 2–7) ──
+    this.placeBuildingDP(3,  2, 7, 5, false);  // Building 1 upper-left
+    this.placeBuildingDP(12, 2, 6, 5, false);  // Building 2 upper-center-left
+    this.placeBuildingDP(22, 2, 6, 5, false);  // Building 3 upper-center-right
+    this.placeBuildingDP(31, 2, 6, 5, true);   // PokéCenter upper-right (red roof)
 
-    // Lower-section buildings (below main road)
-    this.placeBuildingDP(3,  19, 6, 4, false);
-    this.placeBuildingDP(12, 19, 6, 4, false);
-    this.placeBuildingDP(22, 19, 6, 4, false);
-    this.placeBuildingDP(31, 19, 6, 4, true);
+    // ── Buildings — bottom zone (rows 23–27) ──
+    this.placeBuildingDP(3,  23, 7, 5, false);
+    this.placeBuildingDP(12, 23, 6, 5, false);
+    this.placeBuildingDP(22, 23, 6, 5, false);
+    this.placeBuildingDP(31, 23, 6, 5, true);
 
-    // ── Fountain plaza (center of map) ──
-    // Stone surround + 2x2 water
-    for (let y = 12; y <= 15; y++) {
-      for (let x = 16; x <= 23; x++) {
-        if (this.tileMap[y][x] === T_GRASS || this.tileMap[y][x] === T_FLOWER) {
-          this.tileMap[y][x] = T_DIRT;
+    // ── Fountain plaza (center, rows 12–18, cols 15–24) ──
+    // Stone floor surround
+    for (let y = 12; y <= 18; y++) {
+      for (let x = 15; x <= 24; x++) {
+        if (this.inBounds(x, y) && (this.tileMap[y][x] === T_GRASS || this.tileMap[y][x] === T_FLOWER)) {
+          this.tileMap[y][x] = T_STONE;
         }
       }
     }
-    this.tileMap[13][19] = T_WATER;
-    this.tileMap[13][20] = T_WATER;
+    // 2x2 water in center of plaza
     this.tileMap[14][19] = T_WATER;
     this.tileMap[14][20] = T_WATER;
-    // Sign near fountain
-    this.tileMap[15][19] = T_SIGN;
+    this.tileMap[15][19] = T_WATER;
+    this.tileMap[15][20] = T_WATER;
+    // Sign on south side of fountain
+    this.tileMap[17][19] = T_SIGN;
+    // Trees in plaza corners
+    [[12,15],[12,24],[18,15],[18,24]].forEach(([y, x]) => {
+      if (this.inBounds(x, y)) this.tileMap[y][x] = T_TREE;
+    });
 
-    // ── Interior tree clusters ──
+    // ── Interior tree clusters (natural groupings) ──
     const treeClusters: [number, number][] = [
-      [9,5],[10,5],[9,6],[10,6],
-      [9,14],[10,14],[9,15],
-      [9,24],[10,24],[9,25],[10,25],
-      [9,34],[10,34],[9,35],
-      [21,5],[21,6],
-      [21,26],[21,27],
+      // Upper area clusters (between top buildings)
+      [10,9],[11,9],[10,10],
+      [10,17],[11,17],[10,18],[11,18],
+      [10,28],[11,28],
+      // Side clusters
+      [13,3],[14,3],[13,4],
+      [13,36],[14,36],[13,37],
+      // Lower area clusters (between bottom buildings)
+      [19,9],[20,9],[19,10],
+      [19,17],[20,17],[19,18],[20,18],
+      [19,28],[20,28],
     ];
     treeClusters.forEach(([y, x]) => {
       if (this.inBounds(x, y) && this.tileMap[y][x] === T_GRASS) {
@@ -292,13 +299,16 @@ export class WorldScene extends Phaser.Scene {
       }
     });
 
-    // ── Flowers scattered in grass patches ──
+    // ── Flower patches (scattered naturally in grass) ──
     const flowerSpots: [number, number][] = [
-      [10,8],[10,11],[11,14],[11,25],[11,30],[11,35],
-      [18,5],[18,8],[18,14],[18,25],[18,30],[18,35],
-      [21,10],[21,15],[22,8],[22,14],
-      [26,5],[26,8],[26,14],[26,25],[26,30],[26,35],
-      [27,11],[27,22],
+      // Upper grass strip (rows 10-11)
+      [10,6],[10,13],[10,16],[10,25],[10,29],[10,34],[11,11],[11,22],[11,32],
+      // Mid grass areas
+      [12,6],[12,13],[20,6],[20,13],[20,25],[20,29],[20,35],
+      // Lower grass strip (rows 19-20)
+      [19,6],[19,13],[19,16],[19,25],[19,29],[19,34],[20,11],[20,22],[20,32],
+      // Near tree border
+      [2,8],[2,22],[2,30],[27,8],[27,22],[27,30],
     ];
     flowerSpots.forEach(([y, x]) => {
       if (this.inBounds(x, y) && this.tileMap[y][x] === T_GRASS) {
@@ -364,7 +374,7 @@ export class WorldScene extends Phaser.Scene {
     const t = this.tileMap[y][x];
     return t === T_TREE || t === T_WALL || t === T_ROOF_D || t === T_ROOF_R ||
            t === T_WINDOW || t === T_FENCE_H || t === T_FENCE_V || t === T_WATER || t === T_SIGN;
-    // T_DOOR (13) is walkable
+    // T_DOOR (13), T_STONE (14) are walkable
   }
 
   private renderTiles(): void {
@@ -383,6 +393,7 @@ export class WorldScene extends Phaser.Scene {
       'tile_floor',            // 11 T_FLOOR
       'tile_flower',           // 12 T_FLOWER
       'tile_door',             // 13 T_DOOR
+      'tile_stone',            // 14 T_STONE
     ];
 
     for (let y = 0; y < MAP_H; y++) {
@@ -775,16 +786,17 @@ export class WorldScene extends Phaser.Scene {
     for (let y = 0; y < MAP_H; y++) {
       for (let x = 0; x < MAP_W; x++) {
         const t = this.tileMap[y][x];
-        let col = 0x78C850;
-        if (t === T_DIRT || t === T_FLOOR)         col = 0xE8D8A0;
-        else if (t === T_TREE)                      col = 0x389858;
+        let col = 0x7EC850;
+        if (t === T_DIRT || t === T_FLOOR)         col = 0xE8D890;
+        else if (t === T_STONE)                     col = 0xC0B8A8;
+        else if (t === T_TREE)                      col = 0x4A9840;
         else if (t === T_WALL || t === T_ROOF_D ||
-                 t === T_WINDOW)                    col = 0xC0A880;
-        else if (t === T_ROOF_R)                    col = 0xC03028;
-        else if (t === T_WATER)                     col = 0x6890F0;
-        else if (t === T_FENCE_H || t === T_FENCE_V) col = 0xC89040;
-        else if (t === T_FLOWER)                    col = 0xF080A0;
-        else if (t === T_DOOR)                      col = 0x6B3A20;
+                 t === T_WINDOW)                    col = 0xC8A870;
+        else if (t === T_ROOF_R)                    col = 0xE83020;
+        else if (t === T_WATER)                     col = 0x5878E8;
+        else if (t === T_FENCE_H || t === T_FENCE_V) col = 0xB09050;
+        else if (t === T_FLOWER)                    col = 0xF090B0;
+        else if (t === T_DOOR)                      col = 0x8B5E3C;
         bg.fillStyle(col);
         bg.fillRect(mmX + x * scaleX, mmY + y * scaleY,
                     Math.max(scaleX, 1), Math.max(scaleY, 1));

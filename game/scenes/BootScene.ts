@@ -110,254 +110,348 @@ export class BootScene extends Phaser.Scene {
   }
 
   private generateTileTextures() {
-    // ── Grass tile (32x32) ──
+    // ── Grass tile (32x32) — D/P style: lighter, diamond dot pattern ──
     this.tex('tile_grass', 32, 32, (ctx) => {
-      ctx.fillStyle = '#78C850';
+      ctx.fillStyle = '#7EC850';
       ctx.fillRect(0, 0, 32, 32);
-      // Subtle dot texture
-      ctx.fillStyle = '#58A838';
-      [[4,4],[12,8],[20,14],[8,22],[26,6],[16,20],[6,14],[24,26],[14,28],[22,4],[30,18]].forEach(([x,y]) => {
-        ctx.fillRect(x, y, 2, 2);
-      });
-      // Darker edge bottom-right for shading
-      ctx.fillStyle = 'rgba(0,0,0,0.06)';
-      ctx.fillRect(28, 0, 4, 32);
-      ctx.fillRect(0, 28, 32, 4);
+      // Diamond/crosshatch pattern (offset dots every 8px, alternating rows)
+      ctx.fillStyle = '#5EA830';
+      for (let row = 0; row < 5; row++) {
+        for (let col = 0; col < 5; col++) {
+          const x = col * 8 + (row % 2 === 0 ? 0 : 4);
+          const y = row * 8 - 4;
+          if (x < 32 && y >= 0 && y < 32) ctx.fillRect(x, y, 2, 2);
+        }
+      }
+      // Very subtle edge darkening
+      ctx.fillStyle = 'rgba(0,0,0,0.03)';
+      ctx.fillRect(30, 0, 2, 32);
+      ctx.fillRect(0, 30, 32, 2);
     });
 
-    // ── Dirt path tile (32x32) ──
+    // ── Dirt path tile (32x32) — D/P sandy beige ──
     this.tex('tile_dirt', 32, 32, (ctx) => {
-      ctx.fillStyle = '#E8D0A0';
+      ctx.fillStyle = '#E8D890';
       ctx.fillRect(0, 0, 32, 32);
-      ctx.fillStyle = '#C8B070';
-      [[5,5],[18,12],[10,24],[25,18],[3,18],[15,6],[27,28],[8,15],[22,8]].forEach(([x,y]) => {
-        ctx.fillRect(x, y, 1, 1);
+      // Lighter highlights
+      ctx.fillStyle = '#F0E0A0';
+      [[5,5],[18,3],[8,14],[24,18],[13,8],[28,10],[3,24],[19,28]].forEach(([x,y]) => {
+        ctx.fillRect(x, y, 3, 2);
       });
-      // Slightly darker edges
-      ctx.fillStyle = 'rgba(0,0,0,0.06)';
+      // Small pebble texture
+      ctx.fillStyle = '#C8B870';
+      [[10,12],[22,8],[6,20],[28,24]].forEach(([x,y]) => {
+        ctx.fillRect(x, y, 2, 2);
+      });
+      // Thin border shadow
+      ctx.fillStyle = 'rgba(0,0,0,0.05)';
       ctx.fillRect(0, 0, 1, 32); ctx.fillRect(31, 0, 1, 32);
       ctx.fillRect(0, 0, 32, 1); ctx.fillRect(0, 31, 32, 1);
     });
 
-    // ── Tree tile (32x32) ──
+    // ── Tree tile (32x32) — D/P round/fluffy canopy, NOT triangular ──
     this.tex('tile_tree', 32, 32, (ctx) => {
       // Grass background
-      ctx.fillStyle = '#78C850';
+      ctx.fillStyle = '#7EC850';
       ctx.fillRect(0, 0, 32, 32);
-      // Trunk
-      ctx.fillStyle = '#805030';
-      ctx.fillRect(13, 22, 6, 10);
-      ctx.fillStyle = '#6A4020';
-      ctx.fillRect(14, 22, 1, 10);
-      // Tree layers (dark base → medium → light top)
-      const tri = (color: string, tipY: number, baseY: number, baseW: number) => {
-        ctx.fillStyle = color;
-        ctx.beginPath();
-        ctx.moveTo(16, tipY);
-        ctx.lineTo(16 - baseW / 2, baseY);
-        ctx.lineTo(16 + baseW / 2, baseY);
-        ctx.closePath();
-        ctx.fill();
-      };
-      tri('#1a6b35', 7, 27, 28);  // dark shadow base
-      tri('#389858', 5, 25, 26);  // main mid
-      tri('#58C878', 3, 18, 18);  // light top
-      // Highlight dots
-      ctx.fillStyle = '#78D898';
-      ctx.fillRect(13, 5, 3, 3);
-      ctx.fillRect(10, 13, 2, 2);
-      ctx.fillRect(19, 11, 2, 2);
+      ctx.fillStyle = '#5EA830';
+      [[4,4],[20,14],[26,6]].forEach(([x,y]) => ctx.fillRect(x, y, 2, 2));
+
+      // Trunk — brown, centered, bottom of tile
+      ctx.fillStyle = '#6B3A20';
+      ctx.fillRect(13, 23, 6, 9);
+      ctx.fillStyle = '#4A2810'; // left shadow on trunk
+      ctx.fillRect(13, 23, 2, 9);
+
+      // Canopy — layered circles for fluffy round D/P tree
+      // Shadow/base (largest, darkest)
+      ctx.fillStyle = '#2A6830';
+      ctx.beginPath();
+      ctx.arc(16, 19, 14, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Main canopy
+      ctx.fillStyle = '#4A9840';
+      ctx.beginPath();
+      ctx.arc(16, 17, 12, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Mid highlight
+      ctx.fillStyle = '#6ABE50';
+      ctx.beginPath();
+      ctx.arc(15, 14, 8, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Top highlight (bright)
+      ctx.fillStyle = '#8AD870';
+      ctx.beginPath();
+      ctx.arc(14, 11, 4, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Tiny specular
+      ctx.fillStyle = 'rgba(255,255,255,0.25)';
+      ctx.beginPath();
+      ctx.arc(13, 10, 2, 0, Math.PI * 2);
+      ctx.fill();
     });
 
     // ── Water/Fountain tile (32x32) ──
     this.tex('tile_water', 32, 32, (ctx) => {
-      ctx.fillStyle = '#6890F0';
+      ctx.fillStyle = '#5878E8';
       ctx.fillRect(0, 0, 32, 32);
-      ctx.fillStyle = 'rgba(136,176,255,0.55)';
-      ctx.fillRect(4, 4, 6, 4);
-      ctx.fillRect(20, 16, 5, 4);
-      ctx.fillStyle = 'rgba(72,112,208,0.35)';
-      ctx.fillRect(10, 18, 8, 4);
+      // Diagonal ripple lines
+      ctx.strokeStyle = '#7898F0';
+      ctx.lineWidth = 1;
+      for (let i = -32; i < 64; i += 8) {
+        ctx.beginPath();
+        ctx.moveTo(i, 0);
+        ctx.lineTo(i + 32, 32);
+        ctx.stroke();
+      }
+      // White foam dots
+      ctx.fillStyle = 'rgba(255,255,255,0.5)';
+      [[4,4],[20,8],[8,20],[24,16],[14,26]].forEach(([x,y]) => {
+        ctx.beginPath();
+        ctx.arc(x, y, 2, 0, Math.PI * 2);
+        ctx.fill();
+      });
+      // Dark border for depth
+      ctx.fillStyle = 'rgba(0,0,0,0.12)';
+      ctx.fillRect(0, 0, 1, 32);
+      ctx.fillRect(0, 0, 32, 1);
+      ctx.fillRect(31, 0, 1, 32);
+      ctx.fillRect(0, 31, 32, 1);
+    });
+
+    // ── Stone plaza tile (32x32) — fountain surround, gray stone ──
+    this.tex('tile_stone', 32, 32, (ctx) => {
+      ctx.fillStyle = '#C0B8A8';
+      ctx.fillRect(0, 0, 32, 32);
+      // Stone tile grid (16x16 blocks)
+      ctx.strokeStyle = '#A0988A';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(0.5, 0.5, 15, 15);
+      ctx.strokeRect(16.5, 0.5, 15, 15);
+      ctx.strokeRect(0.5, 16.5, 15, 15);
+      ctx.strokeRect(16.5, 16.5, 15, 15);
+      // Highlight (top-left of each stone)
+      ctx.fillStyle = 'rgba(255,255,255,0.1)';
+      ctx.fillRect(1, 1, 14, 5);
+      ctx.fillRect(17, 1, 14, 5);
+      ctx.fillRect(1, 17, 14, 5);
+      ctx.fillRect(17, 17, 14, 5);
+      // Shadow (bottom-right of each stone)
+      ctx.fillStyle = 'rgba(0,0,0,0.08)';
+      ctx.fillRect(2, 12, 12, 3);
+      ctx.fillRect(18, 12, 12, 3);
+      ctx.fillRect(2, 28, 12, 3);
+      ctx.fillRect(18, 28, 12, 3);
     });
 
     // ── Fence tile horizontal (32x32) ──
     this.tex('tile_fence_h', 32, 32, (ctx) => {
-      ctx.fillStyle = '#78C850'; ctx.fillRect(0, 0, 32, 32);
+      ctx.fillStyle = '#7EC850'; ctx.fillRect(0, 0, 32, 32);
+      ctx.fillStyle = '#5EA830';
+      [[4,4],[20,14]].forEach(([x,y]) => ctx.fillRect(x, y, 2, 2));
       // Post
-      ctx.fillStyle = '#805030'; ctx.fillRect(14, 8, 4, 16);
-      ctx.fillStyle = '#6A4020'; ctx.fillRect(14, 8, 1, 16);
+      ctx.fillStyle = '#907040'; ctx.fillRect(14, 6, 4, 20);
+      ctx.fillStyle = '#705030'; ctx.fillRect(14, 6, 1, 20);
       // Rails
-      ctx.fillStyle = '#A06840'; ctx.fillRect(0, 11, 32, 3);
-      ctx.fillStyle = '#A06840'; ctx.fillRect(0, 17, 32, 2);
-      // Weathering
-      ctx.fillStyle = 'rgba(0,0,0,0.08)';
-      ctx.fillRect(0, 11, 32, 1);
-      ctx.fillRect(0, 17, 32, 1);
+      ctx.fillStyle = '#B09050'; ctx.fillRect(0, 10, 32, 4);
+      ctx.fillStyle = '#B09050'; ctx.fillRect(0, 18, 32, 3);
+      // Shadow under rails
+      ctx.fillStyle = '#705030'; ctx.fillRect(0, 14, 32, 1);
+      ctx.fillStyle = '#705030'; ctx.fillRect(0, 21, 32, 1);
     });
 
     // ── Fence tile vertical (32x32) ──
     this.tex('tile_fence_v', 32, 32, (ctx) => {
-      ctx.fillStyle = '#78C850'; ctx.fillRect(0, 0, 32, 32);
+      ctx.fillStyle = '#7EC850'; ctx.fillRect(0, 0, 32, 32);
+      ctx.fillStyle = '#5EA830';
+      [[4,4],[20,14]].forEach(([x,y]) => ctx.fillRect(x, y, 2, 2));
       // Post
-      ctx.fillStyle = '#805030'; ctx.fillRect(8, 14, 16, 4);
-      ctx.fillStyle = '#6A4020'; ctx.fillRect(8, 14, 16, 1);
+      ctx.fillStyle = '#907040'; ctx.fillRect(6, 14, 20, 4);
+      ctx.fillStyle = '#705030'; ctx.fillRect(6, 14, 20, 1);
       // Rails
-      ctx.fillStyle = '#A06840'; ctx.fillRect(12, 0, 3, 32);
-      ctx.fillStyle = '#A06840'; ctx.fillRect(18, 0, 2, 32);
-      ctx.fillStyle = 'rgba(0,0,0,0.08)';
-      ctx.fillRect(12, 0, 1, 32);
+      ctx.fillStyle = '#B09050'; ctx.fillRect(10, 0, 4, 32);
+      ctx.fillStyle = '#B09050'; ctx.fillRect(18, 0, 3, 32);
+      ctx.fillStyle = '#705030'; ctx.fillRect(10, 0, 1, 32);
     });
 
-    // ── Building wall tile (32x32) — cream facade strip ──
+    // ── Building wall tile (32x32) — D/P cream facade ──
     this.tex('tile_building_wall', 32, 32, (ctx) => {
-      ctx.fillStyle = '#D4C4A0';
+      // Cream wall
+      ctx.fillStyle = '#E8E0C8';
       ctx.fillRect(0, 0, 32, 32);
-      // Small window squares
-      ctx.fillStyle = '#A0C8E8';
-      ctx.fillRect(4, 6, 10, 14);
-      ctx.fillRect(18, 6, 10, 14);
-      // Window frames
-      ctx.strokeStyle = '#888870';
+      // Left window
+      ctx.fillStyle = '#A0C8F0';
+      ctx.fillRect(3, 5, 11, 9);
+      ctx.strokeStyle = '#908878';
       ctx.lineWidth = 1;
-      ctx.strokeRect(4, 6, 10, 14);
-      ctx.strokeRect(18, 6, 10, 14);
-      // Window cross
-      ctx.beginPath(); ctx.moveTo(9, 6); ctx.lineTo(9, 20); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(4, 13); ctx.lineTo(14, 13); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(23, 6); ctx.lineTo(23, 20); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(18, 13); ctx.lineTo(28, 13); ctx.stroke();
-      // Subtle top shadow (overhang from roof)
-      ctx.fillStyle = 'rgba(0,0,0,0.15)';
-      ctx.fillRect(0, 0, 32, 3);
-      // Bottom line
-      ctx.fillStyle = 'rgba(0,0,0,0.1)';
+      ctx.strokeRect(3, 5, 11, 9);
+      // Window cross (white divider)
+      ctx.fillStyle = 'rgba(255,255,255,0.7)';
+      ctx.fillRect(8, 5, 1, 9);
+      ctx.fillRect(3, 9, 11, 1);
+      // Right window
+      ctx.fillStyle = '#A0C8F0';
+      ctx.fillRect(18, 5, 11, 9);
+      ctx.strokeStyle = '#908878';
+      ctx.strokeRect(18, 5, 11, 9);
+      ctx.fillStyle = 'rgba(255,255,255,0.7)';
+      ctx.fillRect(23, 5, 1, 9);
+      ctx.fillRect(18, 9, 11, 1);
+      // Top overhang shadow
+      ctx.fillStyle = 'rgba(0,0,0,0.2)';
+      ctx.fillRect(0, 0, 32, 2);
+      // Bottom ground shadow
+      ctx.fillStyle = 'rgba(0,0,0,0.12)';
       ctx.fillRect(0, 30, 32, 2);
     });
 
-    // ── Roof dark tile (32x32) — top-down wood planks ──
+    // ── Roof dark tile (32x32) — D/P tan/beige oblique roof ──
     this.tex('tile_roof_dark', 32, 32, (ctx) => {
-      // Base dark brown
-      ctx.fillStyle = '#4A3020';
+      // Base tan/beige — D/P buildings use warm tones
+      ctx.fillStyle = '#C8A870';
       ctx.fillRect(0, 0, 32, 32);
-      // Horizontal plank lines every 6px
-      ctx.strokeStyle = '#3A2010';
+      // Horizontal roof tile lines every 8px
+      ctx.strokeStyle = '#B09060';
       ctx.lineWidth = 1;
-      for (let i = 1; i <= 5; i++) {
-        ctx.beginPath(); ctx.moveTo(0, i * 6); ctx.lineTo(32, i * 6); ctx.stroke();
+      for (let i = 8; i < 32; i += 8) {
+        ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(32, i); ctx.stroke();
       }
-      // Subtle highlight on top edge (light coming from top)
-      ctx.fillStyle = '#5A4030';
-      ctx.fillRect(0, 0, 32, 3);
-      // Subtle shadow on bottom edge
-      ctx.fillStyle = 'rgba(0,0,0,0.2)';
+      // Left edge shadow (3D depth effect)
+      ctx.fillStyle = 'rgba(0,0,0,0.18)';
+      ctx.fillRect(0, 0, 3, 32);
+      // Top edge highlight (light from top-left)
+      ctx.fillStyle = 'rgba(255,255,255,0.12)';
+      ctx.fillRect(3, 0, 29, 3);
+      // Bottom edge shadow (eave)
+      ctx.fillStyle = 'rgba(0,0,0,0.22)';
       ctx.fillRect(0, 29, 32, 3);
-      // Plank grain texture
-      ctx.fillStyle = 'rgba(90,60,30,0.3)';
-      for (let i = 0; i < 4; i++) {
-        ctx.fillRect(i * 8 + 3, 0, 1, 32);
-      }
     });
 
-    // ── Roof red tile (32x32) — PokéCenter red roof, top-down ──
+    // ── Roof red tile (32x32) — PokéCenter bright red roof ──
     this.tex('tile_roof_red', 32, 32, (ctx) => {
-      // Base red
-      ctx.fillStyle = '#C03028';
+      ctx.fillStyle = '#E83020';
       ctx.fillRect(0, 0, 32, 32);
-      // Horizontal plank lines every 6px in darker red
-      ctx.strokeStyle = '#A02018';
+      // Horizontal tile lines
+      ctx.strokeStyle = '#C02010';
       ctx.lineWidth = 1;
-      for (let i = 1; i <= 5; i++) {
-        ctx.beginPath(); ctx.moveTo(0, i * 6); ctx.lineTo(32, i * 6); ctx.stroke();
+      for (let i = 8; i < 32; i += 8) {
+        ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(32, i); ctx.stroke();
       }
-      // Highlight on top
-      ctx.fillStyle = '#D84038';
-      ctx.fillRect(0, 0, 32, 3);
-      // Shadow on bottom
+      // Left edge shadow
       ctx.fillStyle = 'rgba(0,0,0,0.2)';
+      ctx.fillRect(0, 0, 3, 32);
+      // Top highlight
+      ctx.fillStyle = 'rgba(255,255,255,0.15)';
+      ctx.fillRect(3, 0, 29, 3);
+      // Bottom shadow
+      ctx.fillStyle = 'rgba(0,0,0,0.25)';
       ctx.fillRect(0, 29, 32, 3);
-      // Grain
-      ctx.fillStyle = 'rgba(180,30,20,0.3)';
-      for (let i = 0; i < 4; i++) {
-        ctx.fillRect(i * 8 + 3, 0, 1, 32);
-      }
     });
 
     // ── Building window tile (32x32) ──
     this.tex('tile_building_window', 32, 32, (ctx) => {
-      ctx.fillStyle = '#D4C4A0';
+      ctx.fillStyle = '#E8E0C8';
       ctx.fillRect(0, 0, 32, 32);
-      // Window glass (blue)
-      ctx.fillStyle = '#A0C8E8';
-      ctx.fillRect(8, 8, 16, 14);
-      // Window frame cross
-      ctx.fillStyle = '#F0F0F0';
-      ctx.fillRect(15, 8, 2, 14);
-      ctx.fillRect(8, 14, 16, 2);
-      // Window border
-      ctx.strokeStyle = '#606040';
+      ctx.fillStyle = '#A0C8F0';
+      ctx.fillRect(7, 7, 18, 14);
+      ctx.fillStyle = 'rgba(255,255,255,0.7)';
+      ctx.fillRect(15, 7, 2, 14);
+      ctx.fillRect(7, 13, 18, 2);
+      ctx.strokeStyle = '#707060';
       ctx.lineWidth = 1;
-      ctx.strokeRect(8, 8, 16, 14);
+      ctx.strokeRect(7, 7, 18, 14);
+      ctx.fillStyle = 'rgba(0,0,0,0.2)';
+      ctx.fillRect(0, 0, 32, 2);
     });
 
     // ── Sign tile (32x32) ──
     this.tex('tile_sign', 32, 32, (ctx) => {
-      ctx.fillStyle = '#78C850'; ctx.fillRect(0, 0, 32, 32);
-      ctx.fillStyle = '#A07040'; ctx.fillRect(14, 18, 4, 14);
-      ctx.fillStyle = '#D0A060'; ctx.fillRect(6, 8, 20, 13);
+      ctx.fillStyle = '#7EC850'; ctx.fillRect(0, 0, 32, 32);
+      ctx.fillStyle = '#5EA830';
+      [[4,4],[20,14]].forEach(([x,y]) => ctx.fillRect(x, y, 2, 2));
+      // Post
+      ctx.fillStyle = '#907040'; ctx.fillRect(14, 18, 4, 14);
+      ctx.fillStyle = '#705030'; ctx.fillRect(14, 18, 1, 14);
+      // Sign board
+      ctx.fillStyle = '#D0A060'; ctx.fillRect(5, 6, 22, 15);
+      ctx.fillStyle = '#E0B870'; ctx.fillRect(6, 7, 20, 5); // highlight
       ctx.strokeStyle = '#806030'; ctx.lineWidth = 1;
-      ctx.strokeRect(6, 8, 20, 13);
+      ctx.strokeRect(5, 6, 22, 15);
+      // Sign lines (text effect)
+      ctx.fillStyle = '#705028';
+      ctx.fillRect(9, 12, 14, 2);
+      ctx.fillRect(9, 16, 10, 2);
     });
 
     // ── Floor tile (32x32) ──
     this.tex('tile_floor', 32, 32, (ctx) => {
       ctx.fillStyle = '#D0B890';
       ctx.fillRect(0, 0, 32, 32);
-      ctx.strokeStyle = 'rgba(0,0,0,0.1)';
+      ctx.strokeStyle = 'rgba(0,0,0,0.08)';
       ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(16, 0); ctx.lineTo(16, 32); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, 16); ctx.lineTo(32, 16); ctx.stroke();
       ctx.strokeRect(0, 0, 32, 32);
     });
 
-    // ── Door tile (32x32) — cream facade + dark wood door centered ──
+    // ── Door tile (32x32) — D/P building entrance ──
     this.tex('tile_door', 32, 32, (ctx) => {
-      // Cream/stone facade background
-      ctx.fillStyle = '#D4C4A0';
+      // Cream facade
+      ctx.fillStyle = '#E8E0C8';
       ctx.fillRect(0, 0, 32, 32);
-      // Door frame (slightly lighter wood)
+      // Door frame
       ctx.fillStyle = '#8B5E3C';
-      ctx.fillRect(9, 4, 14, 28);
-      // Door panel (dark wood)
+      ctx.fillRect(9, 2, 14, 30);
+      // Door panels (dark wood)
       ctx.fillStyle = '#6B3A20';
-      ctx.fillRect(11, 6, 10, 24);
-      // Door knob
+      ctx.fillRect(10, 3, 6, 26); // left panel
+      ctx.fillRect(16, 3, 6, 26); // right panel (glass doors like D/P)
+      // Glass panels (light blue)
+      ctx.fillStyle = '#B8D8F0';
+      ctx.fillRect(10, 4, 6, 16);
+      ctx.fillRect(16, 4, 6, 16);
+      // Center divider
+      ctx.fillStyle = '#8B5E3C';
+      ctx.fillRect(15, 3, 2, 26);
+      // Door handles
       ctx.fillStyle = '#D4A020';
-      ctx.fillRect(18, 18, 2, 2);
-      // Door panel highlight
-      ctx.fillStyle = 'rgba(255,255,255,0.1)';
-      ctx.fillRect(12, 7, 4, 10);
-      // Step at bottom
-      ctx.fillStyle = '#B8A880';
+      ctx.fillRect(14, 16, 2, 2);
+      ctx.fillRect(16, 16, 2, 2);
+      // Step
+      ctx.fillStyle = '#C8C0A8';
       ctx.fillRect(7, 28, 18, 4);
+      // Top shadow
+      ctx.fillStyle = 'rgba(0,0,0,0.2)';
+      ctx.fillRect(0, 0, 32, 2);
     });
 
-    // ── Flower tile (32x32) — grass with 2 pixel-art flowers ──
+    // ── Flower tile (32x32) — grass with D/P flowers ──
     this.tex('tile_flower', 32, 32, (ctx) => {
       // Grass base
-      ctx.fillStyle = '#78C850'; ctx.fillRect(0, 0, 32, 32);
-      ctx.fillStyle = '#58A838';
+      ctx.fillStyle = '#7EC850'; ctx.fillRect(0, 0, 32, 32);
+      ctx.fillStyle = '#5EA830';
       [[4,4],[20,14],[8,22]].forEach(([x,y]) => ctx.fillRect(x, y, 2, 2));
-      // Two flowers at (8,18) and (22,14)
-      [[8, 18], [22, 14]].forEach(([cx, cy]) => {
+
+      const drawFlower = (cx: number, cy: number) => {
         // Stem
-        ctx.fillStyle = '#389858'; ctx.fillRect(cx, cy, 1, 4);
-        // Petals
-        ctx.fillStyle = '#F080A0';
-        ctx.fillRect(cx - 2, cy - 2, 2, 2); // left
-        ctx.fillRect(cx + 1, cy - 2, 2, 2); // right
-        ctx.fillRect(cx - 1, cy - 4, 2, 2); // top
-        ctx.fillRect(cx - 1, cy,     2, 2); // bottom
-        // Center
-        ctx.fillStyle = '#F0D000'; ctx.fillRect(cx - 1, cy - 2, 2, 2);
-      });
+        ctx.fillStyle = '#4A9840';
+        ctx.fillRect(cx, cy + 1, 2, 5);
+        // 4 petals in + pattern
+        ctx.fillStyle = '#F090B0';
+        ctx.fillRect(cx - 2, cy, 2, 3); // left
+        ctx.fillRect(cx + 2, cy, 2, 3); // right
+        ctx.fillRect(cx, cy - 2, 2, 3); // top
+        ctx.fillRect(cx, cy + 3, 2, 2); // bottom
+        // Yellow center
+        ctx.fillStyle = '#F0D040';
+        ctx.fillRect(cx, cy, 2, 2);
+      };
+      drawFlower(7, 17);
+      drawFlower(22, 11);
     });
   }
 

@@ -20,8 +20,8 @@ export const GUESTS: Guest[] = [
     name: 'Marc Andreessen',
     title: 'Co-Founder, a16z',
     color: 0x4169E1,
-    x: 10,
-    y: 8,
+    x: 6,
+    y: 10,
     questions: [
       {
         text: 'Marc co-founded a16z with whom?',
@@ -55,8 +55,8 @@ export const GUESTS: Guest[] = [
     name: 'Ben Horowitz',
     title: 'Co-Founder, a16z',
     color: 0x8B0000,
-    x: 28,
-    y: 8,
+    x: 33,
+    y: 10,
     questions: [
       {
         text: 'Ben Horowitz wrote which best-selling book?',
@@ -90,8 +90,8 @@ export const GUESTS: Guest[] = [
     name: 'Lisa Su',
     title: 'CEO, AMD',
     color: 0xFF6B00,
-    x: 18,
-    y: 5,
+    x: 15,
+    y: 10,
     questions: [
       {
         text: 'Lisa Su became CEO of AMD in which year?',
@@ -125,8 +125,8 @@ export const GUESTS: Guest[] = [
     name: 'Alexandr Wang',
     title: 'CEO, Scale AI',
     color: 0x00CED1,
-    x: 8,
-    y: 18,
+    x: 7,
+    y: 9,
     questions: [
       {
         text: 'Alexandr Wang founded Scale AI at what age?',
@@ -161,7 +161,7 @@ export const GUESTS: Guest[] = [
     title: 'CEO, NVIDIA',
     color: 0x76B900,
     x: 32,
-    y: 18,
+    y: 9,
     questions: [
       {
         text: 'Jensen Huang co-founded NVIDIA in which year?',
@@ -195,8 +195,8 @@ export const GUESTS: Guest[] = [
     name: 'Sarah Guo',
     title: 'Founder, Conviction',
     color: 0xFF69B4,
-    x: 20,
-    y: 22,
+    x: 17,
+    y: 16,
     questions: [
       {
         text: 'Sarah Guo founded which AI-focused VC firm?',
@@ -230,8 +230,8 @@ export const GUESTS: Guest[] = [
     name: 'Elad Gil',
     title: 'Investor & Advisor',
     color: 0x9370DB,
-    x: 12,
-    y: 24,
+    x: 22,
+    y: 13,
     questions: [
       {
         text: 'Elad Gil co-founded which mobile company acquired by Twitter?',
@@ -265,8 +265,8 @@ export const GUESTS: Guest[] = [
     name: 'Andrew Chen',
     title: 'General Partner, a16z',
     color: 0xFF8C00,
-    x: 30,
-    y: 24,
+    x: 33,
+    y: 19,
     questions: [
       {
         text: 'Andrew Chen is a General Partner at a16z focused on which area?',
@@ -300,8 +300,8 @@ export const GUESTS: Guest[] = [
     name: 'Sonal Chokshi',
     title: 'Host, a16z Podcast',
     color: 0x20B2AA,
-    x: 22,
-    y: 14,
+    x: 15,
+    y: 19,
     questions: [
       {
         text: 'Sonal Chokshi was editor-in-chief of which publication before a16z?',
@@ -336,7 +336,7 @@ export const GUESTS: Guest[] = [
     title: 'General Partner, a16z Growth',
     color: 0xDC143C,
     x: 6,
-    y: 12,
+    y: 20,
     questions: [
       {
         text: 'David George leads which fund at a16z?',

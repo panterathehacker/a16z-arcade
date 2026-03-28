@@ -63,35 +63,68 @@ export class BattleScene extends Phaser.Scene {
 
   private drawBattleBG(W: number, H: number) {
     const bg = this.add.graphics();
+    const battleH = H * 0.7; // UI takes bottom 30%
 
-    // Sky gradient-like background
-    bg.fillStyle(0x87CEEB);
-    bg.fillRect(0, 0, W, H * 0.5);
+    // ── Sky (top 60% of battle area) — D/P pale blue-gray ──
+    bg.fillStyle(0xB8D0E8);
+    bg.fillRect(0, 0, W, battleH * 0.6);
 
-    // Ground
-    bg.fillStyle(0x78C850);
-    bg.fillRect(0, H * 0.45, W, H * 0.15);
-    bg.fillStyle(0x58A838);
-    bg.fillRect(0, H * 0.52, W, H * 0.08);
+    // Sky gradient layers (simulate depth)
+    bg.fillStyle(0xC8DCF0);
+    bg.fillRect(0, 0, W, battleH * 0.2);
+    bg.fillStyle(0xA8C4DC);
+    bg.fillRect(0, battleH * 0.4, W, battleH * 0.2);
 
-    // Battle platforms
-    // Guest platform (top-right)
-    bg.fillStyle(0xD0C090);
-    bg.fillEllipse(W * 0.72, H * 0.42, 180, 30);
-    bg.fillStyle(0xB0A070);
-    bg.fillEllipse(W * 0.72, H * 0.44, 160, 14);
+    // ── Ground (bottom 40% of battle area) — D/P grass ground ──
+    bg.fillStyle(0x8AD060);
+    bg.fillRect(0, battleH * 0.6, W, battleH * 0.4);
 
-    // Player platform (bottom-left)
-    bg.fillStyle(0xD0C090);
-    bg.fillEllipse(W * 0.28, H * 0.62, 200, 35);
-    bg.fillStyle(0xB0A070);
-    bg.fillEllipse(W * 0.28, H * 0.64, 180, 16);
+    // Ground texture lines
+    bg.lineStyle(1, 0x70B848, 0.5);
+    for (let i = 0; i < 6; i++) {
+      const ly = battleH * 0.62 + i * 8;
+      bg.lineBetween(0, ly, W, ly);
+    }
 
-    // Draw guest character (large, stylized)
-    this.drawBattleCharacter(bg, W * 0.72, H * 0.32, this.guest.color, true);
+    // Horizon line
+    bg.fillStyle(0x60A838);
+    bg.fillRect(0, battleH * 0.6, W, 4);
 
-    // Draw player character (back view, smaller)
-    this.drawPlayerBack(bg, W * 0.28, H * 0.52);
+    // ── D/P-style raised platforms (NOT flat ellipses) ──
+
+    // Guest platform (upper-right): raised dirt/tan platform
+    const gpX = W * 0.68;
+    const gpY = battleH * 0.44;
+    // Platform body (slightly raised above ground)
+    bg.fillStyle(0xE8D890);
+    bg.fillEllipse(gpX, gpY, 160, 28);
+    // Platform edge shadow
+    bg.fillStyle(0xC8B870);
+    bg.fillEllipse(gpX, gpY + 6, 155, 18);
+    // Platform highlight
+    bg.fillStyle(0xF0E0A0);
+    bg.fillEllipse(gpX - 10, gpY - 4, 100, 12);
+    // D/P style platform edge lines
+    bg.lineStyle(2, 0xA89850, 1);
+    bg.strokeEllipse(gpX, gpY, 160, 28);
+
+    // Player platform (lower-left)
+    const ppX = W * 0.30;
+    const ppY = battleH * 0.62;
+    bg.fillStyle(0xE8D890);
+    bg.fillEllipse(ppX, ppY, 190, 32);
+    bg.fillStyle(0xC8B870);
+    bg.fillEllipse(ppX, ppY + 8, 183, 20);
+    bg.fillStyle(0xF0E0A0);
+    bg.fillEllipse(ppX - 10, ppY - 5, 120, 14);
+    bg.lineStyle(2, 0xA89850, 1);
+    bg.strokeEllipse(ppX, ppY, 190, 32);
+
+    // ── Draw guest character on platform ──
+    this.drawBattleCharacter(bg, gpX, gpY - 30, this.guest.color, true);
+
+    // ── Draw player (back view) on player platform ──
+    this.drawPlayerBack(bg, ppX, ppY - 14);
   }
 
   private drawBattleCharacter(g: Phaser.GameObjects.Graphics, x: number, y: number, color: number, large: boolean) {
