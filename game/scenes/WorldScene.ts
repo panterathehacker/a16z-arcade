@@ -7,18 +7,19 @@ const MAP_W = 40;
 const MAP_H = 30;
 
 // Tile type constants
-const T_GRASS = 0;
-const T_DIRT = 1;
-const T_TREE = 2;
-const T_WALL = 3;
-const T_ROOF_D = 4;
-const T_ROOF_R = 5;
-const T_WINDOW = 6;
+const T_GRASS   = 0;
+const T_DIRT    = 1;
+const T_TREE    = 2;
+const T_WALL    = 3;
+const T_ROOF_D  = 4;
+const T_ROOF_R  = 5;
+const T_WINDOW  = 6;
 const T_FENCE_H = 7;
 const T_FENCE_V = 8;
-const T_WATER = 9;
-const T_SIGN = 10;
-const T_FLOOR = 11;
+const T_WATER   = 9;
+const T_SIGN    = 10;
+const T_FLOOR   = 11;
+const T_FLOWER  = 12;
 
 type TileMap = number[][];
 
@@ -27,7 +28,6 @@ export class WorldScene extends Phaser.Scene {
   private playerTileX = 20;
   private playerTileY = 26;
   private playerDir = 'down';
-  private isMoving = false;
   private moveTimer = 0;
   private MOVE_DELAY = 150;
 
@@ -55,11 +55,9 @@ export class WorldScene extends Phaser.Scene {
   private miniMapContainer!: Phaser.GameObjects.Container;
   private miniMapTimer = 0;
 
-  // Supabase player state
   public playerId: string | null = null;
   public sessionId: string | null = null;
 
-  // Username overlay
   private usernameOverlay: HTMLDivElement | null = null;
   private gameReady = false;
 
@@ -77,9 +75,7 @@ export class WorldScene extends Phaser.Scene {
     this.createDialogueBox();
     this.createPokedex();
     this.createMiniMap();
-    this.createHUD();
 
-    // Initialize Supabase player (async, non-blocking)
     this.initPlayer();
   }
 
@@ -89,7 +85,6 @@ export class WorldScene extends Phaser.Scene {
       this.playerId = player.id;
       this.sessionId = player.sessionId;
 
-      // Sync captures from Supabase into localStorage
       const remoteCaptures = await fetchCaptures(this.playerId);
       if (remoteCaptures.length > 0) {
         const localCaptures: string[] = JSON.parse(localStorage.getItem('a16z_captured') || '[]');
@@ -100,7 +95,6 @@ export class WorldScene extends Phaser.Scene {
       console.warn('Supabase init failed, running offline:', err);
     }
 
-    // Show username prompt if not set yet
     const hasUsername = localStorage.getItem('a16z_username');
     if (!hasUsername) {
       this.showUsernameOverlay();
@@ -110,7 +104,9 @@ export class WorldScene extends Phaser.Scene {
   }
 
   private showUsernameOverlay() {
-    // Create an HTML overlay on top of the canvas
+    // Disable Phaser keyboard capture while HTML overlay is active (Bug #1 fix)
+    this.input.keyboard?.disableGlobalCapture();
+
     const overlay = document.createElement('div');
     overlay.style.cssText = `
       position: fixed;
@@ -179,7 +175,6 @@ export class WorldScene extends Phaser.Scene {
       const name = input.value.trim() || 'Trainer';
       localStorage.setItem('a16z_username', name);
 
-      // Save to Supabase
       if (this.playerId) {
         try {
           await updateUsername(this.playerId, name);
@@ -190,6 +185,8 @@ export class WorldScene extends Phaser.Scene {
 
       overlay.remove();
       this.usernameOverlay = null;
+      // Re-enable Phaser keyboard capture after overlay is dismissed (Bug #1 fix)
+      this.input.keyboard?.enableGlobalCapture();
       this.gameReady = true;
     };
 
@@ -206,39 +203,31 @@ export class WorldScene extends Phaser.Scene {
     document.body.appendChild(overlay);
     this.usernameOverlay = overlay;
 
-    // Focus input after a tick
     setTimeout(() => input.focus(), 100);
   }
 
   private buildTileMap(): void {
-    // Initialize with grass
     this.tileMap = Array.from({ length: MAP_H }, () => Array(MAP_W).fill(T_GRASS));
 
-    // Dirt paths
-    // Main horizontal path (center)
+    // Main horizontal paths
     for (let x = 0; x < MAP_W; x++) {
       this.tileMap[14][x] = T_DIRT;
       this.tileMap[15][x] = T_DIRT;
+      this.tileMap[25][x] = T_DIRT;
+      this.tileMap[26][x] = T_DIRT;
+      this.tileMap[3][x]  = T_DIRT;
     }
-    // Vertical path
+    // Vertical paths
     for (let y = 0; y < MAP_H; y++) {
       this.tileMap[y][19] = T_DIRT;
       this.tileMap[y][20] = T_DIRT;
     }
-    // Bottom path
-    for (let x = 0; x < MAP_W; x++) {
-      this.tileMap[25][x] = T_DIRT;
-      this.tileMap[26][x] = T_DIRT;
-    }
-    // Top path
-    for (let x = 0; x < MAP_W; x++) {
-      this.tileMap[3][x] = T_DIRT;
-    }
 
-    // Trees - border trees
+    // Border trees (dense)
     for (let x = 0; x < MAP_W; x++) {
       this.tileMap[0][x] = T_TREE;
       this.tileMap[1][x] = T_TREE;
+      this.tileMap[2][x] = T_TREE;
       this.tileMap[MAP_H - 1][x] = T_TREE;
     }
     for (let y = 0; y < MAP_H; y++) {
@@ -248,22 +237,22 @@ export class WorldScene extends Phaser.Scene {
       this.tileMap[y][MAP_W - 2] = T_TREE;
     }
 
-    // Scattered trees
-    const treeClusters = [
-      [4,4],[4,5],[5,4],[5,5],
-      [4,10],[4,11],[5,10],
-      [4,24],[4,25],[5,25],
-      [4,34],[4,35],[5,34],
-      [9,4],[9,5],[10,5],
-      [9,30],[10,30],[10,31],
-      [16,4],[16,5],[17,5],
-      [16,24],[16,25],[17,24],
-      [20,4],[20,5],
-      [20,34],[20,35],[21,34],
-      [23,4],[23,5],[24,4],
-      [23,24],[23,25],[24,24],
-      [27,5],[27,6],[28,5],
-      [27,24],[28,24],[27,25],
+    // Interior tree clusters
+    const treeClusters: [number, number][] = [
+      [4,4],[4,5],[5,4],[5,5],[6,4],
+      [4,10],[4,11],[5,10],[6,10],
+      [4,24],[4,25],[5,25],[6,24],
+      [4,34],[4,35],[5,34],[5,35],
+      [9,4],[9,5],[10,4],[10,5],
+      [9,30],[10,30],[10,31],[11,30],
+      [16,4],[16,5],[17,5],[17,4],
+      [16,24],[16,25],[17,24],[18,24],
+      [20,4],[20,5],[21,4],
+      [20,34],[20,35],[21,34],[21,35],
+      [23,4],[23,5],[24,4],[24,5],
+      [23,24],[23,25],[24,24],[25,24],
+      [27,5],[27,6],[28,5],[28,6],
+      [27,24],[28,24],[27,25],[28,25],
     ];
     treeClusters.forEach(([y, x]) => {
       if (this.inBounds(x, y) && this.tileMap[y][x] === T_GRASS) {
@@ -271,36 +260,48 @@ export class WorldScene extends Phaser.Scene {
       }
     });
 
-    // Buildings
-    this.placeBuilding(6, 5, 8, 8);    // Top-left building
-    this.placeBuilding(22, 5, 8, 8);   // Top-right area
-    this.placeBuilding(6, 17, 8, 6);   // Mid-left building
-    this.placeBuilding(22, 17, 8, 6);  // Mid-right building
-    this.placeBuilding(14, 5, 6, 7);   // Top center
-    this.placeBuilding(30, 5, 7, 8);   // Far right building
-    this.placeBuilding(30, 17, 7, 6);  // Far right mid
+    // Flowers scattered in grass
+    const flowerSpots: [number, number][] = [
+      [6,7],[6,16],[7,23],[8,35],[11,7],[11,22],[12,34],
+      [13,7],[17,8],[17,32],[18,8],[19,12],[21,7],[21,32],
+      [22,8],[24,8],[24,30],[27,8],[27,30],[28,8],[28,30],
+    ];
+    flowerSpots.forEach(([y, x]) => {
+      if (this.inBounds(x, y) && this.tileMap[y][x] === T_GRASS) {
+        this.tileMap[y][x] = T_FLOWER;
+      }
+    });
 
-    // Fountain plaza (center around 19-20, 14-15)
-    for (let y = 11; y <= 12; y++) {
-      for (let x = 17; x <= 22; x++) {
-        this.tileMap[y][x] = T_DIRT;
+    // Buildings
+    this.placeBuilding(6, 5, 8, 8);
+    this.placeBuilding(22, 5, 8, 8);
+    this.placeBuilding(6, 17, 8, 6);
+    this.placeBuilding(22, 17, 8, 6);
+    this.placeBuilding(14, 5, 6, 7);
+    this.placeBuilding(30, 5, 7, 8);
+    this.placeBuilding(30, 17, 7, 6);
+
+    // Fountain plaza (center)
+    for (let y = 10; y <= 13; y++) {
+      for (let x = 16; x <= 23; x++) {
+        if (this.tileMap[y][x] === T_GRASS || this.tileMap[y][x] === T_FLOWER) {
+          this.tileMap[y][x] = T_DIRT;
+        }
       }
     }
-    // Fountain tiles
+    // 2x2 water fountain in the center
     this.tileMap[11][19] = T_WATER;
     this.tileMap[11][20] = T_WATER;
     this.tileMap[12][19] = T_WATER;
     this.tileMap[12][20] = T_WATER;
 
     // Fences
-    // Horizontal fence
     for (let x = 7; x <= 13; x++) {
       if (this.tileMap[16][x] === T_GRASS) this.tileMap[16][x] = T_FENCE_H;
     }
     for (let x = 24; x <= 30; x++) {
       if (this.tileMap[16][x] === T_GRASS) this.tileMap[16][x] = T_FENCE_H;
     }
-    // Vertical fence
     for (let y = 17; y <= 22; y++) {
       if (this.tileMap[y][13] === T_GRASS) this.tileMap[y][13] = T_FENCE_V;
       if (this.tileMap[y][25] === T_GRASS) this.tileMap[y][25] = T_FENCE_V;
@@ -325,7 +326,6 @@ export class WorldScene extends Phaser.Scene {
         } else if (dy === h - 1) {
           this.tileMap[ty][tx] = T_FLOOR;
         } else {
-          // Windows on alternating tiles
           if ((dx === 1 || dx === w - 2) && dy >= 2) {
             this.tileMap[ty][tx] = T_WINDOW;
           } else {
@@ -349,18 +349,19 @@ export class WorldScene extends Phaser.Scene {
 
   private renderTiles(): void {
     const textureKeys = [
-      'tile_grass',       // T_GRASS = 0
-      'tile_dirt',        // T_DIRT = 1
-      'tile_tree',        // T_TREE = 2
-      'tile_building_wall', // T_WALL = 3
-      'tile_roof_dark',   // T_ROOF_D = 4
-      'tile_roof_red',    // T_ROOF_R = 5
-      'tile_building_window', // T_WINDOW = 6
-      'tile_fence_h',     // T_FENCE_H = 7
-      'tile_fence_v',     // T_FENCE_V = 8
-      'tile_water',       // T_WATER = 9
-      'tile_sign',        // T_SIGN = 10
-      'tile_floor',       // T_FLOOR = 11
+      'tile_grass',            // 0 T_GRASS
+      'tile_dirt',             // 1 T_DIRT
+      'tile_tree',             // 2 T_TREE
+      'tile_building_wall',    // 3 T_WALL
+      'tile_roof_dark',        // 4 T_ROOF_D
+      'tile_roof_red',         // 5 T_ROOF_R
+      'tile_building_window',  // 6 T_WINDOW
+      'tile_fence_h',          // 7 T_FENCE_H
+      'tile_fence_v',          // 8 T_FENCE_V
+      'tile_water',            // 9 T_WATER
+      'tile_sign',             // 10 T_SIGN
+      'tile_floor',            // 11 T_FLOOR
+      'tile_flower',           // 12 T_FLOWER
     ];
 
     for (let y = 0; y < MAP_H; y++) {
@@ -385,21 +386,18 @@ export class WorldScene extends Phaser.Scene {
       const sprite = this.add.image(0, 0, `npc_${i}`);
       sprite.setOrigin(0.5);
 
-      // Name label background
-      const labelBg = this.add.graphics();
+      // Name label
       const labelText = this.add.text(0, -26, guest.name, {
-        fontFamily: '"Press Start 2P"',
+        fontFamily: '"Press Start 2P", monospace',
         fontSize: '5px',
         color: '#FFFFFF',
         resolution: 2,
+        stroke: '#000000',
+        strokeThickness: 2,
       });
       labelText.setOrigin(0.5);
-      const lw = labelText.width + 6;
-      const lh = labelText.height + 4;
-      labelBg.fillStyle(0x000000, 0.7);
-      labelBg.fillRect(-lw / 2, -lh / 2 - 26, lw, lh);
 
-      container.add([labelBg, sprite, labelText]);
+      container.add([sprite, labelText]);
       this.npcSprites.set(guest.id, container);
 
       // Idle bob animation
@@ -415,11 +413,11 @@ export class WorldScene extends Phaser.Scene {
   }
 
   private createPlayer(): void {
+    // Bug #2 fix: use player_front texture (single sprite, flip for left)
     this.player = this.add.image(
       this.playerTileX * TILE + TILE / 2,
       this.playerTileY * TILE + TILE / 2,
-      'player',
-      'down'
+      'player_front'
     );
     this.player.setOrigin(0.5);
     this.player.setDepth(10);
@@ -435,15 +433,16 @@ export class WorldScene extends Phaser.Scene {
     if (!this.input.keyboard) return;
     this.cursors = this.input.keyboard.createCursorKeys();
     this.wasd = {
-      up: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W),
-      down: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S),
-      left: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A),
+      up:    this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W),
+      down:  this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S),
+      left:  this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A),
       right: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D),
     };
     this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
-    this.cKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.C);
+    this.cKey     = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.C);
   }
 
+  // ─── Dialogue Box (Bug #3 fix + polish) ───────────────────────────────────
   private createDialogueBox(): void {
     this.dialogueBox = this.add.container(0, 0);
     this.dialogueBox.setScrollFactor(0);
@@ -452,51 +451,95 @@ export class WorldScene extends Phaser.Scene {
 
     const camW = this.cameras.main.width;
     const camH = this.cameras.main.height;
-    const boxH = 120;
+    const boxH = 130;
+    const boxX = 10;
     const boxY = camH - boxH - 10;
+    const boxW = camW - 20;
 
+    // White background with thick black border
     const bg = this.add.graphics();
-    bg.fillStyle(0xF0F0F0, 0.97);
-    bg.fillRoundedRect(10, boxY, camW - 20, boxH, 8);
-    bg.lineStyle(3, 0x303030);
-    bg.strokeRoundedRect(10, boxY, camW - 20, boxH, 8);
-    bg.lineStyle(2, 0x707070);
-    bg.strokeRoundedRect(14, boxY + 4, camW - 28, boxH - 8, 6);
+    bg.fillStyle(0xFFFFFF, 1);
+    bg.fillRect(boxX, boxY, boxW, boxH);
+    bg.lineStyle(4, 0x000000, 1);
+    bg.strokeRect(boxX, boxY, boxW, boxH);
 
-    const nameText = this.add.text(24, boxY + 14, '', {
-      fontFamily: '"Press Start 2P"',
+    // Portrait area (dark square, top-left of box)
+    const portraitBg = this.add.graphics();
+    portraitBg.fillStyle(0x202040, 1);
+    portraitBg.fillRect(boxX + 8, boxY + 8, 40, 40);
+    portraitBg.lineStyle(2, 0x000000, 1);
+    portraitBg.strokeRect(boxX + 8, boxY + 8, 40, 40);
+    portraitBg.setName('portraitBg');
+
+    // Separator line
+    const sep = this.add.graphics();
+    sep.lineStyle(1, 0x000000, 0.3);
+    sep.lineBetween(boxX + 56, boxY + 55, boxX + boxW - 8, boxY + 55);
+
+    // Bottom bar (slightly gray)
+    const bottomBar = this.add.graphics();
+    bottomBar.fillStyle(0xF0F0F0, 1);
+    bottomBar.fillRect(boxX + 1, boxY + boxH - 22, boxW - 2, 21);
+    bottomBar.lineStyle(1, 0x000000, 0.2);
+    bottomBar.lineBetween(boxX + 1, boxY + boxH - 22, boxX + boxW - 1, boxY + boxH - 22);
+
+    // Name text — bold, dark, explicit font+color
+    const nameText = this.add.text(boxX + 56, boxY + 10, '', {
+      fontFamily: '"Press Start 2P", monospace',
       fontSize: '8px',
-      color: '#1a1a2e',
+      color: '#000000',
       resolution: 2,
     });
     nameText.setName('nameText');
+    nameText.setDepth(101);
 
-    const titleText = this.add.text(24, boxY + 30, '', {
-      fontFamily: '"Press Start 2P"',
+    // Title text — italic style, smaller, muted
+    const titleText = this.add.text(boxX + 56, boxY + 26, '', {
+      fontFamily: '"Press Start 2P", monospace',
       fontSize: '6px',
-      color: '#4a4a6e',
+      color: '#444466',
       resolution: 2,
     });
     titleText.setName('titleText');
+    titleText.setDepth(101);
 
-    const bodyText = this.add.text(24, boxY + 50, '', {
-      fontFamily: '"Press Start 2P"',
-      fontSize: '7px',
-      color: '#222222',
+    // Body text — main dialogue line
+    const bodyText = this.add.text(boxX + 56, boxY + 58, '', {
+      fontFamily: '"Press Start 2P", monospace',
+      fontSize: '6px',
+      color: '#111111',
       resolution: 2,
-      wordWrap: { width: camW - 60 },
+      wordWrap: { width: boxW - 70 },
     });
     bodyText.setName('bodyText');
+    bodyText.setDepth(101);
 
-    const hintText = this.add.text(24, boxY + 90, 'SPACE to battle  •  Walk away to cancel', {
-      fontFamily: '"Press Start 2P"',
+    // Hint text in the bottom bar
+    const hintText = this.add.text(boxX + 8, boxY + boxH - 16, 'SPACE to battle  \u2022  Walk away to cancel', {
+      fontFamily: '"Press Start 2P", monospace',
       fontSize: '5px',
-      color: '#888888',
+      color: '#666666',
       resolution: 2,
     });
     hintText.setName('hintText');
+    hintText.setDepth(101);
 
-    this.dialogueBox.add([bg, nameText, titleText, bodyText, hintText]);
+    // ▼ arrow indicator
+    const arrowText = this.add.text(boxX + boxW - 14, boxY + boxH - 16, '\u25BC', {
+      fontFamily: 'monospace',
+      fontSize: '8px',
+      color: '#444444',
+    });
+    arrowText.setDepth(101);
+
+    // Portrait sprite (will be set in showDialogue)
+    const portraitSprite = this.add.image(boxX + 28, boxY + 28, 'npc_0');
+    portraitSprite.setOrigin(0.5);
+    portraitSprite.setScale(1.0);
+    portraitSprite.setName('portraitSprite');
+    portraitSprite.setDepth(101);
+
+    this.dialogueBox.add([bg, portraitBg, sep, bottomBar, nameText, titleText, bodyText, hintText, arrowText, portraitSprite]);
   }
 
   private showDialogue(guest: Guest): void {
@@ -505,13 +548,19 @@ export class WorldScene extends Phaser.Scene {
     this.nearbyGuest = guest;
     this.dialogueBox.setVisible(true);
 
-    const nameText = this.dialogueBox.getByName('nameText') as Phaser.GameObjects.Text;
-    const titleText = this.dialogueBox.getByName('titleText') as Phaser.GameObjects.Text;
-    const bodyText = this.dialogueBox.getByName('bodyText') as Phaser.GameObjects.Text;
+    const guestIndex = GUESTS.findIndex(g => g.id === guest.id);
 
-    nameText.setText(guest.name);
-    titleText.setText(guest.title);
-    bodyText.setText(`${guest.name} wants to test your knowledge!`);
+    const nameText     = this.dialogueBox.getByName('nameText')     as Phaser.GameObjects.Text;
+    const titleText    = this.dialogueBox.getByName('titleText')    as Phaser.GameObjects.Text;
+    const bodyText     = this.dialogueBox.getByName('bodyText')     as Phaser.GameObjects.Text;
+    const portraitSpr  = this.dialogueBox.getByName('portraitSprite') as Phaser.GameObjects.Image;
+
+    if (nameText)  nameText.setText(guest.name);
+    if (titleText) titleText.setText(guest.title);
+    if (bodyText)  bodyText.setText(`${guest.name} wants to\ntest your knowledge!`);
+    if (portraitSpr && guestIndex >= 0) {
+      portraitSpr.setTexture(`npc_${guestIndex}`);
+    }
   }
 
   private hideDialogue(): void {
@@ -531,6 +580,7 @@ export class WorldScene extends Phaser.Scene {
     return null;
   }
 
+  // ─── Pokédex ──────────────────────────────────────────────────────────────
   private createPokedex(): void {
     const camW = this.cameras.main.width;
     const camH = this.cameras.main.height;
@@ -554,21 +604,20 @@ export class WorldScene extends Phaser.Scene {
     panel.strokeRoundedRect(20, 20, panelW, panelH, 12);
     this.pokedexContainer.add(panel);
 
-    const title = this.add.text(camW / 2, 40, 'a16z ARCADE DEX', {
-      fontFamily: '"Press Start 2P"',
+    const titleT = this.add.text(camW / 2, 40, 'a16z ARCADE DEX', {
+      fontFamily: '"Press Start 2P", monospace',
       fontSize: '10px',
       color: '#60A0FF',
       resolution: 2,
     });
-    title.setOrigin(0.5, 0);
-    this.pokedexContainer.add(title);
+    titleT.setOrigin(0.5, 0);
+    this.pokedexContainer.add(titleT);
   }
 
   private showPokedex(): void {
     this.pokedexVisible = true;
     this.pokedexContainer.setVisible(true);
 
-    // Clear old children (keep first 3: overlay, panel, title)
     const children = this.pokedexContainer.list;
     while (children.length > 3) {
       const child = children[children.length - 1] as Phaser.GameObjects.GameObject;
@@ -579,7 +628,7 @@ export class WorldScene extends Phaser.Scene {
     const camW = this.cameras.main.width;
 
     const countText = this.add.text(camW / 2, 58, `${captured.length}/10 Captured`, {
-      fontFamily: '"Press Start 2P"',
+      fontFamily: '"Press Start 2P", monospace',
       fontSize: '7px',
       color: '#FFFFFF',
       resolution: 2,
@@ -587,7 +636,6 @@ export class WorldScene extends Phaser.Scene {
     countText.setOrigin(0.5, 0);
     this.pokedexContainer.add(countText);
 
-    // Grid of guests
     const cols = 2;
     const startX = 35;
     const startY = 80;
@@ -609,21 +657,28 @@ export class WorldScene extends Phaser.Scene {
       this.pokedexContainer.add(cardBg);
 
       const numText = this.add.text(cx + 6, cy + 6, `#${String(i + 1).padStart(2, '0')}`, {
-        fontFamily: '"Press Start 2P"',
+        fontFamily: '"Press Start 2P", monospace',
         fontSize: '5px',
         color: isCaptured ? '#60A0FF' : '#606060',
         resolution: 2,
       });
       this.pokedexContainer.add(numText);
 
-      // Mini sprite circle
-      const spriteCircle = this.add.graphics();
-      spriteCircle.fillStyle(isCaptured ? guest.color : 0x404040);
-      spriteCircle.fillCircle(cx + cellW - 22, cy + cellH / 2 - 2, 14);
-      this.pokedexContainer.add(spriteCircle);
+      // Mini sprite
+      if (isCaptured) {
+        const miniSprite = this.add.image(cx + cellW - 26, cy + cellH / 2 - 2, `npc_${i}`);
+        miniSprite.setOrigin(0.5);
+        miniSprite.setScale(0.9);
+        this.pokedexContainer.add(miniSprite);
+      } else {
+        const spriteCircle = this.add.graphics();
+        spriteCircle.fillStyle(0x404040);
+        spriteCircle.fillCircle(cx + cellW - 26, cy + cellH / 2 - 2, 14);
+        this.pokedexContainer.add(spriteCircle);
+      }
 
       const nameT = this.add.text(cx + 6, cy + 18, isCaptured ? guest.name : '???', {
-        fontFamily: '"Press Start 2P"',
+        fontFamily: '"Press Start 2P", monospace',
         fontSize: '5px',
         color: isCaptured ? '#FFFFFF' : '#404040',
         resolution: 2,
@@ -633,7 +688,7 @@ export class WorldScene extends Phaser.Scene {
 
       if (isCaptured) {
         const titleT = this.add.text(cx + 6, cy + 32, guest.title, {
-          fontFamily: '"Press Start 2P"',
+          fontFamily: '"Press Start 2P", monospace',
           fontSize: '4px',
           color: '#8080C0',
           resolution: 2,
@@ -644,7 +699,7 @@ export class WorldScene extends Phaser.Scene {
     });
 
     const closeHint = this.add.text(camW / 2, camW > 400 ? 600 : 580, 'Press C to close', {
-      fontFamily: '"Press Start 2P"',
+      fontFamily: '"Press Start 2P", monospace',
       fontSize: '6px',
       color: '#606090',
       resolution: 2,
@@ -658,6 +713,7 @@ export class WorldScene extends Phaser.Scene {
     this.pokedexContainer.setVisible(false);
   }
 
+  // ─── Mini-map ─────────────────────────────────────────────────────────────
   private createMiniMap(): void {
     this.miniMapContainer = this.add.container(0, 0);
     this.miniMapContainer.setScrollFactor(0);
@@ -665,7 +721,6 @@ export class WorldScene extends Phaser.Scene {
   }
 
   private updateMiniMap(): void {
-    // Remove previous graphics to prevent accumulation
     this.miniMapContainer.removeAll(true);
 
     const camW = this.cameras.main.width;
@@ -678,32 +733,49 @@ export class WorldScene extends Phaser.Scene {
     const scaleY = mmH / MAP_H;
 
     const bg = this.add.graphics();
-    bg.fillStyle(0x000000, 0.7);
-    bg.fillRect(mmX - 2, mmY - 2, mmW + 4, mmH + 4);
 
-    // Minimap tiles
+    // Black background with yellow border
+    bg.fillStyle(0x000000, 0.85);
+    bg.fillRect(mmX - 2, mmY - 14, mmW + 4, mmH + 16);
+    bg.lineStyle(2, 0xFFD700, 1);
+    bg.strokeRect(mmX - 2, mmY - 14, mmW + 4, mmH + 16);
+
+    // "MAP 1" label
+    const labelT = this.add.text(mmX + mmW / 2, mmY - 11, 'MAP 1', {
+      fontFamily: '"Press Start 2P", monospace',
+      fontSize: '5px',
+      color: '#FFD700',
+      resolution: 2,
+    });
+    labelT.setOrigin(0.5, 0);
+    this.miniMapContainer.add(labelT);
+
+    // Tiles
     for (let y = 0; y < MAP_H; y++) {
       for (let x = 0; x < MAP_W; x++) {
         const t = this.tileMap[y][x];
         let col = 0x78C850;
-        if (t === T_DIRT || t === T_FLOOR) col = 0xE8D8A0;
-        else if (t === T_TREE) col = 0x389858;
-        else if (t === T_WALL || t === T_ROOF_D || t === T_ROOF_R || t === T_WINDOW) col = 0xC0A880;
-        else if (t === T_WATER) col = 0x6890F0;
+        if (t === T_DIRT || t === T_FLOOR)         col = 0xE8D8A0;
+        else if (t === T_TREE)                      col = 0x389858;
+        else if (t === T_WALL || t === T_ROOF_D ||
+                 t === T_ROOF_R || t === T_WINDOW)  col = 0xC0A880;
+        else if (t === T_WATER)                     col = 0x6890F0;
         else if (t === T_FENCE_H || t === T_FENCE_V) col = 0xC89040;
+        else if (t === T_FLOWER)                    col = 0xF080A0;
         bg.fillStyle(col);
-        bg.fillRect(mmX + x * scaleX, mmY + y * scaleY, Math.max(scaleX, 1), Math.max(scaleY, 1));
+        bg.fillRect(mmX + x * scaleX, mmY + y * scaleY,
+                    Math.max(scaleX, 1), Math.max(scaleY, 1));
       }
     }
 
-    // NPC dots
+    // NPC dots (red = not captured, yellow = captured)
     const captured: string[] = JSON.parse(localStorage.getItem('a16z_captured') || '[]');
     GUESTS.forEach((guest) => {
       bg.fillStyle(captured.includes(guest.id) ? 0xFFFF00 : 0xFF4040);
       bg.fillRect(mmX + guest.x * scaleX - 1, mmY + guest.y * scaleY - 1, 3, 3);
     });
 
-    // Player dot
+    // Player dot (white)
     bg.fillStyle(0xFFFFFF);
     bg.fillCircle(
       mmX + this.playerTileX * scaleX,
@@ -714,24 +786,17 @@ export class WorldScene extends Phaser.Scene {
     this.miniMapContainer.add(bg);
   }
 
-  private createHUD(): void {
-    // HUD elements are rendered directly in update via minimap
-  }
-
-  update(time: number, delta: number): void {
+  // ─── Update loop ──────────────────────────────────────────────────────────
+  update(_time: number, delta: number): void {
     if (this.scene.isActive('BattleScene')) return;
-
-    // Don't process input until game is ready (username set)
     if (!this.gameReady) return;
 
-    // Toggle pokedex
+    // Toggle pokédex
     if (Phaser.Input.Keyboard.JustDown(this.cKey)) {
       if (this.pokedexVisible) {
         this.hidePokedex();
-      } else {
-        if (!this.dialogueVisible) {
-          this.showPokedex();
-        }
+      } else if (!this.dialogueVisible) {
+        this.showPokedex();
       }
     }
 
@@ -740,21 +805,17 @@ export class WorldScene extends Phaser.Scene {
     // Dialogue interaction
     if (this.dialogueVisible) {
       if (Phaser.Input.Keyboard.JustDown(this.spaceKey)) {
-        // Start battle
         if (this.nearbyGuest) {
           const guest = this.nearbyGuest;
           this.hideDialogue();
-          this.scene.launch('BattleScene', {
-            guest,
-            playerId: this.playerId,
-          });
+          this.scene.launch('BattleScene', { guest, playerId: this.playerId });
           this.scene.pause('WorldScene');
         }
       }
       return;
     }
 
-    // Check if near an NPC
+    // Check proximity for dialogue
     const nearby = this.getGuestNearPlayer();
     if (nearby && Phaser.Input.Keyboard.JustDown(this.spaceKey)) {
       this.showDialogue(nearby);
@@ -763,7 +824,6 @@ export class WorldScene extends Phaser.Scene {
 
     // Movement
     this.moveTimer -= delta;
-
     if (this.moveTimer <= 0) {
       let dx = 0;
       let dy = 0;
@@ -780,20 +840,29 @@ export class WorldScene extends Phaser.Scene {
       }
 
       if (moved) {
+        if (this.dialogueVisible) this.hideDialogue();
+
         const newX = this.playerTileX + dx;
         const newY = this.playerTileY + dy;
-
-        // Hide dialogue if moving away
-        if (this.dialogueVisible) {
-          this.hideDialogue();
-        }
 
         if (!this.isSolid(newX, newY)) {
           this.playerTileX = newX;
           this.playerTileY = newY;
         }
 
-        this.player.setTexture('player', this.playerDir);
+        // Bug #2 fix: use player_front for all directions, flip for left, back texture for up
+        if (this.playerDir === 'up') {
+          this.player.setTexture('player_back');
+          this.player.setFlipX(false);
+        } else if (this.playerDir === 'left') {
+          this.player.setTexture('player_front');
+          this.player.setFlipX(true);
+        } else {
+          // right or down
+          this.player.setTexture('player_front');
+          this.player.setFlipX(false);
+        }
+
         this.player.setPosition(
           this.playerTileX * TILE + TILE / 2,
           this.playerTileY * TILE + TILE / 2
@@ -803,7 +872,7 @@ export class WorldScene extends Phaser.Scene {
       }
     }
 
-    // Show dialogue popup if near NPC
+    // Proximity dialogue popup
     const nearbyNow = this.getGuestNearPlayer();
     if (nearbyNow && !this.dialogueVisible) {
       this.showDialogue(nearbyNow);
@@ -811,7 +880,7 @@ export class WorldScene extends Phaser.Scene {
       this.hideDialogue();
     }
 
-    // Update minimap every 500ms to avoid expensive per-frame redraws
+    // Update minimap every 500ms
     this.miniMapTimer -= delta;
     if (this.miniMapTimer <= 0) {
       this.updateMiniMap();
