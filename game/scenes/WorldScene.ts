@@ -29,6 +29,7 @@ export class WorldScene extends Phaser.Scene {
   private npcSprites: Map<string, Phaser.GameObjects.Container> = new Map();
 
   private dialogueBox!: Phaser.GameObjects.Container;
+  private playerNameLabel!: Phaser.GameObjects.Text;
   private dialogueVisible = false;
   private nearbyGuest: Guest | null = null;
   private activeNPC: Guest | null = null;
@@ -80,10 +81,21 @@ export class WorldScene extends Phaser.Scene {
     // ── Create player with physics ────────────────────────────────────────
     // Spawn in safe open area at bottom-center of map, away from all NPCs
     this.player = this.physics.add.image(352, 1216, 'player_ai');
-    this.player.setDisplaySize(48, 64);
+    this.player.setDisplaySize(64, 80);
     this.player.setOrigin(0.5);
     this.player.setDepth(5);
     this.player.setCollideWorldBounds(true);
+
+    // Player name label (updated from localStorage)
+    const savedName = localStorage.getItem('a16z_username') || 'You';
+    this.playerNameLabel = this.add.text(352, 1216 - 84, savedName, {
+      fontFamily: '"Press Start 2P", monospace',
+      fontSize: '5px',
+      color: '#FFFF00',
+      resolution: 2,
+      stroke: '#000000',
+      strokeThickness: 3,
+    }).setOrigin(0.5).setDepth(6);
 
     // Slightly smaller body so player fits through tight paths
     this.player.body.setSize(24, 28);
@@ -130,12 +142,9 @@ export class WorldScene extends Phaser.Scene {
       console.warn('Supabase init failed, running offline:', err);
     }
 
-    const askedThisSession = sessionStorage.getItem('a16z_name_asked');
-    if (!askedThisSession) {
-      this.showUsernameOverlay();
-    } else {
-      this.gameReady = true;
-    }
+    // Always ask for name on fresh page load (sessionStorage cleared each browser session)
+    sessionStorage.removeItem('a16z_name_asked');
+    this.showUsernameOverlay();
   }
 
   private showUsernameOverlay() {
@@ -222,6 +231,10 @@ export class WorldScene extends Phaser.Scene {
       this.usernameOverlay = null;
       this.input.keyboard?.enableGlobalCapture();
       this.gameReady = true;
+      // Update player name label
+      if (this.playerNameLabel) {
+        this.playerNameLabel.setText(name);
+      }
     };
 
     btn.addEventListener('click', confirm);
@@ -251,10 +264,10 @@ export class WorldScene extends Phaser.Scene {
       sprite.setOrigin(0.5, 1.0); // anchor at feet so character stands on ground
       // Scale AI sprites (1024x1024) down to Pokémon trainer sprite size
       if (spriteKey === aiKey) {
-        sprite.setDisplaySize(48, 64); // Pokémon trainer sprite size - matches map tile size
+        sprite.setDisplaySize(64, 80); // Pokémon trainer sprite size - matches map tile size
       }
 
-      const labelText = this.add.text(0, -68, guest.name, {
+      const labelText = this.add.text(0, -84, guest.name, {
         fontFamily: '"Press Start 2P", monospace',
         fontSize: '5px',
         color: '#FFFFFF',
@@ -302,7 +315,7 @@ export class WorldScene extends Phaser.Scene {
 
     const camW = this.cameras.main.width;
     const camH = this.cameras.main.height;
-    const boxH = 130;
+    const boxH = 160;
     const boxX = 10;
     const boxY = camH - boxH - 10;
     const boxW = camW - 20;
