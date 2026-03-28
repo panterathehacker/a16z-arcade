@@ -21,6 +21,9 @@ export class WorldScene extends Phaser.Scene {
   };
   private spaceKey!: Phaser.Input.Keyboard.Key;
   private cKey!: Phaser.Input.Keyboard.Key;
+  private escKey!: Phaser.Input.Keyboard.Key;
+
+  private dialogueGracePeriod = true;
 
   private worldLayer!: Phaser.Tilemaps.TilemapLayer;
   private npcSprites: Map<string, Phaser.GameObjects.Container> = new Map();
@@ -28,6 +31,7 @@ export class WorldScene extends Phaser.Scene {
   private dialogueBox!: Phaser.GameObjects.Container;
   private dialogueVisible = false;
   private nearbyGuest: Guest | null = null;
+  private activeNPC: Guest | null = null;
 
   private pokedexContainer!: Phaser.GameObjects.Container;
   private pokedexVisible = false;
@@ -73,9 +77,8 @@ export class WorldScene extends Phaser.Scene {
     this.physics.world.setBounds(0, 0, mapPixelW, mapPixelH);
 
     // ── Create player with physics ────────────────────────────────────────
-    // Spawn near the map's Objects layer spawn point (tile 11,38 ≈ px 368,1216)
-    // but move up a bit so the player starts in a good open area
-    this.player = this.physics.add.image(368, 800, 'player_front');
+    // Spawn in safe open area at bottom-center of map, away from all NPCs
+    this.player = this.physics.add.image(640, 1100, 'player_front');
     this.player.setOrigin(0.5);
     this.player.setDepth(5);
     this.player.setCollideWorldBounds(true);
@@ -103,6 +106,10 @@ export class WorldScene extends Phaser.Scene {
     this.createMiniMap();
 
     this.initPlayer();
+
+    // Grace period: disable dialogue triggers for 2 seconds after scene load
+    this.dialogueGracePeriod = true;
+    this.time.delayedCall(2000, () => { this.dialogueGracePeriod = false; });
   }
 
   private async initPlayer() {
@@ -281,6 +288,7 @@ export class WorldScene extends Phaser.Scene {
     };
     this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
     this.cKey     = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.C);
+    this.escKey   = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
   }
 
   // ─── Dialogue Box ─────────────────────────────────────────────────────────
@@ -377,6 +385,7 @@ export class WorldScene extends Phaser.Scene {
     if (this.dialogueVisible) return;
     this.dialogueVisible = true;
     this.nearbyGuest = guest;
+    this.activeNPC = guest;
     this.dialogueBox.setVisible(true);
 
     const guestIndex = GUESTS.findIndex(g => g.id === guest.id);
@@ -399,7 +408,12 @@ export class WorldScene extends Phaser.Scene {
   private hideDialogue(): void {
     this.dialogueVisible = false;
     this.nearbyGuest = null;
+    this.activeNPC = null;
     this.dialogueBox.setVisible(false);
+  }
+
+  private dismissDialogue(): void {
+    this.hideDialogue();
   }
 
   private getGuestNearPlayer(): Guest | null {
@@ -619,7 +633,7 @@ export class WorldScene extends Phaser.Scene {
     if (this.scene.isActive('BattleScene')) return;
     if (!this.gameReady) return;
 
-    // Stop player movement while dialogue/pokedex is open
+    // Default velocity to zero; movement code below sets it appropriately
     this.player.setVelocity(0);
 
     if (Phaser.Input.Keyboard.JustDown(this.cKey)) {
@@ -632,27 +646,7 @@ export class WorldScene extends Phaser.Scene {
 
     if (this.pokedexVisible) return;
 
-    // Dialogue interaction
-    if (this.dialogueVisible) {
-      if (Phaser.Input.Keyboard.JustDown(this.spaceKey)) {
-        if (this.nearbyGuest) {
-          const guest = this.nearbyGuest;
-          this.hideDialogue();
-          this.scene.launch('BattleScene', { guest, playerId: this.playerId });
-          this.scene.pause('WorldScene');
-        }
-      }
-      return;
-    }
-
-    // Check proximity for dialogue trigger
-    const nearby = this.getGuestNearPlayer();
-    if (nearby && Phaser.Input.Keyboard.JustDown(this.spaceKey)) {
-      this.showDialogue(nearby);
-      return;
-    }
-
-    // Movement via velocity (physics-based)
+    // Movement via velocity (physics-based) — always allow movement
     this.moveTimer -= delta;
 
     const speed = 160;
@@ -669,6 +663,7 @@ export class WorldScene extends Phaser.Scene {
       vy = speed; this.playerDir = 'down';
     }
 
+    // Allow movement even during dialogue — walking away dismisses it
     this.player.setVelocity(vx, vy);
 
     // Update player sprite direction
@@ -688,12 +683,42 @@ export class WorldScene extends Phaser.Scene {
       }
     }
 
-    // Proximity dialogue popup
-    const nearbyNow = this.getGuestNearPlayer();
-    if (nearbyNow && !this.dialogueVisible) {
-      this.showDialogue(nearbyNow);
-    } else if (!nearbyNow && this.dialogueVisible) {
-      this.hideDialogue();
+    // Dialogue: handle interaction and dismissal
+    if (this.dialogueVisible && this.activeNPC) {
+      // Dismiss if player moved > 80px away from NPC
+      const npcSprite = this.npcSprites.get(this.activeNPC.id);
+      const npcX = npcSprite ? npcSprite.x : this.activeNPC.px;
+      const npcY = npcSprite ? npcSprite.y : this.activeNPC.py;
+      const dist = Phaser.Math.Distance.Between(this.player.x, this.player.y, npcX, npcY);
+      if (dist > 80) {
+        this.dismissDialogue();
+      }
+      // Dismiss on ESC
+      if (this.escKey && Phaser.Input.Keyboard.JustDown(this.escKey)) {
+        this.dismissDialogue();
+      }
+      // SPACE to start battle
+      if (Phaser.Input.Keyboard.JustDown(this.spaceKey)) {
+        if (this.nearbyGuest) {
+          const guest = this.nearbyGuest;
+          this.hideDialogue();
+          this.scene.launch('BattleScene', { guest, playerId: this.playerId });
+          this.scene.pause('WorldScene');
+        }
+      }
+    } else if (!this.dialogueVisible) {
+      // Check proximity for dialogue trigger (with grace period)
+      if (!this.dialogueGracePeriod) {
+        const nearby = this.getGuestNearPlayer();
+        if (nearby && Phaser.Input.Keyboard.JustDown(this.spaceKey)) {
+          this.showDialogue(nearby);
+        }
+        // Proximity dialogue popup (auto-show when walking near)
+        const nearbyNow = this.getGuestNearPlayer();
+        if (nearbyNow) {
+          this.showDialogue(nearbyNow);
+        }
+      }
     }
 
     // Update minimap every 500ms
