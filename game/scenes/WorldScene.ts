@@ -28,7 +28,7 @@ export class WorldScene extends Phaser.Scene {
   private worldLayer!: Phaser.Tilemaps.TilemapLayer;
   private npcSprites: Map<string, Phaser.GameObjects.Container> = new Map();
 
-  private dialogueBox!: Phaser.GameObjects.Container;
+  private dialogueOverlay: HTMLDivElement | null = null;
   private playerNameLabel!: Phaser.GameObjects.Text;
   private dialogueVisible = false;
   private nearbyGuest: Guest | null = null;
@@ -115,7 +115,7 @@ export class WorldScene extends Phaser.Scene {
     this.setupInput();
 
     // ── UI overlays ───────────────────────────────────────────────────────
-    this.createDialogueBox();
+    // Dialogue box is now a DOM overlay — no Phaser container needed
     this.createPokedex();
     this.createMiniMap();
 
@@ -309,135 +309,155 @@ export class WorldScene extends Phaser.Scene {
     this.escKey   = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
   }
 
-  // ─── Dialogue Box ─────────────────────────────────────────────────────────
-  private createDialogueBox(): void {
-    this.dialogueBox = this.add.container(0, 0);
-    this.dialogueBox.setScrollFactor(0);
-    this.dialogueBox.setDepth(100);
-    this.dialogueBox.setVisible(false);
-
-    const camW = this.cameras.main.width;
-    const camH = this.cameras.main.height;
-    const boxH = 160;
-    const boxX = 10;
-    const boxY = camH - boxH - 10;
-    const boxW = camW - 20;
-
-    const bg = this.add.graphics();
-    bg.fillStyle(0xFFFFFF, 1);
-    bg.fillRect(boxX, boxY, boxW, boxH);
-    bg.lineStyle(4, 0x000000, 1);
-    bg.strokeRect(boxX, boxY, boxW, boxH);
-    bg.setScrollFactor(0);
-
-    const portraitBg = this.add.graphics();
-    portraitBg.fillStyle(0x202040, 1);
-    portraitBg.fillRect(boxX + 8, boxY + 8, 40, 40);
-    portraitBg.lineStyle(2, 0x000000, 1);
-    portraitBg.strokeRect(boxX + 8, boxY + 8, 40, 40);
-    portraitBg.setName('portraitBg');
-    portraitBg.setScrollFactor(0);
-
-    const sep = this.add.graphics();
-    sep.lineStyle(1, 0x000000, 0.3);
-    sep.lineBetween(boxX + 56, boxY + 55, boxX + boxW - 8, boxY + 55);
-    sep.setScrollFactor(0);
-
-    const bottomBar = this.add.graphics();
-    bottomBar.fillStyle(0xF0F0F0, 1);
-    bottomBar.fillRect(boxX + 1, boxY + boxH - 22, boxW - 2, 21);
-    bottomBar.lineStyle(1, 0x000000, 0.2);
-    bottomBar.lineBetween(boxX + 1, boxY + boxH - 22, boxX + boxW - 1, boxY + boxH - 22);
-    bottomBar.setScrollFactor(0);
-
-    const nameText = this.add.text(boxX + 56, boxY + 10, '', {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '8px',
-      color: '#000000',
-      resolution: 2,
-    });
-    nameText.setName('nameText');
-    nameText.setDepth(101);
-    nameText.setScrollFactor(0);
-
-    const titleText = this.add.text(boxX + 56, boxY + 26, '', {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '6px',
-      color: '#444466',
-      resolution: 2,
-    });
-    titleText.setName('titleText');
-    titleText.setDepth(101);
-    titleText.setScrollFactor(0);
-
-    const bodyText = this.add.text(boxX + 56, boxY + 58, '', {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '6px',
-      color: '#111111',
-      resolution: 2,
-      wordWrap: { width: boxW - 70 },
-    });
-    bodyText.setName('bodyText');
-    bodyText.setDepth(101);
-    bodyText.setScrollFactor(0);
-
-    const hintText = this.add.text(boxX + 8, boxY + boxH - 16, 'SPACE to battle  \u2022  Walk away to cancel', {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '5px',
-      color: '#666666',
-      resolution: 2,
-    });
-    hintText.setName('hintText');
-    hintText.setDepth(101);
-    hintText.setScrollFactor(0);
-
-    const arrowText = this.add.text(boxX + boxW - 14, boxY + boxH - 16, '\u25BC', {
-      fontFamily: 'monospace',
-      fontSize: '8px',
-      color: '#444444',
-    });
-    arrowText.setDepth(101);
-    arrowText.setScrollFactor(0);
-
-    const portraitSprite = this.add.image(boxX + 28, boxY + 28, 'npc_ai_0');
-    portraitSprite.setOrigin(0.5);
-    portraitSprite.setDisplaySize(40, 40);
-    portraitSprite.setName('portraitSprite');
-    portraitSprite.setDepth(101);
-    portraitSprite.setScrollFactor(0);
-
-    this.dialogueBox.add([bg, portraitBg, sep, bottomBar, nameText, titleText, bodyText, hintText, arrowText, portraitSprite]);
-  }
-
+  // ─── Dialogue Box (DOM overlay — avoids Phaser scroll-factor clipping) ───────
   private showDialogue(guest: Guest): void {
     if (this.dialogueVisible) return;
     this.dialogueVisible = true;
     this.nearbyGuest = guest;
     this.activeNPC = guest;
-    this.dialogueBox.setVisible(true);
+
+    // Remove any stale overlay
+    if (this.dialogueOverlay) {
+      this.dialogueOverlay.remove();
+      this.dialogueOverlay = null;
+    }
 
     const guestIndex = GUESTS.findIndex(g => g.id === guest.id);
 
-    const nameText    = this.dialogueBox.getByName('nameText')      as Phaser.GameObjects.Text;
-    const titleText   = this.dialogueBox.getByName('titleText')     as Phaser.GameObjects.Text;
-    const bodyText    = this.dialogueBox.getByName('bodyText')      as Phaser.GameObjects.Text;
-    const portraitSpr = this.dialogueBox.getByName('portraitSprite') as Phaser.GameObjects.Image;
-
-    if (nameText)  nameText.setText(guest.name);
-    if (titleText) titleText.setText(guest.title);
-    if (bodyText)  bodyText.setText(`${guest.name} wants to\ntest your knowledge!`);
-    if (portraitSpr && guestIndex >= 0) {
-      const aiKey = `npc_ai_${guestIndex}`;
-      portraitSpr.setTexture(this.textures.exists(aiKey) ? aiKey : `npc_${guestIndex}`);
-      portraitSpr.setDisplaySize(40, 40);
+    // Resolve portrait: prefer canvas-rendered sprite texture, fall back to PNG path
+    let portraitSrc = '';
+    const aiKey = `npc_ai_${guestIndex}`;
+    const npcKey = `npc_${guestIndex}`;
+    const texKey = this.textures.exists(aiKey) ? aiKey : (this.textures.exists(npcKey) ? npcKey : '');
+    if (texKey) {
+      try {
+        const frame = this.textures.getFrame(texKey);
+        if (frame && frame.source && frame.source.image) {
+          const src = frame.source.image as HTMLImageElement | HTMLCanvasElement;
+          portraitSrc = (src as HTMLImageElement).src || (src as HTMLCanvasElement).toDataURL?.() || '';
+        }
+      } catch (_) { /* ignore */ }
     }
+    if (!portraitSrc && guest.id) {
+      portraitSrc = `assets/sprites/guests/${guest.id}.png`;
+    }
+
+    const overlay = document.createElement('div');
+    overlay.style.cssText = `
+      position: fixed;
+      left: 10px;
+      right: 10px;
+      bottom: 10px;
+      height: 160px;
+      background: #ffffff;
+      border: 4px solid #000000;
+      font-family: "Press Start 2P", monospace;
+      z-index: 500;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    `;
+
+    // Portrait area
+    const portrait = document.createElement('div');
+    portrait.style.cssText = `
+      position: absolute;
+      left: 8px;
+      top: 8px;
+      width: 40px;
+      height: 40px;
+      background: #202040;
+      border: 2px solid #000000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      flex-shrink: 0;
+    `;
+    if (portraitSrc) {
+      const img = document.createElement('img');
+      img.src = portraitSrc;
+      img.style.cssText = `width: 40px; height: 40px; object-fit: contain; image-rendering: pixelated;`;
+      portrait.appendChild(img);
+    }
+
+    // Text area
+    const textArea = document.createElement('div');
+    textArea.style.cssText = `
+      position: absolute;
+      left: 56px;
+      top: 10px;
+      right: 8px;
+      bottom: 26px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      overflow: hidden;
+    `;
+
+    const nameEl = document.createElement('div');
+    nameEl.style.cssText = `font-size: 8px; color: #000000; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;`;
+    nameEl.textContent = guest.name;
+
+    const titleEl = document.createElement('div');
+    titleEl.style.cssText = `font-size: 6px; color: #444466; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;`;
+    titleEl.textContent = guest.title;
+
+    const sep = document.createElement('div');
+    sep.style.cssText = `height: 1px; background: rgba(0,0,0,0.3); margin: 6px 0 6px 0;`;
+
+    const bodyEl = document.createElement('div');
+    bodyEl.style.cssText = `font-size: 6px; color: #111111; line-height: 2;`;
+    bodyEl.textContent = `${guest.name} wants to test your knowledge!`;
+
+    textArea.appendChild(nameEl);
+    textArea.appendChild(titleEl);
+    textArea.appendChild(sep);
+    textArea.appendChild(bodyEl);
+
+    // Bottom bar
+    const bottomBar = document.createElement('div');
+    bottomBar.style.cssText = `
+      position: absolute;
+      left: 1px;
+      right: 1px;
+      bottom: 1px;
+      height: 21px;
+      background: #f0f0f0;
+      border-top: 1px solid rgba(0,0,0,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 8px;
+    `;
+
+    const hintEl = document.createElement('div');
+    hintEl.style.cssText = `font-size: 5px; color: #666666;`;
+    hintEl.textContent = 'SPACE to battle  \u2022  Walk away to cancel';
+
+    const arrowEl = document.createElement('div');
+    arrowEl.style.cssText = `font-size: 8px; color: #444444; font-family: monospace;`;
+    arrowEl.textContent = '\u25BC';
+
+    bottomBar.appendChild(hintEl);
+    bottomBar.appendChild(arrowEl);
+
+    overlay.appendChild(portrait);
+    overlay.appendChild(textArea);
+    overlay.appendChild(bottomBar);
+    document.body.appendChild(overlay);
+    this.dialogueOverlay = overlay;
   }
 
   private hideDialogue(): void {
     this.dialogueVisible = false;
     this.nearbyGuest = null;
     this.activeNPC = null;
-    this.dialogueBox.setVisible(false);
+    if (this.dialogueOverlay) {
+      this.dialogueOverlay.remove();
+      this.dialogueOverlay = null;
+    }
   }
 
   private dismissDialogue(): void {

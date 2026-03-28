@@ -26,7 +26,7 @@ export const GUESTS: Guest[] = [
     name: 'Marc Andreessen',
     title: 'Co-Founder, a16z',
     color: 0x4169E1,
-    px: 200,  py: 500,   // tile ~6,16 — open area
+    px: 200,  py: 750,   // tile ~6,16 — open area
     x: 6,     y: 16,
     questions: [
       {
@@ -61,7 +61,7 @@ export const GUESTS: Guest[] = [
     name: 'Ben Horowitz',
     title: 'Co-Founder, a16z',
     color: 0x8B0000,
-    px: 1050, py: 500,   // tile ~33,16 — open area
+    px: 1050,  py: 750,   // tile ~33,16 — open area
     x: 33,    y: 16,
     questions: [
       {
@@ -96,7 +96,7 @@ export const GUESTS: Guest[] = [
     name: 'Jensen Huang',
     title: 'CEO, NVIDIA',
     color: 0x76B900,
-    px: 200,  py: 650,   // tile ~6,20 — open area
+    px: 350,  py: 800,   // tile ~6,20 — open area
     x: 6,     y: 20,
     questions: [
       {
@@ -131,7 +131,7 @@ export const GUESTS: Guest[] = [
     name: 'Lisa Su',
     title: 'CEO, AMD',
     color: 0xFF6B00,
-    px: 400,  py: 700,   // tile ~13,22 — open area
+    px: 700,  py: 750,   // tile ~13,22 — open area
     x: 13,    y: 22,
     questions: [
       {
@@ -166,7 +166,7 @@ export const GUESTS: Guest[] = [
     name: 'Alexandr Wang',
     title: 'CEO, Scale AI',
     color: 0x00CED1,
-    px: 650,  py: 550,   // tile ~20,17 — open area
+    px: 950,  py: 800,   // tile ~20,17 — open area
     x: 20,    y: 17,
     questions: [
       {
@@ -201,7 +201,7 @@ export const GUESTS: Guest[] = [
     name: 'Sam Altman',
     title: 'CEO, OpenAI',
     color: 0x1A1A2E,
-    px: 900,  py: 600,   // tile ~28,19 — open area
+    px: 200,  py: 900,   // tile ~28,19 — open area
     x: 28,    y: 19,
     questions: [
       {
@@ -236,7 +236,7 @@ export const GUESTS: Guest[] = [
     name: 'Satya Nadella',
     title: 'CEO, Microsoft',
     color: 0x00A4EF,
-    px: 1050, py: 700,   // tile ~33,22 — open area
+    px: 500,  py: 850,   // tile ~33,22 — open area
     x: 33,    y: 22,
     questions: [
       {
@@ -271,7 +271,7 @@ export const GUESTS: Guest[] = [
     name: 'Brian Chesky',
     title: 'CEO & Co-Founder, Airbnb',
     color: 0xFF5A5F,
-    px: 200,  py: 800,   // tile ~6,25 — open area
+    px: 800,  py: 900,   // tile ~6,25 — open area
     x: 6,     y: 25,
     questions: [
       {
@@ -306,7 +306,7 @@ export const GUESTS: Guest[] = [
     name: 'Patrick Collison',
     title: 'CEO & Co-Founder, Stripe',
     color: 0x6772E5,
-    px: 400,  py: 850,   // tile ~13,27 — open area
+    px: 1050,  py: 850,   // tile ~13,27 — open area
     x: 13,    y: 27,
     questions: [
       {
@@ -341,7 +341,7 @@ export const GUESTS: Guest[] = [
     name: 'Dario Amodei',
     title: 'CEO & Co-Founder, Anthropic',
     color: 0xCC785C,
-    px: 600,  py: 800,   // tile ~19,25 — open area
+    px: 300,  py: 1000,   // tile ~19,25 — open area
     x: 19,    y: 25,
     questions: [
       {
@@ -376,7 +376,7 @@ export const GUESTS: Guest[] = [
     name: 'Chris Dixon',
     title: 'General Partner, a16z Crypto',
     color: 0xF7931A,
-    px: 800,  py: 750,   // tile ~25,23 — open area
+    px: 600,  py: 950,   // tile ~25,23 — open area
     x: 25,    y: 23,
     questions: [
       {
@@ -411,7 +411,7 @@ export const GUESTS: Guest[] = [
     name: 'Sarah Guo',
     title: 'Founder, Conviction',
     color: 0xFF69B4,
-    px: 1000, py: 850,   // tile ~31,27 — open area
+    px: 900,  py: 1000,   // tile ~31,27 — open area
     x: 31,    y: 27,
     questions: [
       {
@@ -446,7 +446,7 @@ export const GUESTS: Guest[] = [
     name: 'Elad Gil',
     title: 'Investor & Advisor',
     color: 0x9370DB,
-    px: 200,  py: 950,   // tile ~6,30 — open area
+    px: 200,  py: 1050,   // tile ~6,30 — open area
     x: 6,     y: 30,
     questions: [
       {
@@ -481,7 +481,7 @@ export const GUESTS: Guest[] = [
     name: 'Andrew Chen',
     title: 'General Partner, a16z',
     color: 0xFF8C00,
-    px: 400,  py: 1000,  // tile ~13,31 — open area
+    px: 500,  py: 1050,  // tile ~13,31 — open area
     x: 13,    y: 31,
     questions: [
       {
@@ -516,7 +516,7 @@ export const GUESTS: Guest[] = [
     name: 'Sonal Chokshi',
     title: 'Former Editor-in-Chief, a16z',
     color: 0x20B2AA,
-    px: 600,  py: 950,   // tile ~19,30 — open area
+    px: 800,  py: 1000,   // tile ~19,30 — open area
     x: 19,    y: 30,
     questions: [
       {
@@ -551,7 +551,7 @@ export const GUESTS: Guest[] = [
     name: 'David George',
     title: 'General Partner, a16z Growth',
     color: 0xDC143C,
-    px: 800,  py: 1000,  // tile ~25,31 — open area
+    px: 1050,  py: 1050,  // tile ~25,31 — open area
     x: 25,    y: 31,
     questions: [
       {
@@ -586,7 +586,7 @@ export const GUESTS: Guest[] = [
     name: 'Wade Foster',
     title: 'CEO & Co-Founder, Zapier',
     color: 0xFF4A00,
-    px: 1000, py: 950,   // tile ~31,30 — open area
+    px: 300,  py: 1150,   // tile ~31,30 — open area
     x: 31,    y: 30,
     questions: [
       {
@@ -621,7 +621,7 @@ export const GUESTS: Guest[] = [
     name: 'Tomer London',
     title: 'Co-Founder & CPO, Gusto',
     color: 0xF45D48,
-    px: 200,  py: 1050,  // tile ~6,33 — open area
+    px: 600,  py: 1150,  // tile ~6,33 — open area
     x: 6,     y: 33,
     questions: [
       {
@@ -656,7 +656,7 @@ export const GUESTS: Guest[] = [
     name: 'Balaji Srinivasan',
     title: 'Investor & Author',
     color: 0xF7A800,
-    px: 400,  py: 1100,  // tile ~13,34 — open area
+    px: 900,  py: 1100,  // tile ~13,34 — open area
     x: 13,    y: 34,
     questions: [
       {
@@ -691,7 +691,7 @@ export const GUESTS: Guest[] = [
     name: 'Naval Ravikant',
     title: 'Founder, AngelList',
     color: 0x2D2D2D,
-    px: 600,  py: 1050,  // tile ~19,33 — open area
+    px: 200,  py: 1200,  // tile ~19,33 — open area
     x: 19,    y: 33,
     questions: [
       {
@@ -726,7 +726,7 @@ export const GUESTS: Guest[] = [
     name: 'Reid Hoffman',
     title: 'Co-Founder, LinkedIn',
     color: 0x0077B5,
-    px: 800,  py: 1100,  // tile ~25,34 — open area
+    px: 500,  py: 1200,  // tile ~25,34 — open area
     x: 25,    y: 34,
     questions: [
       {
@@ -761,7 +761,7 @@ export const GUESTS: Guest[] = [
     name: 'Steve Wozniak',
     title: 'Co-Founder, Apple',
     color: 0xA2AAAD,
-    px: 1000, py: 1050,  // tile ~31,33 — open area
+    px: 800,  py: 1200,  // tile ~31,33 — open area
     x: 31,    y: 33,
     questions: [
       {
@@ -796,7 +796,7 @@ export const GUESTS: Guest[] = [
     name: 'Nicole Brichtova',
     title: 'Group PM, Google DeepMind',
     color: 0x4285F4,
-    px: 300,  py: 1150,  // tile ~9,36 — open area
+    px: 1050,  py: 1150,  // tile ~9,36 — open area
     x: 9,     y: 36,
     questions: [
       {
@@ -831,7 +831,7 @@ export const GUESTS: Guest[] = [
     name: 'Tomer Cohen',
     title: 'CPO, LinkedIn',
     color: 0x0A66C2,
-    px: 700,  py: 1150,  // tile ~22,36 — open area
+    px: 350,  py: 1250,  // tile ~22,36 — open area
     x: 22,    y: 36,
     questions: [
       {
@@ -866,7 +866,7 @@ export const GUESTS: Guest[] = [
     name: 'Alex Karp',
     title: 'CEO, Palantir',
     color: 0x1C1C1E,
-    px: 950,  py: 960,  // tile ~30,30 — open grass area
+    px: 700,  py: 1250,  // tile ~30,30 — open grass area
     x: 30,    y: 30,
     questions: [
       {
