@@ -862,7 +862,7 @@ export const GUESTS: Guest[] = [
     ],
   },
   {
-    id: 'alex-karp',
+    {KARP_MARKER}
     name: 'Alex Karp',
     title: 'CEO, Palantir',
     color: 0x1C1C1E,
