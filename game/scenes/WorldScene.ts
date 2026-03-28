@@ -339,7 +339,7 @@ export class WorldScene extends Phaser.Scene {
       } catch (_) { /* ignore */ }
     }
     if (!portraitSrc && guest.id) {
-      portraitSrc = `assets/sprites/guests/${guest.id}.png`;
+      portraitSrc = `/assets/sprites/guests/${guest.id}.png`;
     }
 
     // Position dialogue inside the game canvas
