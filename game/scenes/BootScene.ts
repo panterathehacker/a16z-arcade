@@ -208,50 +208,78 @@ export class BootScene extends Phaser.Scene {
       ctx.fillRect(12, 0, 1, 32);
     });
 
-    // ── Building wall tile (32x32) ──
+    // ── Building wall tile (32x32) — cream facade strip ──
     this.tex('tile_building_wall', 32, 32, (ctx) => {
       ctx.fillStyle = '#D4C4A0';
       ctx.fillRect(0, 0, 32, 32);
-      // Brick lines every 8px
-      ctx.strokeStyle = '#B8A880';
+      // Small window squares
+      ctx.fillStyle = '#A0C8E8';
+      ctx.fillRect(4, 6, 10, 14);
+      ctx.fillRect(18, 6, 10, 14);
+      // Window frames
+      ctx.strokeStyle = '#888870';
       ctx.lineWidth = 1;
-      for (let row = 0; row < 5; row++) {
-        const y = row * 8;
-        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(32, y); ctx.stroke();
-        // Alternating vertical joints
-        const off = (row % 2) * 10;
-        for (let jx = off; jx < 36; jx += 20) {
-          ctx.beginPath(); ctx.moveTo(jx, y); ctx.lineTo(jx, y + 8); ctx.stroke();
-        }
-      }
+      ctx.strokeRect(4, 6, 10, 14);
+      ctx.strokeRect(18, 6, 10, 14);
+      // Window cross
+      ctx.beginPath(); ctx.moveTo(9, 6); ctx.lineTo(9, 20); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(4, 13); ctx.lineTo(14, 13); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(23, 6); ctx.lineTo(23, 20); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(18, 13); ctx.lineTo(28, 13); ctx.stroke();
+      // Subtle top shadow (overhang from roof)
+      ctx.fillStyle = 'rgba(0,0,0,0.15)';
+      ctx.fillRect(0, 0, 32, 3);
+      // Bottom line
+      ctx.fillStyle = 'rgba(0,0,0,0.1)';
+      ctx.fillRect(0, 30, 32, 2);
     });
 
-    // ── Roof dark tile (32x32) ──
+    // ── Roof dark tile (32x32) — top-down wood planks ──
     this.tex('tile_roof_dark', 32, 32, (ctx) => {
-      ctx.fillStyle = '#4A3828';
+      // Base dark brown
+      ctx.fillStyle = '#4A3020';
       ctx.fillRect(0, 0, 32, 32);
-      // Horizontal plank lines every 4px
-      ctx.strokeStyle = '#3A2818';
+      // Horizontal plank lines every 6px
+      ctx.strokeStyle = '#3A2010';
       ctx.lineWidth = 1;
-      for (let i = 1; i < 8; i++) {
-        ctx.beginPath(); ctx.moveTo(0, i * 4); ctx.lineTo(32, i * 4); ctx.stroke();
+      for (let i = 1; i <= 5; i++) {
+        ctx.beginPath(); ctx.moveTo(0, i * 6); ctx.lineTo(32, i * 6); ctx.stroke();
       }
-      // Overhang shadow at top
-      ctx.fillStyle = '#2A1808';
-      ctx.fillRect(0, 0, 32, 4);
+      // Subtle highlight on top edge (light coming from top)
+      ctx.fillStyle = '#5A4030';
+      ctx.fillRect(0, 0, 32, 3);
+      // Subtle shadow on bottom edge
+      ctx.fillStyle = 'rgba(0,0,0,0.2)';
+      ctx.fillRect(0, 29, 32, 3);
+      // Plank grain texture
+      ctx.fillStyle = 'rgba(90,60,30,0.3)';
+      for (let i = 0; i < 4; i++) {
+        ctx.fillRect(i * 8 + 3, 0, 1, 32);
+      }
     });
 
-    // ── Roof red tile (32x32) ──
+    // ── Roof red tile (32x32) — PokéCenter red roof, top-down ──
     this.tex('tile_roof_red', 32, 32, (ctx) => {
+      // Base red
       ctx.fillStyle = '#C03028';
       ctx.fillRect(0, 0, 32, 32);
+      // Horizontal plank lines every 6px in darker red
       ctx.strokeStyle = '#A02018';
       ctx.lineWidth = 1;
-      for (let i = 1; i < 8; i++) {
-        ctx.beginPath(); ctx.moveTo(0, i * 4); ctx.lineTo(32, i * 4); ctx.stroke();
+      for (let i = 1; i <= 5; i++) {
+        ctx.beginPath(); ctx.moveTo(0, i * 6); ctx.lineTo(32, i * 6); ctx.stroke();
       }
-      ctx.fillStyle = '#801818';
-      ctx.fillRect(0, 0, 32, 4);
+      // Highlight on top
+      ctx.fillStyle = '#D84038';
+      ctx.fillRect(0, 0, 32, 3);
+      // Shadow on bottom
+      ctx.fillStyle = 'rgba(0,0,0,0.2)';
+      ctx.fillRect(0, 29, 32, 3);
+      // Grain
+      ctx.fillStyle = 'rgba(180,30,20,0.3)';
+      for (let i = 0; i < 4; i++) {
+        ctx.fillRect(i * 8 + 3, 0, 1, 32);
+      }
     });
 
     // ── Building window tile (32x32) ──
@@ -289,6 +317,28 @@ export class BootScene extends Phaser.Scene {
       ctx.strokeRect(0, 0, 32, 32);
     });
 
+    // ── Door tile (32x32) — cream facade + dark wood door centered ──
+    this.tex('tile_door', 32, 32, (ctx) => {
+      // Cream/stone facade background
+      ctx.fillStyle = '#D4C4A0';
+      ctx.fillRect(0, 0, 32, 32);
+      // Door frame (slightly lighter wood)
+      ctx.fillStyle = '#8B5E3C';
+      ctx.fillRect(9, 4, 14, 28);
+      // Door panel (dark wood)
+      ctx.fillStyle = '#6B3A20';
+      ctx.fillRect(11, 6, 10, 24);
+      // Door knob
+      ctx.fillStyle = '#D4A020';
+      ctx.fillRect(18, 18, 2, 2);
+      // Door panel highlight
+      ctx.fillStyle = 'rgba(255,255,255,0.1)';
+      ctx.fillRect(12, 7, 4, 10);
+      // Step at bottom
+      ctx.fillStyle = '#B8A880';
+      ctx.fillRect(7, 28, 18, 4);
+    });
+
     // ── Flower tile (32x32) — grass with 2 pixel-art flowers ──
     this.tex('tile_flower', 32, 32, (ctx) => {
       // Grass base
@@ -312,7 +362,7 @@ export class BootScene extends Phaser.Scene {
   }
 
   private generatePlayerTextures() {
-    // player_front: used for down / left / right directions (flip for left)
+    // player_front: used for down direction
     this.tex('player_front', 32, 32, (ctx) => {
       this.drawChibi(ctx, {
         skinColor: '#F0C090',
@@ -333,6 +383,75 @@ export class BootScene extends Phaser.Scene {
         back: true,
       });
     });
+
+    // player_right: side-profile view — used for right (and flipped for left)
+    this.tex('player_right', 32, 32, (ctx) => {
+      this.drawChibiSide(ctx, {
+        skinColor: '#F0C090',
+        hairColor: '#6B3E2A',
+        outfitColor: '#2850A0',
+      });
+    });
+  }
+
+  // Draw a chibi character in side profile (facing right)
+  private drawChibiSide(ctx: CanvasRenderingContext2D, opts: {
+    skinColor: string;
+    hairColor: string;
+    outfitColor: string;
+  }) {
+    const { skinColor, hairColor, outfitColor } = opts;
+    const cx = 16;
+
+    // Shoes (side view — one visible, one slightly behind)
+    ctx.fillStyle = '#101010';
+    ctx.fillRect(cx + 1, 28, 7, 3);   // front shoe
+    ctx.fillRect(cx - 2, 28, 5, 2);   // back shoe (partial)
+
+    // Legs (side — slight offset for walk pose)
+    ctx.fillStyle = '#202040';
+    ctx.fillRect(cx + 2, 22, 4, 7);   // front leg
+    ctx.fillRect(cx - 1, 23, 4, 6);   // back leg
+
+    // Body (narrower from side)
+    ctx.fillStyle = outfitColor;
+    ctx.fillRect(cx - 3, 13, 9, 10);
+
+    // Near arm (visible from side)
+    ctx.fillStyle = outfitColor;
+    ctx.fillRect(cx + 5, 14, 3, 8);
+
+    // Hand (skin)
+    ctx.fillStyle = skinColor;
+    ctx.fillRect(cx + 5, 21, 3, 3);
+
+    // Neck
+    ctx.fillStyle = skinColor;
+    ctx.fillRect(cx - 1, 10, 3, 4);
+
+    // Head (side profile — slightly offset forward)
+    ctx.fillStyle = skinColor;
+    ctx.fillRect(cx, 3, 9, 9);
+
+    // Nose hint
+    ctx.fillStyle = '#D09070';
+    ctx.fillRect(cx + 8, 7, 2, 2);
+
+    // Eye (single eye from side)
+    ctx.fillStyle = '#202020';
+    ctx.fillRect(cx + 6, 6, 2, 2);
+
+    // Hair (side profile)
+    ctx.fillStyle = hairColor;
+    ctx.fillRect(cx, 1, 9, 5);         // top
+    ctx.fillRect(cx - 1, 3, 2, 7);    // back of head
+    ctx.fillRect(cx + 8, 2, 3, 4);    // front tuft
+
+    // Subtle outline
+    ctx.strokeStyle = 'rgba(0,0,0,0.15)';
+    ctx.lineWidth = 0.5;
+    ctx.strokeRect(cx - 3, 13, 9, 10);
+    ctx.strokeRect(cx, 3, 9, 9);
   }
 
   private generateNPCTextures() {

@@ -20,6 +20,7 @@ const T_WATER   = 9;
 const T_SIGN    = 10;
 const T_FLOOR   = 11;
 const T_FLOWER  = 12;
+const T_DOOR    = 13;
 
 type TileMap = number[][];
 
@@ -95,8 +96,10 @@ export class WorldScene extends Phaser.Scene {
       console.warn('Supabase init failed, running offline:', err);
     }
 
-    const hasUsername = localStorage.getItem('a16z_username');
-    if (!hasUsername) {
+    // Issue 1 fix: show name prompt on EVERY fresh page load (once per browser session).
+    // Use sessionStorage so it shows on each new tab/reload but not on scene restarts.
+    const askedThisSession = sessionStorage.getItem('a16z_name_asked');
+    if (!askedThisSession) {
       this.showUsernameOverlay();
     } else {
       this.gameReady = true;
@@ -174,6 +177,7 @@ export class WorldScene extends Phaser.Scene {
     const confirm = async () => {
       const name = input.value.trim() || 'Trainer';
       localStorage.setItem('a16z_username', name);
+      sessionStorage.setItem('a16z_name_asked', '1');
 
       if (this.playerId) {
         try {
@@ -209,26 +213,12 @@ export class WorldScene extends Phaser.Scene {
   private buildTileMap(): void {
     this.tileMap = Array.from({ length: MAP_H }, () => Array(MAP_W).fill(T_GRASS));
 
-    // Main horizontal paths
-    for (let x = 0; x < MAP_W; x++) {
-      this.tileMap[14][x] = T_DIRT;
-      this.tileMap[15][x] = T_DIRT;
-      this.tileMap[25][x] = T_DIRT;
-      this.tileMap[26][x] = T_DIRT;
-      this.tileMap[3][x]  = T_DIRT;
-    }
-    // Vertical paths
-    for (let y = 0; y < MAP_H; y++) {
-      this.tileMap[y][19] = T_DIRT;
-      this.tileMap[y][20] = T_DIRT;
-    }
-
-    // Border trees (dense)
+    // ── Border trees (all 4 edges, 2 tiles thick) ──
     for (let x = 0; x < MAP_W; x++) {
       this.tileMap[0][x] = T_TREE;
       this.tileMap[1][x] = T_TREE;
-      this.tileMap[2][x] = T_TREE;
       this.tileMap[MAP_H - 1][x] = T_TREE;
+      this.tileMap[MAP_H - 2][x] = T_TREE;
     }
     for (let y = 0; y < MAP_H; y++) {
       this.tileMap[y][0] = T_TREE;
@@ -237,22 +227,64 @@ export class WorldScene extends Phaser.Scene {
       this.tileMap[y][MAP_W - 2] = T_TREE;
     }
 
-    // Interior tree clusters
+    // ── Main paths ──
+    // Horizontal road across middle
+    for (let x = 2; x < MAP_W - 2; x++) {
+      this.tileMap[16][x] = T_DIRT;
+      this.tileMap[17][x] = T_DIRT;
+    }
+    // Vertical road
+    for (let y = 2; y < MAP_H - 2; y++) {
+      this.tileMap[y][19] = T_DIRT;
+      this.tileMap[y][20] = T_DIRT;
+    }
+    // Extra horizontal path in lower half
+    for (let x = 2; x < MAP_W - 2; x++) {
+      this.tileMap[24][x] = T_DIRT;
+      this.tileMap[25][x] = T_DIRT;
+    }
+
+    // ── Buildings (top-down Pokémon D/P style) ──
+    // Each building: ROOF rows on top, then 1 row WALL (facade), door at bottom-center
+    // Building 1: upper-left area (x=3, y=4, w=6, h=4) — dark roof
+    this.placeBuildingDP(3,  4, 6, 4, false);
+    // Building 2: upper area center-left (x=12, y=4, w=6, h=4) — dark roof
+    this.placeBuildingDP(12, 4, 6, 4, false);
+    // Building 3: upper area center-right (x=22, y=4, w=6, h=4) — dark roof
+    this.placeBuildingDP(22, 4, 6, 4, false);
+    // PokéCenter: upper-right (x=31, y=4, w=6, h=4) — red roof
+    this.placeBuildingDP(31, 4, 6, 4, true);
+
+    // Lower-section buildings (below main road)
+    this.placeBuildingDP(3,  19, 6, 4, false);
+    this.placeBuildingDP(12, 19, 6, 4, false);
+    this.placeBuildingDP(22, 19, 6, 4, false);
+    this.placeBuildingDP(31, 19, 6, 4, true);
+
+    // ── Fountain plaza (center of map) ──
+    // Stone surround + 2x2 water
+    for (let y = 12; y <= 15; y++) {
+      for (let x = 16; x <= 23; x++) {
+        if (this.tileMap[y][x] === T_GRASS || this.tileMap[y][x] === T_FLOWER) {
+          this.tileMap[y][x] = T_DIRT;
+        }
+      }
+    }
+    this.tileMap[13][19] = T_WATER;
+    this.tileMap[13][20] = T_WATER;
+    this.tileMap[14][19] = T_WATER;
+    this.tileMap[14][20] = T_WATER;
+    // Sign near fountain
+    this.tileMap[15][19] = T_SIGN;
+
+    // ── Interior tree clusters ──
     const treeClusters: [number, number][] = [
-      [4,4],[4,5],[5,4],[5,5],[6,4],
-      [4,10],[4,11],[5,10],[6,10],
-      [4,24],[4,25],[5,25],[6,24],
-      [4,34],[4,35],[5,34],[5,35],
-      [9,4],[9,5],[10,4],[10,5],
-      [9,30],[10,30],[10,31],[11,30],
-      [16,4],[16,5],[17,5],[17,4],
-      [16,24],[16,25],[17,24],[18,24],
-      [20,4],[20,5],[21,4],
-      [20,34],[20,35],[21,34],[21,35],
-      [23,4],[23,5],[24,4],[24,5],
-      [23,24],[23,25],[24,24],[25,24],
-      [27,5],[27,6],[28,5],[28,6],
-      [27,24],[28,24],[27,25],[28,25],
+      [9,5],[10,5],[9,6],[10,6],
+      [9,14],[10,14],[9,15],
+      [9,24],[10,24],[9,25],[10,25],
+      [9,34],[10,34],[9,35],
+      [21,5],[21,6],
+      [21,26],[21,27],
     ];
     treeClusters.forEach(([y, x]) => {
       if (this.inBounds(x, y) && this.tileMap[y][x] === T_GRASS) {
@@ -260,56 +292,43 @@ export class WorldScene extends Phaser.Scene {
       }
     });
 
-    // Flowers scattered in grass
+    // ── Flowers scattered in grass patches ──
     const flowerSpots: [number, number][] = [
-      [6,7],[6,16],[7,23],[8,35],[11,7],[11,22],[12,34],
-      [13,7],[17,8],[17,32],[18,8],[19,12],[21,7],[21,32],
-      [22,8],[24,8],[24,30],[27,8],[27,30],[28,8],[28,30],
+      [10,8],[10,11],[11,14],[11,25],[11,30],[11,35],
+      [18,5],[18,8],[18,14],[18,25],[18,30],[18,35],
+      [21,10],[21,15],[22,8],[22,14],
+      [26,5],[26,8],[26,14],[26,25],[26,30],[26,35],
+      [27,11],[27,22],
     ];
     flowerSpots.forEach(([y, x]) => {
       if (this.inBounds(x, y) && this.tileMap[y][x] === T_GRASS) {
         this.tileMap[y][x] = T_FLOWER;
       }
     });
+  }
 
-    // Buildings
-    this.placeBuilding(6, 5, 8, 8);
-    this.placeBuilding(22, 5, 8, 8);
-    this.placeBuilding(6, 17, 8, 6);
-    this.placeBuilding(22, 17, 8, 6);
-    this.placeBuilding(14, 5, 6, 7);
-    this.placeBuilding(30, 5, 7, 8);
-    this.placeBuilding(30, 17, 7, 6);
-
-    // Fountain plaza (center)
-    for (let y = 10; y <= 13; y++) {
-      for (let x = 16; x <= 23; x++) {
-        if (this.tileMap[y][x] === T_GRASS || this.tileMap[y][x] === T_FLOWER) {
-          this.tileMap[y][x] = T_DIRT;
+  // Pokémon D/P-style building: top rows = ROOF, last row = WALL facade, door at bottom-center
+  private placeBuildingDP(x: number, y: number, w: number, h: number, redRoof: boolean): void {
+    const roofTile = redRoof ? T_ROOF_R : T_ROOF_D;
+    const roofRows = h - 1; // all but last row are roof
+    for (let dy = 0; dy < h; dy++) {
+      for (let dx = 0; dx < w; dx++) {
+        const tx = x + dx;
+        const ty = y + dy;
+        if (!this.inBounds(tx, ty)) continue;
+        if (dy < roofRows) {
+          this.tileMap[ty][tx] = roofTile;
+        } else {
+          // Last row: facade wall, with door at center
+          const centerX = Math.floor(w / 2);
+          if (dx === centerX) {
+            this.tileMap[ty][tx] = T_DOOR;
+          } else {
+            this.tileMap[ty][tx] = T_WALL;
+          }
         }
       }
     }
-    // 2x2 water fountain in the center
-    this.tileMap[11][19] = T_WATER;
-    this.tileMap[11][20] = T_WATER;
-    this.tileMap[12][19] = T_WATER;
-    this.tileMap[12][20] = T_WATER;
-
-    // Fences
-    for (let x = 7; x <= 13; x++) {
-      if (this.tileMap[16][x] === T_GRASS) this.tileMap[16][x] = T_FENCE_H;
-    }
-    for (let x = 24; x <= 30; x++) {
-      if (this.tileMap[16][x] === T_GRASS) this.tileMap[16][x] = T_FENCE_H;
-    }
-    for (let y = 17; y <= 22; y++) {
-      if (this.tileMap[y][13] === T_GRASS) this.tileMap[y][13] = T_FENCE_V;
-      if (this.tileMap[y][25] === T_GRASS) this.tileMap[y][25] = T_FENCE_V;
-    }
-
-    // Signs
-    this.tileMap[13][19] = T_SIGN;
-    this.tileMap[13][20] = T_SIGN;
   }
 
   private placeBuilding(x: number, y: number, w: number, h: number): void {
@@ -345,6 +364,7 @@ export class WorldScene extends Phaser.Scene {
     const t = this.tileMap[y][x];
     return t === T_TREE || t === T_WALL || t === T_ROOF_D || t === T_ROOF_R ||
            t === T_WINDOW || t === T_FENCE_H || t === T_FENCE_V || t === T_WATER || t === T_SIGN;
+    // T_DOOR (13) is walkable
   }
 
   private renderTiles(): void {
@@ -362,6 +382,7 @@ export class WorldScene extends Phaser.Scene {
       'tile_sign',             // 10 T_SIGN
       'tile_floor',            // 11 T_FLOOR
       'tile_flower',           // 12 T_FLOWER
+      'tile_door',             // 13 T_DOOR
     ];
 
     for (let y = 0; y < MAP_H; y++) {
@@ -758,10 +779,12 @@ export class WorldScene extends Phaser.Scene {
         if (t === T_DIRT || t === T_FLOOR)         col = 0xE8D8A0;
         else if (t === T_TREE)                      col = 0x389858;
         else if (t === T_WALL || t === T_ROOF_D ||
-                 t === T_ROOF_R || t === T_WINDOW)  col = 0xC0A880;
+                 t === T_WINDOW)                    col = 0xC0A880;
+        else if (t === T_ROOF_R)                    col = 0xC03028;
         else if (t === T_WATER)                     col = 0x6890F0;
         else if (t === T_FENCE_H || t === T_FENCE_V) col = 0xC89040;
         else if (t === T_FLOWER)                    col = 0xF080A0;
+        else if (t === T_DOOR)                      col = 0x6B3A20;
         bg.fillStyle(col);
         bg.fillRect(mmX + x * scaleX, mmY + y * scaleY,
                     Math.max(scaleX, 1), Math.max(scaleY, 1));
@@ -850,16 +873,19 @@ export class WorldScene extends Phaser.Scene {
           this.playerTileY = newY;
         }
 
-        // Bug #2 fix: use player_front for all directions, flip for left, back texture for up
+        // Issue 2 fix: directional sprites
         if (this.playerDir === 'up') {
           this.player.setTexture('player_back');
           this.player.setFlipX(false);
-        } else if (this.playerDir === 'left') {
+        } else if (this.playerDir === 'down') {
           this.player.setTexture('player_front');
+          this.player.setFlipX(false);
+        } else if (this.playerDir === 'left') {
+          this.player.setTexture('player_right');
           this.player.setFlipX(true);
         } else {
-          // right or down
-          this.player.setTexture('player_front');
+          // right
+          this.player.setTexture('player_right');
           this.player.setFlipX(false);
         }
 
