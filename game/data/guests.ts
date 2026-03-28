@@ -862,12 +862,12 @@ export const GUESTS: Guest[] = [
     ],
   },
   {
-    {KARP_MARKER}
+    id: 'alex-karp',
     name: 'Alex Karp',
     title: 'CEO, Palantir',
     color: 0x1C1C1E,
-    px: 640,  py: 1088,  // tile ~20,34 — lower center
-    x: 20,    y: 34,
+    px: 960,  py: 960,  // tile ~30,30 — open grass area
+    x: 30,    y: 30,
     questions: [
       {
         text: 'Alex Karp is CEO of which data analytics company?',
