@@ -9,19 +9,25 @@ export interface Guest {
   name: string;
   title: string;
   color: number; // sprite color
-  x: number; // tile position
+  // Pixel positions on the Tuxemon town map (40x40 tiles, 32px each = 1280x1280)
+  px: number;
+  py: number;
+  // Keep x/y for legacy compatibility (tile coords approximated)
+  x: number;
   y: number;
   questions: Question[];
 }
 
+// NPC pixel positions spread across walkable areas of the Tuxemon town map
+// The town has open paths and a central plaza area
 export const GUESTS: Guest[] = [
   {
     id: 'marc',
     name: 'Marc Andreessen',
     title: 'Co-Founder, a16z',
     color: 0x4169E1,
-    x: 6,
-    y: 10,
+    px: 256,  py: 416,   // tile ~8,13 — left side path
+    x: 8,     y: 13,
     questions: [
       {
         text: 'Marc co-founded a16z with whom?',
@@ -55,8 +61,8 @@ export const GUESTS: Guest[] = [
     name: 'Ben Horowitz',
     title: 'Co-Founder, a16z',
     color: 0x8B0000,
-    x: 33,
-    y: 10,
+    px: 992,  py: 416,   // tile ~31,13 — right side path
+    x: 31,    y: 13,
     questions: [
       {
         text: 'Ben Horowitz wrote which best-selling book?',
@@ -90,8 +96,8 @@ export const GUESTS: Guest[] = [
     name: 'Lisa Su',
     title: 'CEO, AMD',
     color: 0xFF6B00,
-    x: 15,
-    y: 10,
+    px: 480,  py: 288,   // tile ~15,9 — upper center path
+    x: 15,    y: 9,
     questions: [
       {
         text: 'Lisa Su became CEO of AMD in which year?',
@@ -125,8 +131,8 @@ export const GUESTS: Guest[] = [
     name: 'Alexandr Wang',
     title: 'CEO, Scale AI',
     color: 0x00CED1,
-    x: 7,
-    y: 9,
+    px: 224,  py: 288,   // tile ~7,9 — upper left path
+    x: 7,     y: 9,
     questions: [
       {
         text: 'Alexandr Wang founded Scale AI at what age?',
@@ -160,8 +166,8 @@ export const GUESTS: Guest[] = [
     name: 'Jensen Huang',
     title: 'CEO, NVIDIA',
     color: 0x76B900,
-    x: 32,
-    y: 9,
+    px: 1024, py: 288,   // tile ~32,9 — upper right path
+    x: 32,    y: 9,
     questions: [
       {
         text: 'Jensen Huang co-founded NVIDIA in which year?',
@@ -195,8 +201,8 @@ export const GUESTS: Guest[] = [
     name: 'Sarah Guo',
     title: 'Founder, Conviction',
     color: 0xFF69B4,
-    x: 17,
-    y: 16,
+    px: 544,  py: 512,   // tile ~17,16 — center plaza area
+    x: 17,    y: 16,
     questions: [
       {
         text: 'Sarah Guo founded which AI-focused VC firm?',
@@ -230,8 +236,8 @@ export const GUESTS: Guest[] = [
     name: 'Elad Gil',
     title: 'Investor & Advisor',
     color: 0x9370DB,
-    x: 22,
-    y: 13,
+    px: 704,  py: 416,   // tile ~22,13 — central path
+    x: 22,    y: 13,
     questions: [
       {
         text: 'Elad Gil co-founded which mobile company acquired by Twitter?',
@@ -265,8 +271,8 @@ export const GUESTS: Guest[] = [
     name: 'Andrew Chen',
     title: 'General Partner, a16z',
     color: 0xFF8C00,
-    x: 33,
-    y: 19,
+    px: 1056, py: 608,   // tile ~33,19 — lower right
+    x: 33,    y: 19,
     questions: [
       {
         text: 'Andrew Chen is a General Partner at a16z focused on which area?',
@@ -300,8 +306,8 @@ export const GUESTS: Guest[] = [
     name: 'Sonal Chokshi',
     title: 'Host, a16z Podcast',
     color: 0x20B2AA,
-    x: 15,
-    y: 19,
+    px: 480,  py: 608,   // tile ~15,19 — lower center path
+    x: 15,    y: 19,
     questions: [
       {
         text: 'Sonal Chokshi was editor-in-chief of which publication before a16z?',
@@ -335,8 +341,8 @@ export const GUESTS: Guest[] = [
     name: 'David George',
     title: 'General Partner, a16z Growth',
     color: 0xDC143C,
-    x: 6,
-    y: 20,
+    px: 192,  py: 640,   // tile ~6,20 — lower left
+    x: 6,     y: 20,
     questions: [
       {
         text: 'David George leads which fund at a16z?',
