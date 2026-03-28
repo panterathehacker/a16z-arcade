@@ -356,7 +356,7 @@ export class WorldScene extends Phaser.Scene {
       left: ${dlgLeft}px;
       width: ${dlgWidth}px;
       bottom: ${dlgBottom}px;
-      height: 170px;
+      height: 200px;
       background: #ffffff;
       border: 5px solid #000000;
       font-family: "Press Start 2P", monospace;
@@ -366,12 +366,12 @@ export class WorldScene extends Phaser.Scene {
 
     // Inner layout: portrait left, text right
     const inner = document.createElement('div');
-    inner.style.cssText = `display: flex; align-items: flex-start; padding: 12px 14px 8px 12px; height: 120px;`;
+    inner.style.cssText = `display: flex; align-items: flex-start; padding: 12px 14px 8px 12px; height: 150px;`;
 
     // Portrait thumbnail
     const portrait = document.createElement('div');
     portrait.style.cssText = `
-      width: 52px; height: 52px; min-width: 52px;
+      width: 80px; height: 100px; min-width: 80px;
       background: #e8e8e8;
       border: 2px solid #000;
       overflow: hidden;
@@ -390,18 +390,18 @@ export class WorldScene extends Phaser.Scene {
     right.style.cssText = `display: flex; flex-direction: column; flex: 1; overflow: hidden;`;
 
     const nameEl = document.createElement('div');
-    nameEl.style.cssText = `font-size: 10px; font-weight: bold; color: #000000; white-space: nowrap; letter-spacing: 1px; margin-bottom: 4px;`;
+    nameEl.style.cssText = `font-size: 13px; font-weight: bold; color: #000000; white-space: nowrap; letter-spacing: 1px; margin-bottom: 4px;`;
     nameEl.textContent = guest.name.toUpperCase();
 
     const titleEl = document.createElement('div');
-    titleEl.style.cssText = `font-size: 6px; color: #555555; white-space: nowrap; margin-bottom: 8px;`;
+    titleEl.style.cssText = `font-size: 8px; color: #555555; white-space: nowrap; margin-bottom: 8px;`;
     titleEl.textContent = guest.title;
 
     const sep = document.createElement('hr');
     sep.style.cssText = `border: none; border-top: 1px solid #000; margin: 0 0 8px 0;`;
 
     const bodyEl = document.createElement('div');
-    bodyEl.style.cssText = `font-size: 7px; color: #000000; line-height: 1.8;`;
+    bodyEl.style.cssText = `font-size: 10px; font-weight: bold; color: #000000; line-height: 1.8;`;
     bodyEl.textContent = `${guest.name.split(' ')[0]} has a challenge for you!`;
 
     right.appendChild(nameEl);
@@ -427,13 +427,13 @@ export class WorldScene extends Phaser.Scene {
     spacePill.style.cssText = `
       background: #000; color: #fff;
       font-family: "Press Start 2P", monospace;
-      font-size: 6px; padding: 3px 6px;
+      font-size: 7px; padding: 3px 6px;
       border-radius: 2px;
     `;
     spacePill.textContent = 'SPACE';
 
     const hintEl = document.createElement('span');
-    hintEl.style.cssText = `font-size: 6px; color: #333333;`;
+    hintEl.style.cssText = `font-size: 7px; color: #333333;`;
     hintEl.textContent = 'to battle  •  Walk away to cancel';
 
     const arrowEl = document.createElement('span');
