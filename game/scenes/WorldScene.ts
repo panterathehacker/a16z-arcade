@@ -342,12 +342,19 @@ export class WorldScene extends Phaser.Scene {
       portraitSrc = `assets/sprites/guests/${guest.id}.png`;
     }
 
+    // Position dialogue inside the game canvas
+    const canvas = document.querySelector('canvas');
+    const canvasRect = canvas ? canvas.getBoundingClientRect() : { left: 0, bottom: window.innerHeight, width: window.innerWidth };
+    const dlgLeft = canvasRect.left;
+    const dlgWidth = canvasRect.width;
+    const dlgBottom = window.innerHeight - (canvas ? canvas.getBoundingClientRect().bottom : 0);
+
     const overlay = document.createElement('div');
     overlay.style.cssText = `
       position: fixed;
-      left: 10px;
-      right: 10px;
-      bottom: 10px;
+      left: ${dlgLeft + 10}px;
+      width: ${dlgWidth - 20}px;
+      bottom: ${dlgBottom + 10}px;
       height: 160px;
       background: #ffffff;
       border: 4px solid #000000;
