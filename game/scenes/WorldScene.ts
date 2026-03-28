@@ -78,7 +78,7 @@ export class WorldScene extends Phaser.Scene {
 
     // ── Create player with physics ────────────────────────────────────────
     // Spawn in safe open area at bottom-center of map, away from all NPCs
-    this.player = this.physics.add.image(640, 1100, 'player_front');
+    this.player = this.physics.add.image(640, 1100, 'player_ai');
     this.player.setOrigin(0.5);
     this.player.setDepth(5);
     this.player.setCollideWorldBounds(true);
@@ -669,16 +669,16 @@ export class WorldScene extends Phaser.Scene {
     // Update player sprite direction
     if (vx !== 0 || vy !== 0) {
       if (this.playerDir === 'up') {
-        this.player.setTexture('player_back');
+        this.player.setTexture('player_ai');
         this.player.setFlipX(false);
       } else if (this.playerDir === 'down') {
-        this.player.setTexture('player_front');
+        this.player.setTexture('player_ai');
         this.player.setFlipX(false);
       } else if (this.playerDir === 'left') {
-        this.player.setTexture('player_right');
+        this.player.setTexture('player_ai');
         this.player.setFlipX(true);
       } else {
-        this.player.setTexture('player_right');
+        this.player.setTexture('player_ai');
         this.player.setFlipX(false);
       }
     }
