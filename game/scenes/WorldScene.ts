@@ -239,13 +239,13 @@ export class WorldScene extends Phaser.Scene {
       const aiKey = `npc_ai_${i}`;
       const spriteKey = this.textures.exists(aiKey) ? aiKey : `npc_${i}`;
       const sprite = this.add.image(0, 0, spriteKey);
-      sprite.setOrigin(0.5);
-      // Scale AI sprites (1024x1024) down to NPC display size (~48x48)
+      sprite.setOrigin(0.5, 1.0); // anchor at feet so character stands on ground
+      // Scale AI sprites (1024x1024) down to Pokémon trainer sprite size
       if (spriteKey === aiKey) {
-        sprite.setDisplaySize(48, 48);
+        sprite.setDisplaySize(32, 48); // Pokémon trainer sprite size - matches map tile size
       }
 
-      const labelText = this.add.text(0, -26, guest.name, {
+      const labelText = this.add.text(0, -52, guest.name, {
         fontFamily: '"Press Start 2P", monospace',
         fontSize: '5px',
         color: '#FFFFFF',
