@@ -235,8 +235,15 @@ export class WorldScene extends Phaser.Scene {
     GUESTS.forEach((guest, i) => {
       const container = this.add.container(guest.px, guest.py);
 
-      const sprite = this.add.image(0, 0, `npc_${i}`);
+      // Use AI-generated sprite if available, fall back to procedural
+      const aiKey = `npc_ai_${i}`;
+      const spriteKey = this.textures.exists(aiKey) ? aiKey : `npc_${i}`;
+      const sprite = this.add.image(0, 0, spriteKey);
       sprite.setOrigin(0.5);
+      // Scale AI sprites (1024x1024) down to NPC display size (~48x48)
+      if (spriteKey === aiKey) {
+        sprite.setDisplaySize(48, 48);
+      }
 
       const labelText = this.add.text(0, -26, guest.name, {
         fontFamily: '"Press Start 2P", monospace',
@@ -357,9 +364,9 @@ export class WorldScene extends Phaser.Scene {
     });
     arrowText.setDepth(101);
 
-    const portraitSprite = this.add.image(boxX + 28, boxY + 28, 'npc_0');
+    const portraitSprite = this.add.image(boxX + 28, boxY + 28, 'npc_ai_0');
     portraitSprite.setOrigin(0.5);
-    portraitSprite.setScale(1.0);
+    portraitSprite.setDisplaySize(40, 40);
     portraitSprite.setName('portraitSprite');
     portraitSprite.setDepth(101);
 
@@ -383,7 +390,9 @@ export class WorldScene extends Phaser.Scene {
     if (titleText) titleText.setText(guest.title);
     if (bodyText)  bodyText.setText(`${guest.name} wants to\ntest your knowledge!`);
     if (portraitSpr && guestIndex >= 0) {
-      portraitSpr.setTexture(`npc_${guestIndex}`);
+      const aiKey = `npc_ai_${guestIndex}`;
+      portraitSpr.setTexture(this.textures.exists(aiKey) ? aiKey : `npc_${guestIndex}`);
+      portraitSpr.setDisplaySize(40, 40);
     }
   }
 
@@ -492,9 +501,14 @@ export class WorldScene extends Phaser.Scene {
       this.pokedexContainer.add(numText);
 
       if (isCaptured) {
-        const miniSprite = this.add.image(cx + cellW - 26, cy + cellH / 2 - 2, `npc_${i}`);
+        const aiKey = `npc_ai_${i}`;
+        const miniSprite = this.add.image(cx + cellW - 26, cy + cellH / 2 - 2, this.textures.exists(aiKey) ? aiKey : `npc_${i}`);
         miniSprite.setOrigin(0.5);
-        miniSprite.setScale(0.9);
+        if (this.textures.exists(aiKey)) {
+          miniSprite.setDisplaySize(28, 28);
+        } else {
+          miniSprite.setScale(0.9);
+        }
         this.pokedexContainer.add(miniSprite);
       } else {
         const spriteCircle = this.add.graphics();

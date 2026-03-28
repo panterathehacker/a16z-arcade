@@ -9,6 +9,26 @@ export class BootScene extends Phaser.Scene {
     // Load the real Tuxemon tileset and map
     this.load.image('tiles', '/assets/tilemaps/tuxmon-sample-32px-extruded.png');
     this.load.tilemapTiledJSON('map', '/assets/tilemaps/tuxemon-town.json');
+
+    // Load AI-generated guest sprites
+    // Order matches GUESTS array: marc, ben, lisa, alexandr, jensen, sarah, elad, andrew, sonal, david
+    const guestFiles = [
+      'marc-andreessen',
+      'ben-horowitz',
+      'lisa-su',
+      'alexandr-wang',
+      'jensen-huang',
+      'sarah-guo',
+      'elad-gil',
+      'andrew-chen',
+      'sonal-chokshi',
+      'david-george',
+    ];
+    guestFiles.forEach((id, i) => {
+      this.load.image(`npc_ai_${i}`, `/assets/sprites/guests/${id}.png`);
+    });
+    // Also load player AI sprite
+    this.load.image('player_ai', '/assets/sprites/guests/player.png');
   }
 
   create() {
