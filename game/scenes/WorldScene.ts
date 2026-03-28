@@ -79,6 +79,7 @@ export class WorldScene extends Phaser.Scene {
     // ── Create player with physics ────────────────────────────────────────
     // Spawn in safe open area at bottom-center of map, away from all NPCs
     this.player = this.physics.add.image(640, 1100, 'player_ai');
+    this.player.setDisplaySize(32, 48);
     this.player.setOrigin(0.5);
     this.player.setDepth(5);
     this.player.setCollideWorldBounds(true);
