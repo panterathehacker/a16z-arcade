@@ -61,8 +61,9 @@ export class WorldScene extends Phaser.Scene {
     this.worldLayer  = map.createLayer('World', tileset!, 0, 0)!;
     const aboveLayer = map.createLayer('Above Player', tileset!, 0, 0);
 
-    // Set collision on World layer tiles that have the 'collides' property set to true
-    this.worldLayer.setCollisionByProperty({ collides: true });
+    // Use setCollisionByExclusion so all non-empty tiles in the World layer are solid.
+    // setCollisionByProperty can fail with embedded tilesets in Phaser 3; this is more reliable.
+    this.worldLayer.setCollisionByExclusion([-1]);
 
     // Above layer renders on top of player
     aboveLayer?.setDepth(10);
@@ -79,14 +80,14 @@ export class WorldScene extends Phaser.Scene {
     // ── Create player with physics ────────────────────────────────────────
     // Spawn in safe open area at bottom-center of map, away from all NPCs
     this.player = this.physics.add.image(352, 1216, 'player_ai');
-    this.player.setDisplaySize(32, 48);
+    this.player.setDisplaySize(48, 64);
     this.player.setOrigin(0.5);
     this.player.setDepth(5);
     this.player.setCollideWorldBounds(true);
 
     // Slightly smaller body so player fits through tight paths
-    this.player.body.setSize(20, 20);
-    this.player.body.setOffset(6, 12);
+    this.player.body.setSize(24, 28);
+    this.player.body.setOffset(12, 36);
 
     // ── Tilemap collision with player ─────────────────────────────────────
     this.physics.add.collider(this.player, this.worldLayer);
@@ -250,10 +251,10 @@ export class WorldScene extends Phaser.Scene {
       sprite.setOrigin(0.5, 1.0); // anchor at feet so character stands on ground
       // Scale AI sprites (1024x1024) down to Pokémon trainer sprite size
       if (spriteKey === aiKey) {
-        sprite.setDisplaySize(32, 48); // Pokémon trainer sprite size - matches map tile size
+        sprite.setDisplaySize(48, 64); // Pokémon trainer sprite size - matches map tile size
       }
 
-      const labelText = this.add.text(0, -52, guest.name, {
+      const labelText = this.add.text(0, -68, guest.name, {
         fontFamily: '"Press Start 2P", monospace',
         fontSize: '5px',
         color: '#FFFFFF',
