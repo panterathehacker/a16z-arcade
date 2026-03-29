@@ -19,9 +19,12 @@ const GameComponent = dynamic(() => import('../game/GameComponent'), {
 export default function Home() {
   return (
     <main
-      className="min-h-screen flex flex-col items-center justify-center"
+      className="min-h-screen flex flex-col items-center"
       style={{
-        padding: 'env(safe-area-inset-top, 8px) 8px env(safe-area-inset-bottom, 8px) 8px',
+        padding: 'env(safe-area-inset-top, 12px) 8px 8px 8px',
+        paddingTop: 'max(env(safe-area-inset-top), 12px)',
+        justifyContent: 'flex-start',
+        paddingBottom: '8px',
         background: '#1a0008',
         backgroundImage: `
           linear-gradient(45deg, #2a0010 25%, transparent 25%),
@@ -148,9 +151,12 @@ export default function Home() {
         <p
           style={{
             fontFamily: '"Press Start 2P", monospace',
-            fontSize: '11px',
+            fontSize: 'clamp(7px, 1.5vw, 11px)',
             color: 'rgba(255,215,0,0.7)',
             textShadow: '1px 1px 0px #4A0315',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
           }}
         >
           Learn from the best, one battle at a time.
