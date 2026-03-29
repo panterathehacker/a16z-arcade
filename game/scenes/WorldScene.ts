@@ -299,9 +299,10 @@ export class WorldScene extends Phaser.Scene {
         ctx.fillRect(0, 0, W, H);
         setTimeout(() => {
           swirlCanvas.remove();
+          // scene.start() cleanly restarts BattleScene each time
+          // It handles stopping any existing instance automatically
           this.scene.pause('WorldScene');
-          if (this.scene.get('BattleScene')) this.scene.stop('BattleScene');
-          this.scene.launch('BattleScene', { guest, playerId: this.playerId });
+          this.scene.start('BattleScene', { guest, playerId: this.playerId });
         }, 150);
       }
     };
@@ -492,7 +493,7 @@ export class WorldScene extends Phaser.Scene {
       const sprite = this.add.image(0, 0, spriteKey);
       sprite.setOrigin(0.5, 1.0);
       if (spriteKey === aiKey) {
-        sprite.setDisplaySize(64, 80);
+        sprite.setDisplaySize(80, 100);
       }
 
       const labelText = this.add.text(0, -84, guest.name, {
@@ -1177,8 +1178,9 @@ export class WorldScene extends Phaser.Scene {
         const tile = this.worldLayer?.getTileAt(newTX, newTY);
         const tileBlocked = tile ? tile.collides : false;
 
-        // Check NPC collision
+        // Check NPC collision (LennyRPG: block if NPC tile matches)
         const npcBlocked = this.isOccupiedByNPC(newTX, newTY);
+        if(npcBlocked) console.log('[Collision] NPC blocked at', newTX, newTY);
 
         if (inBounds && !tileBlocked && !npcBlocked) {
           this.playerTileX = newTX;
