@@ -45,7 +45,7 @@ export default function Home() {
       >
         <span className="text-gray-400">WASD / Arrow Keys</span> to move &nbsp;|&nbsp;{' '}
         <span className="text-gray-400">SPACE</span> to interact &nbsp;|&nbsp;{' '}
-        <span className="text-gray-400">1-4</span> to answer &nbsp;|&nbsp;{' '}
+        <span className="text-gray-400">1-4 / ↑↓</span> to answer &nbsp;|&nbsp;{' '}
         <span className="text-gray-400">C</span> for Pokédex
       </div>
 
