@@ -298,6 +298,8 @@ export default function Home() {
         <div
           style={{
             flex: 1,
+            maxWidth: '1100px',
+            minWidth: 0,
             border: '2px solid rgba(255,215,0,0.4)',
             borderRadius: '4px',
             boxShadow: '0 0 30px rgba(255,215,0,0.15), 0 0 60px rgba(74,3,21,0.5)',
