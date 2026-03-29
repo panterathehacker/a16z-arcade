@@ -27,6 +27,10 @@ export class BattleScene extends Phaser.Scene {
   private statusText!: Phaser.GameObjects.Text;
   private waitingForNext = false;
   private battleOver = false;
+  private _gpX = 0; private _gpY = 0;
+  private _ppX = 0; private _ppY = 0;
+  private guestSprite!: Phaser.GameObjects.Image;
+  private playerSprite!: Phaser.GameObjects.Image;
 
   private keys!: {
     one: Phaser.Input.Keyboard.Key;
@@ -56,6 +60,40 @@ export class BattleScene extends Phaser.Scene {
     const H = this.cameras.main.height;
 
     this.drawBattleBG(W, H);
+
+    // Add AI sprites on battle platforms using direct path loading
+    // Find guest index by trying texture keys 0-24
+    for (let i = 0; i < 25; i++) {
+      const key = `npc_ai_${i}`;
+      if (this.textures.exists(key)) {
+        // Check if this texture matches our guest by loading order
+        // Just try all and use the one that was loaded for this guest
+      }
+    }
+    
+    // Load guest sprite directly from path if texture available
+    const guestImgKey = `battle_guest_${this.guest.id}`;
+    if (!this.textures.exists(guestImgKey)) {
+      this.load.image(guestImgKey, `/assets/sprites/guests/${this.guest.id}.png`);
+      this.load.once('complete', () => {
+        if (!this.guestSprite) {
+          this.guestSprite = this.add.image(this._gpX, this._gpY - 60, guestImgKey)
+            .setDisplaySize(96, 128).setOrigin(0.5, 1.0).setDepth(5);
+        }
+      });
+      this.load.start();
+    } else {
+      this.guestSprite = this.add.image(this._gpX, this._gpY - 60, guestImgKey)
+        .setDisplaySize(96, 128).setOrigin(0.5, 1.0).setDepth(5);
+    }
+    
+    // Player sprite (facing left for battle back-view)
+    const playerImgKey = 'player_ai';
+    if (this.textures.exists(playerImgKey)) {
+      this.playerSprite = this.add.image(this._ppX, this._ppY - 20, playerImgKey)
+        .setDisplaySize(80, 110).setFlipX(true).setOrigin(0.5, 1.0).setDepth(5);
+    }
+
     this.createBattleUI(W, H);
     this.setupKeys();
     this.showQuestion();
@@ -120,11 +158,10 @@ export class BattleScene extends Phaser.Scene {
     bg.lineStyle(2, 0xA89850, 1);
     bg.strokeEllipse(ppX, ppY, 190, 32);
 
-    // ── Draw guest character on platform ──
-    this.drawBattleCharacter(bg, gpX, gpY - 30, this.guest.color, true);
-
-    // ── Draw player (back view) on player platform ──
-    this.drawPlayerBack(bg, ppX, ppY - 14);
+    // ── Draw guest AI sprite on platform ──
+    // (sprites are added after bg in create(), stored as instance vars)
+    this._gpX = gpX; this._gpY = gpY;
+    this._ppX = ppX; this._ppY = ppY;
   }
 
   private drawBattleCharacter(g: Phaser.GameObjects.Graphics, x: number, y: number, color: number, large: boolean) {
@@ -188,14 +225,14 @@ export class BattleScene extends Phaser.Scene {
 
     this.add.text(20, 18, this.guest.name, {
       fontFamily: '"Press Start 2P"',
-      fontSize: '7px',
+      fontSize: '11px',
       color: '#1a1a2e',
       resolution: 2,
     });
 
     this.add.text(20, 32, this.guest.title, {
       fontFamily: '"Press Start 2P"',
-      fontSize: '5px',
+      fontSize: '11px',
       color: '#4a4a6e',
       resolution: 2,
     });
@@ -203,7 +240,7 @@ export class BattleScene extends Phaser.Scene {
     // Guest HP label
     this.add.text(20, 44, 'HP', {
       fontFamily: '"Press Start 2P"',
-      fontSize: '6px',
+      fontSize: '11px',
       color: '#606060',
       resolution: 2,
     });
@@ -215,7 +252,7 @@ export class BattleScene extends Phaser.Scene {
     this.guestHPBar = this.add.graphics();
     this.guestHPText = this.add.text(190, 42, '100/100', {
       fontFamily: '"Press Start 2P"',
-      fontSize: '5px',
+      fontSize: '11px',
       color: '#303030',
       resolution: 2,
     });
@@ -229,14 +266,14 @@ export class BattleScene extends Phaser.Scene {
 
     this.add.text(W - 230, battleAreaH - 62, 'PLAYER', {
       fontFamily: '"Press Start 2P"',
-      fontSize: '7px',
+      fontSize: '11px',
       color: '#1a1a2e',
       resolution: 2,
     });
 
     this.add.text(W - 230, battleAreaH - 48, 'HP', {
       fontFamily: '"Press Start 2P"',
-      fontSize: '6px',
+      fontSize: '11px',
       color: '#606060',
       resolution: 2,
     });
@@ -248,7 +285,7 @@ export class BattleScene extends Phaser.Scene {
     this.playerHPBar = this.add.graphics();
     this.playerHPText = this.add.text(W - 60, battleAreaH - 50, '100/100', {
       fontFamily: '"Press Start 2P"',
-      fontSize: '5px',
+      fontSize: '11px',
       color: '#303030',
       resolution: 2,
     });
@@ -268,7 +305,7 @@ export class BattleScene extends Phaser.Scene {
     // Question text
     this.questionText = this.add.text(16, menuY + 10, '', {
       fontFamily: '"Press Start 2P"',
-      fontSize: '7px',
+      fontSize: '11px',
       color: '#1a1a2e',
       resolution: 2,
       wordWrap: { width: W - 40 },
@@ -292,14 +329,14 @@ export class BattleScene extends Phaser.Scene {
 
       this.add.text(ox + 6, oy + 8, `${i + 1}.`, {
         fontFamily: '"Press Start 2P"',
-        fontSize: '6px',
+        fontSize: '11px',
         color: '#4060A0',
         resolution: 2,
       });
 
       const optText = this.add.text(ox + 22, oy + 8, '', {
         fontFamily: '"Press Start 2P"',
-        fontSize: '6px',
+        fontSize: '11px',
         color: '#1a1a2e',
         resolution: 2,
         wordWrap: { width: optW - 30 },
@@ -310,7 +347,7 @@ export class BattleScene extends Phaser.Scene {
     // Status text (feedback)
     this.statusText = this.add.text(W / 2, menuY + 10, '', {
       fontFamily: '"Press Start 2P"',
-      fontSize: '8px',
+      fontSize: '11px',
       color: '#C03028',
       resolution: 2,
       align: 'center',
@@ -322,7 +359,7 @@ export class BattleScene extends Phaser.Scene {
     // Progress indicator
     this.add.text(W - 20, menuY + 12, `Q1/5`, {
       fontFamily: '"Press Start 2P"',
-      fontSize: '6px',
+      fontSize: '11px',
       color: '#808080',
       resolution: 2,
     }).setOrigin(1, 0).setName('progress');
@@ -536,14 +573,14 @@ export class BattleScene extends Phaser.Scene {
 
     this.add.text(W / 2, menuY + 50, `${this.guest.name} captured!`, {
       fontFamily: '"Press Start 2P"',
-      fontSize: '7px',
+      fontSize: '11px',
       color: '#FFFFFF',
       resolution: 2,
     }).setOrigin(0.5, 0);
 
     this.add.text(W / 2, menuY + 70, `Total: ${total}/10 captured`, {
       fontFamily: '"Press Start 2P"',
-      fontSize: '6px',
+      fontSize: '11px',
       color: '#80FF80',
       resolution: 2,
     }).setOrigin(0.5, 0);
@@ -562,7 +599,7 @@ export class BattleScene extends Phaser.Scene {
 
     this.add.text(W / 2, menuY + 140, 'Press SPACE to continue', {
       fontFamily: '"Press Start 2P"',
-      fontSize: '6px',
+      fontSize: '11px',
       color: '#AAAAAA',
       resolution: 2,
     }).setOrigin(0.5, 0);
@@ -593,14 +630,14 @@ export class BattleScene extends Phaser.Scene {
 
     this.add.text(W / 2, menuY + 55, 'Study harder and try again!', {
       fontFamily: '"Press Start 2P"',
-      fontSize: '6px',
+      fontSize: '11px',
       color: '#AAAAAA',
       resolution: 2,
     }).setOrigin(0.5, 0);
 
     this.add.text(W / 2, menuY + 90, 'Press SPACE to return', {
       fontFamily: '"Press Start 2P"',
-      fontSize: '6px',
+      fontSize: '11px',
       color: '#AAAAAA',
       resolution: 2,
     }).setOrigin(0.5, 0);
@@ -638,7 +675,7 @@ export class BattleScene extends Phaser.Scene {
 
         this.add.text(W / 2, H / 2 + 20, 'Press SPACE to return', {
           fontFamily: '"Press Start 2P"',
-          fontSize: '7px',
+          fontSize: '11px',
           color: '#AAAAAA',
           resolution: 2,
         }).setOrigin(0.5).setDepth(1001);
