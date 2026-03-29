@@ -479,7 +479,7 @@ export class WorldScene extends Phaser.Scene {
       const dx = Math.abs(guest.px - px);
       const dy = Math.abs(guest.py - py);
       // Within ~2 tiles (64px) in each direction
-      if (dx <= 48 && dy <= 48) {
+      if (dx <= 32 && dy <= 32) {
         return guest;
       }
     }
