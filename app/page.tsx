@@ -153,7 +153,7 @@ export default function Home() {
             textShadow: '1px 1px 0px #4A0315',
           }}
         >
-          Battle the greatest minds in tech
+          Learn from the best, one battle at a time.
         </p>
       </div>
 
