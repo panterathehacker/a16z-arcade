@@ -353,7 +353,7 @@ export default function Home() {
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '9px', color: 'rgba(255,255,255,0.85)' }}>
-              <span>Inspired by</span>
+              <span>Showcases content from</span>
               <span style={{ position: 'relative', cursor: 'pointer' }}
                 onMouseEnter={() => setShowTooltip(true)}
                 onMouseLeave={() => setShowTooltip(false)}
@@ -393,11 +393,11 @@ export default function Home() {
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '9px', color: 'rgba(255,255,255,0.85)' }}>
               <span>Made by</span>
-              <div style={{ width: '44px', height: '44px', overflow: 'hidden', imageRendering: 'pixelated', borderRadius: '4px', border: '2px solid #FFD700', flexShrink: 0 }}>
+              <div style={{ width: '44px', height: '44px', overflow: 'hidden', imageRendering: 'pixelated', borderRadius: '4px', border: '2px solid #FFD700', flexShrink: 0, background: 'transparent' }}>
                 <img
                   src="/assets/sprites/player-male/front.png"
                   alt="David"
-                  style={{ width: '44px', height: '88px', imageRendering: 'pixelated', objectFit: 'none', objectPosition: '0 0' }}
+                  style={{ width: '88px', height: 'auto', marginLeft: '-22px', marginTop: '-8px', imageRendering: 'pixelated' }}
                 />
               </div>
               <a
@@ -423,7 +423,7 @@ export default function Home() {
               </a>
             </div>
             <div style={{ fontSize: '6px', color: 'rgba(255,255,255,0.5)', lineHeight: 2, marginTop: '2px' }}>
-              Fan project. Not affiliated with a16z.<br />Some art is AI-generated.
+              Inspired by <a href="https://www.lennysnewsletter.com/p/how-i-built-lennyrpg" target="_blank" rel="noopener noreferrer" style={{color:"#FFD700",textDecoration:"none"}}>LennyRPG</a> by Ben Shih.<br/>Fan project. Not affiliated with a16z.<br />Some art is AI-generated.
             </div>
           </div>
         </div>

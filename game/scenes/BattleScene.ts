@@ -94,7 +94,7 @@ export class BattleScene extends Phaser.Scene {
     this.questions = [...this.guest.questions];
     this.currentQ = 0;
     this.playerStats = loadPlayerStats();
-    this.playerHP = this.playerStats.maxHp; // Always start battle at full HP
+    this.playerHP = this.playerStats.hp; // Use global HP (carries over between battles)
     this.guestHP = 100;
     this.waitingForNext = false;
     this.battleOver = false;
@@ -653,8 +653,10 @@ export class BattleScene extends Phaser.Scene {
     this.time.delayedCall(1800, () => {
       this.currentQ++;
 
-      if (this.playerHP <= 0) {
+      if (this.playerHP <= 0 || this.playerStats.hp <= 0) {
         // HP completely drained - game over but keep progress
+        this.playerStats.hp = 0;
+        savePlayerStats(this.playerStats);
         this.showGameOver();
         return;
       }
