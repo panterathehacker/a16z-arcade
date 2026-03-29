@@ -183,39 +183,26 @@ export class WorldScene extends Phaser.Scene {
 
     // Gender selector
     const genderRow = document.createElement('div');
-    genderRow.style.cssText = `display: flex; gap: 16px; justify-content: center; margin-bottom: 24px;`;
-    
+    genderRow.style.cssText = 'display:flex;gap:16px;justify-content:center;margin-bottom:24px;';
     let selectedGender = 'male';
-    const genderBtns: HTMLButtonElement[] = [];
-    
-    [{ id: 'male', icon: '\u{1F466}', label: 'HE/HIM' }, { id: 'female', icon: '\u{1F467}', label: 'SHE/HER' }].forEach(({ id, icon, label }) => {
+    const genderBtns = [];
+    [{id:'male',icon:'👦',label:'HE/HIM'},{id:'female',icon:'👧',label:'SHE/HER'}].forEach(({id,icon,label},idx) => {
       const gb = document.createElement('button');
-      gb.style.cssText = \`
-        font-family: "Press Start 2P", monospace;
-        font-size: 9px;
-        background: \${id === 'male' ? '#3050C0' : '#0a0a2a'};
-        color: #fff;
-        border: 2px solid \${id === 'male' ? '#80A0FF' : '#303060'};
-        border-radius: 8px;
-        padding: 12px 18px;
-        cursor: pointer;
-        flex: 1;
-        display: flex; flex-direction: column; align-items: center; gap: 6px;
-      \`;
+      const isSel = idx === 0;
+      gb.style.cssText = 'font-family:"Press Start 2P",monospace;font-size:9px;background:' + (isSel?'#3050C0':'#0a0a2a') + ';color:#fff;border:2px solid ' + (isSel?'#80A0FF':'#303060') + ';border-radius:8px;padding:12px 18px;cursor:pointer;flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;';
       const iconEl = document.createElement('span');
       iconEl.style.fontSize = '28px';
       iconEl.textContent = icon;
       const labelEl = document.createElement('span');
       labelEl.textContent = label;
-      gb.appendChild(iconEl);
-      gb.appendChild(labelEl);
+      gb.appendChild(iconEl); gb.appendChild(labelEl);
       gb.addEventListener('click', () => {
         selectedGender = id;
         localStorage.setItem('a16z_gender', id);
         genderBtns.forEach((b, i) => {
-          const sel = i === (id === 'male' ? 0 : 1);
-          b.style.background = sel ? '#3050C0' : '#0a0a2a';
-          b.style.borderColor = sel ? '#80A0FF' : '#303060';
+          const s = i===(id==='male'?0:1);
+          b.style.background = s?'#3050C0':'#0a0a2a';
+          b.style.borderColor = s?'#80A0FF':'#303060';
         });
       });
       genderBtns.push(gb);
