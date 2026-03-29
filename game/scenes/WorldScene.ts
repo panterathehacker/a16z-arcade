@@ -819,6 +819,10 @@ export class WorldScene extends Phaser.Scene {
         if (this.nearbyGuest) {
           const guest = this.nearbyGuest;
           this.hideDialogue();
+          // Stop any existing BattleScene first to prevent double-render
+          if (this.scene.get('BattleScene')) {
+            this.scene.stop('BattleScene');
+          }
           this.scene.launch('BattleScene', { guest, playerId: this.playerId });
           this.scene.pause('WorldScene');
         }

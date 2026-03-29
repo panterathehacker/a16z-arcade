@@ -705,6 +705,17 @@ export class BattleScene extends Phaser.Scene {
     });
   }
 
+  shutdown() {
+    // Called automatically by Phaser when scene is stopped
+    // Clean up all objects to prevent double-render on re-launch
+    this.children.removeAll(true); // destroy all children
+    if (this.input.keyboard) {
+      this.input.keyboard.removeAllListeners();
+    }
+    this.events.removeAllListeners();
+    this.tweens.killAll();
+  }
+
   private returnToWorld() {
     // Clean up all keyboard listeners before stopping to prevent interference
     if (this.input.keyboard) {
