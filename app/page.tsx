@@ -402,23 +402,8 @@ export default function Home() {
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '9px', color: 'rgba(255,255,255,0.85)' }}>
               <span>Made by</span>
-              <div style={{
-                width: '44px', height: '44px', flexShrink: 0,
-                borderRadius: '4px', border: '2px solid #FFD700',
-                overflow: 'hidden',
-              }}>
-                <img
-                  src="/assets/sprites/player-male/front.png"
-                  alt="David"
-                  style={{
-                    width: '132px',
-      height: 'auto',
-      marginLeft: '-44px',
-      marginTop: '-22px',
-                    imageRendering: 'pixelated',
-                    display: 'block',
-                  }}
-                />
+              <div style={{ width: '44px', height: '44px', flexShrink: 0, borderRadius: '4px', border: '2px solid #FFD700', overflow: 'hidden' }}>
+                <img src="/assets/sprites/player-male/front.png" alt="David" style={{ width: '88px', height: 'auto', marginLeft: '-22px', marginTop: '-18px', imageRendering: 'pixelated', display: 'block' }} />
               </div>
               <a
                 href="https://x.com/davidpantera_"

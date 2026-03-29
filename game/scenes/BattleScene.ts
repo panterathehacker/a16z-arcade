@@ -44,6 +44,7 @@ export class BattleScene extends Phaser.Scene {
   private currentQ = 0;
   private playerHP = 100;
   private guestHP = 100;
+  private correctAnswers = 0;
   private playerId: string | null = null;
   private playerStats!: PlayerStats;
 
@@ -96,6 +97,7 @@ export class BattleScene extends Phaser.Scene {
     this.playerStats = loadPlayerStats();
     this.playerHP = this.playerStats.hp; // Use global HP (carries over between battles)
     this.guestHP = 100;
+    this.correctAnswers = 0;
     this.waitingForNext = false;
     this.battleOver = false;
   }
@@ -653,6 +655,12 @@ export class BattleScene extends Phaser.Scene {
     this.time.delayedCall(1800, () => {
       this.currentQ++;
 
+      // Win early if 3 correct answers
+      if (this.correctAnswers >= 3) {
+        this.endBattle();
+        return;
+      }
+      
       if (this.playerHP <= 0 || this.playerStats.hp <= 0) {
         // HP completely drained - game over but keep progress
         this.playerStats.hp = 0;
@@ -817,8 +825,18 @@ export class BattleScene extends Phaser.Scene {
     this.add.text(W/2, menuY+80, 'Your Pokédex & Level are saved.', { fontFamily: '"Press Start 2P"', fontSize: '9px', color: '#AAAAAA', resolution: 2 }).setOrigin(0.5,0).setDepth(21);
     this.add.text(W/2, menuY+110, typeof window !== 'undefined' && 'ontouchstart' in window ? 'TAP to continue' : 'Press SPACE to continue', { fontFamily: '"Press Start 2P"', fontSize: '10px', color: '#888888', resolution: 2 }).setOrigin(0.5,0).setDepth(21);
     
-    // Reset HP to max (but keep level/xp/captures)
+    // Reset HP to max and XP to start of current level (keep level/captures)
     this.playerStats.hp = this.playerStats.maxHp;
+    // XP reset: go back to start of current level
+    const xpForCurrentLevel = (level: number) => {
+      let total = 0;
+      for(let i=1; i<level; i++) {
+        total += 24 * Math.min(10+5*(i-1), 50);
+      }
+      return total;
+    };
+    this.playerStats.xp = xpForCurrentLevel(this.playerStats.level);
+    this.playerStats.xpToNext = 24 * Math.min(10+5*(this.playerStats.level-1), 50);
     savePlayerStats(this.playerStats);
     
     this.time.delayedCall(500, () => {
