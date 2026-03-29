@@ -526,14 +526,16 @@ export class WorldScene extends Phaser.Scene {
     const dlgWidth = canvasRect.width;
     const dlgBottom = window.innerHeight - (canvas ? canvas.getBoundingClientRect().bottom : 0);
 
-    // LennyRPG-style dialogue box
+    // LennyRPG-style dialogue box - smaller on mobile
+    const isMobileView = window.innerWidth < 768;
+    const dlgHeight = isMobileView ? Math.min(140, Math.floor(window.innerHeight * 0.28)) : 200;
     const overlay = document.createElement('div');
     overlay.style.cssText = `
       position: fixed;
       left: ${dlgLeft}px;
       width: ${dlgWidth}px;
       bottom: ${dlgBottom}px;
-      height: 200px;
+      height: ${dlgHeight}px;
       background: #ffffff;
       border: 5px solid #000000;
       font-family: "Press Start 2P", monospace;
@@ -543,7 +545,7 @@ export class WorldScene extends Phaser.Scene {
 
     // Inner layout: portrait left, text right
     const inner = document.createElement('div');
-    inner.style.cssText = `display: flex; align-items: flex-start; padding: 12px 14px 8px 12px; height: 150px;`;
+    inner.style.cssText = `display: flex; align-items: flex-start; padding: ${isMobileView ? '8px 10px 6px 10px' : '12px 14px 8px 12px'}; height: ${dlgHeight - 44}px; overflow: hidden;`;
 
     // Portrait thumbnail
     const portrait = document.createElement('div');

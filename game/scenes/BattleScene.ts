@@ -68,7 +68,8 @@ export class BattleScene extends Phaser.Scene {
   }
 
   create() {
-    // Destroy any leftover children from a previous run (prevents double-render on re-launch)
+    // Destroy any leftover children and timers from a previous run
+    this.time.removeAllEvents();
     this.children.removeAll(true);
     this.optionTexts = [];
     this.optionBgs = [];
@@ -297,17 +298,7 @@ export class BattleScene extends Phaser.Scene {
       resolution: 2,
     }).setDepth(11).setName('progress');
 
-    // "EASY" yellow badge top-right of left panel
-    const easyX = qPanelX + qPanelW - 58;
-    const easyBadge = this.add.graphics().setDepth(11);
-    easyBadge.fillStyle(0xFFD700, 1.0);
-    easyBadge.fillRoundedRect(easyX, menuY + 10, 52, 18, 5);
-    this.add.text(easyX + 6, menuY + 13, 'EASY', {
-      fontFamily: '"Press Start 2P"',
-      fontSize: '9px',
-      color: '#000000',
-      resolution: 2,
-    }).setDepth(12);
+    // Difficulty badge removed
 
     // Question text: 20px Press Start 2P black, word-wrapped, 20px padding
     this.questionText = this.add.text(qPanelX, menuY + 40, '', {
