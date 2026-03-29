@@ -56,14 +56,13 @@ export class BattleScene extends Phaser.Scene {
   }
 
   preload() {
+    // Only preload battle bg - don't touch player textures (managed by WorldScene)
     if (!this.textures.exists('battle-bg')) {
       this.load.image('battle-bg', '/assets/battle/bg.png');
     }
+    // Load back sprite separately so it doesn't conflict with player_ai in WorldScene
     if (!this.textures.exists('battle-player-back')) {
       this.load.image('battle-player-back', '/assets/battle/player-back.png');
-      this.load.image('battle-player-front', '/assets/battle/player-front.png');
-      this.load.image('battle-player-left', '/assets/battle/player-left.png');
-      this.load.image('battle-player-right', '/assets/battle/player-right.png');
     }
   }
 
@@ -71,14 +70,15 @@ export class BattleScene extends Phaser.Scene {
     const W = this.cameras.main.width;
     const H = this.cameras.main.height;
 
-    // Use LennyRPG battle background if loaded
+    // Always draw the battle BG (platforms) - this gives us the ground
+    this.drawBattleBG(W, H);
+    
+    // Layer LennyRPG bg UNDER the platforms (depth -1)
     if (this.textures.exists('battle-bg')) {
       this.add.image(0, 0, 'battle-bg')
         .setOrigin(0, 0)
         .setDisplaySize(W, H * 0.7)
-        .setDepth(0);
-    } else {
-      this.drawBattleBG(W, H);
+        .setDepth(-1);
     }
 
     // Sprite positions — computed from W and H (same formula as drawBattleBG)
