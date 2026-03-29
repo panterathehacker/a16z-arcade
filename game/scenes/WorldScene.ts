@@ -802,17 +802,14 @@ export class WorldScene extends Phaser.Scene {
       } else if (this.playerDir === 'down') {
         this.player.setTexture(this.playerSpriteSet + '_front');
         this.player.setFlipX(false);
-        this.player.setFlipX(false);
       } else if (this.playerDir === 'left') {
         this.player.setTexture(this.playerSpriteSet + '_right');
         this.player.setFlipX(true);
-        this.player.setFlipX(false);
       } else if (this.playerDir === 'right') {
         this.player.setTexture(this.playerSpriteSet + '_right');
         this.player.setFlipX(false);
       } else {
         this.player.setTexture(this.playerSpriteSet + '_back');
-        this.player.setFlipX(false);
         this.player.setFlipX(false);
       }
     }
