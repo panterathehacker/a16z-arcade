@@ -1,5 +1,5 @@
 import * as Phaser from 'phaser';
-import { Guest, Question } from '../data/guests';
+import { Guest, Question, GUESTS } from '../data/guests';
 import { saveCapture } from '../services/playerService';
 
 interface BattleSceneData {
@@ -27,6 +27,8 @@ export class BattleScene extends Phaser.Scene {
   private statusText!: Phaser.GameObjects.Text;
   private waitingForNext = false;
   private battleOver = false;
+
+  // Platform center positions (set by drawBattleBG, used for sprite placement)
   private _gpX = 0; private _gpY = 0;
   private _ppX = 0; private _ppY = 0;
   private guestSprite!: Phaser.GameObjects.Image;
@@ -56,11 +58,9 @@ export class BattleScene extends Phaser.Scene {
   }
 
   preload() {
-    // Only preload battle bg - don't touch player textures (managed by WorldScene)
     if (!this.textures.exists('battle-bg')) {
       this.load.image('battle-bg', '/assets/battle/bg.png');
     }
-    // Load back sprite separately so it doesn't conflict with player_ai in WorldScene
     if (!this.textures.exists('battle-player-back')) {
       this.load.image('battle-player-back', '/assets/battle/player-back.png');
     }
@@ -70,50 +70,31 @@ export class BattleScene extends Phaser.Scene {
     const W = this.cameras.main.width;
     const H = this.cameras.main.height;
 
-    // Always draw the battle BG (platforms) - this gives us the ground
+    // Draw battle background (sky, ground, platforms) — sets _gpX/Y and _ppX/Y
     this.drawBattleBG(W, H);
-    
-    // Layer LennyRPG bg UNDER the platforms (depth -1)
-    if (this.textures.exists('battle-bg')) {
-      this.add.image(0, 0, 'battle-bg')
-        .setOrigin(0, 0)
-        .setDisplaySize(W, H * 0.7)
-        .setDepth(-1);
-    }
 
-    // Sprite positions — computed from W and H (same formula as drawBattleBG)
     const battleH = H * 0.7;
-    const guestX = W * 0.70;
-    const guestY = battleH * 0.50;  // guest stands on platform (feet on platform top)
-    const playerX = W * 0.28;
-    const playerY = battleH * 0.65; // player closer to camera (lower = closer)
 
-    // Guest sprite - upper RIGHT platform
-    const guestFileNames = [
-      'marc-andreessen','ben-horowitz','jensen-huang','lisa-su','alexandr-wang',
-      'sam-altman','satya-nadella','brian-chesky','patrick-collison','dario-amodei',
-      'chris-dixon','sarah-guo','elad-gil','andrew-chen','sonal-chokshi',
-      'david-george','wade-foster','tomer-london','balaji-srinivasan','naval-ravikant',
-      'reid-hoffman','steve-wozniak','nicole-brichtova','tomer-cohen','alex-karp'
-    ];
-    const gIdx = guestFileNames.indexOf(this.guest.id);
+    // Guest sprite — upper-right platform, anchored at feet
+    // Find index by matching guest id against the GUESTS array (excluding player)
+    const gIdx = GUESTS.findIndex(g => g.id === this.guest.id);
     const guestTexKey = gIdx >= 0 && this.textures.exists(`npc_ai_${gIdx}`) ? `npc_ai_${gIdx}` : null;
-    console.log('[Battle] guest id:', this.guest.id, 'idx:', gIdx, 'key:', guestTexKey, 'pos:', guestX, guestY);
-    
+    console.log('[Battle] guest id:', this.guest.id, 'idx:', gIdx, 'key:', guestTexKey);
+
     if (guestTexKey) {
-      this.guestSprite = this.add.image(guestX, guestY, guestTexKey)
-        .setDisplaySize(140, 190)
-        .setOrigin(0.5, 1.0)  // anchor at feet
+      this.guestSprite = this.add.image(this._gpX, this._gpY, guestTexKey)
+        .setDisplaySize(130, 180)
+        .setOrigin(0.5, 1.0)   // anchor at feet — bottom of sprite sits on platform top
         .setDepth(5);
     }
-    
-    // Player sprite - use LennyRPG back sprite if available
-    const playerSpriteKey = this.textures.exists('battle-player-back') ? 'battle-player-back' : 
-                            (this.textures.exists('player_ai') ? 'player_ai' : null);
+
+    // Player sprite — lower-left platform, back-facing
+    const playerSpriteKey = this.textures.exists('battle-player-back') ? 'battle-player-back'
+                          : (this.textures.exists('player_ai') ? 'player_ai' : null);
     if (playerSpriteKey) {
-      this.playerSprite = this.add.image(playerX, playerY, playerSpriteKey)
-        .setDisplaySize(playerSpriteKey === 'battle-player-back' ? 90 : 110, 
-                        playerSpriteKey === 'battle-player-back' ? 130 : 150)
+      this.playerSprite = this.add.image(this._ppX, this._ppY, playerSpriteKey)
+        .setDisplaySize(playerSpriteKey === 'battle-player-back' ? 100 : 110,
+                        playerSpriteKey === 'battle-player-back' ? 140 : 150)
         .setOrigin(0.5, 1.0)
         .setDepth(5);
     }
@@ -123,291 +104,281 @@ export class BattleScene extends Phaser.Scene {
     this.showQuestion();
   }
 
+  // ─────────────────────────────────────────────
+  // drawBattleBG — LennyRPG / Pokemon-style scene
+  // ─────────────────────────────────────────────
   private drawBattleBG(W: number, H: number) {
     const bg = this.add.graphics();
-    const battleH = H * 0.7; // UI takes bottom 30%
+    const battleH = H * 0.7; // Bottom 30% is the UI panel
 
-    // ── Sky (top 60% of battle area) — D/P pale blue-gray ──
-    bg.fillStyle(0xB8D0E8);
-    bg.fillRect(0, 0, W, battleH * 0.6);
+    // ── Sky gradient (top 55% of battle area) ──
+    // Layered rectangles simulating blue→cyan gradient
+    const skyColors = [0x3A7BD5, 0x4A8BE5, 0x5A9BF0, 0x6AABF8, 0x7ABBFF, 0x8ACBFF];
+    const skyBands = skyColors.length;
+    const bandH = (battleH * 0.55) / skyBands;
+    skyColors.forEach((col, i) => {
+      bg.fillStyle(col);
+      bg.fillRect(0, i * bandH, W, bandH + 1);
+    });
 
-    // Sky gradient layers (simulate depth)
-    bg.fillStyle(0xC8DCF0);
-    bg.fillRect(0, 0, W, battleH * 0.2);
-    bg.fillStyle(0xA8C4DC);
-    bg.fillRect(0, battleH * 0.4, W, battleH * 0.2);
+    // ── Green grass ground (bottom 45% of battle area) ──
+    bg.fillStyle(0x5BA632);
+    bg.fillRect(0, battleH * 0.55, W, battleH * 0.45);
 
-    // ── Ground (bottom 40% of battle area) — D/P grass ground ──
-    bg.fillStyle(0x8AD060);
-    bg.fillRect(0, battleH * 0.6, W, battleH * 0.4);
+    // Slightly lighter mid-ground stripe for depth
+    bg.fillStyle(0x6BBF3A);
+    bg.fillRect(0, battleH * 0.55, W, battleH * 0.08);
 
-    // Ground texture lines
-    bg.lineStyle(1, 0x70B848, 0.5);
-    for (let i = 0; i < 6; i++) {
-      const ly = battleH * 0.62 + i * 8;
-      bg.lineBetween(0, ly, W, ly);
-    }
+    // ── Thin horizon line ──
+    bg.fillStyle(0x2E7A10);
+    bg.fillRect(0, battleH * 0.55, W, 3);
 
-    // Horizon line
-    bg.fillStyle(0x60A838);
-    bg.fillRect(0, battleH * 0.6, W, 4);
-
-    // ── D/P-style raised platforms (NOT flat ellipses) ──
-
-    // Guest platform (upper-right): raised dirt/tan platform
+    // ── Guest platform (upper-right) — tan/dirt oval with shadow ──
     const gpX = W * 0.70;
     const gpY = battleH * 0.50;
-    // Platform body (slightly raised above ground)
-    bg.fillStyle(0xE8D890);
-    bg.fillEllipse(gpX, gpY, 160, 28);
-    // Platform edge shadow
-    bg.fillStyle(0xC8B870);
-    bg.fillEllipse(gpX, gpY + 6, 155, 18);
-    // Platform highlight
-    bg.fillStyle(0xF0E0A0);
-    bg.fillEllipse(gpX - 10, gpY - 4, 100, 12);
-    // D/P style platform edge lines
-    bg.lineStyle(2, 0xA89850, 1);
-    bg.strokeEllipse(gpX, gpY, 160, 28);
 
-    // Player platform (lower-left)
+    // Drop shadow
+    bg.fillStyle(0x2A6010, 0.45);
+    bg.fillEllipse(gpX + 4, gpY + 10, 200, 38);
+
+    // Platform body — tan/dirt
+    bg.fillStyle(0xD4B07A);
+    bg.fillEllipse(gpX, gpY, 200, 34);
+
+    // Highlight band on top
+    bg.fillStyle(0xE8CB96);
+    bg.fillEllipse(gpX - 8, gpY - 5, 140, 14);
+
+    // Dark edge
+    bg.lineStyle(2, 0x9A7840, 1.0);
+    bg.strokeEllipse(gpX, gpY, 200, 34);
+
+    // ── Player platform (lower-left) — slightly larger, same style ──
     const ppX = W * 0.28;
-    const ppY = battleH * 0.65;
-    bg.fillStyle(0xE8D890);
-    bg.fillEllipse(ppX, ppY, 190, 32);
-    bg.fillStyle(0xC8B870);
-    bg.fillEllipse(ppX, ppY + 8, 183, 20);
-    bg.fillStyle(0xF0E0A0);
-    bg.fillEllipse(ppX - 10, ppY - 5, 120, 14);
-    bg.lineStyle(2, 0xA89850, 1);
-    bg.strokeEllipse(ppX, ppY, 190, 32);
+    const ppY = battleH * 0.68;
 
-    // ── Draw guest AI sprite on platform ──
-    // (sprites are added after bg in create(), stored as instance vars)
-    this._gpX = gpX; this._gpY = gpY;
-    this._ppX = ppX; this._ppY = ppY;
+    // Drop shadow
+    bg.fillStyle(0x2A6010, 0.45);
+    bg.fillEllipse(ppX + 5, ppY + 12, 230, 44);
+
+    // Platform body
+    bg.fillStyle(0xD4B07A);
+    bg.fillEllipse(ppX, ppY, 230, 40);
+
+    // Highlight
+    bg.fillStyle(0xE8CB96);
+    bg.fillEllipse(ppX - 10, ppY - 6, 160, 16);
+
+    // Dark edge
+    bg.lineStyle(2, 0x9A7840, 1.0);
+    bg.strokeEllipse(ppX, ppY, 230, 40);
+
+    // Store platform centers for sprite positioning (feet on platform top)
+    this._gpX = gpX;
+    this._gpY = gpY - 17;  // top edge of guest oval
+    this._ppX = ppX;
+    this._ppY = ppY - 20;  // top edge of player oval
   }
 
-  private drawBattleCharacter(g: Phaser.GameObjects.Graphics, x: number, y: number, color: number, large: boolean) {
-    const scale = large ? 1.8 : 1;
-    const s = (n: number) => n * scale;
-
-    // Body
-    g.fillStyle(color);
-    g.fillRect(x - s(14), y - s(16), s(28), s(24));
-
-    // Head
-    g.fillStyle(0xF0C890);
-    g.fillRect(x - s(12), y - s(34), s(24), s(20));
-
-    // Hair
-    g.fillStyle(0x303030);
-    g.fillRect(x - s(12), y - s(38), s(24), s(10));
-
-    // Eyes
-    g.fillStyle(0x202020);
-    g.fillRect(x - s(7), y - s(26), s(5), s(5));
-    g.fillRect(x + s(2), y - s(26), s(5), s(5));
-
-    // Legs
-    g.fillStyle(0x202040);
-    g.fillRect(x - s(12), y + s(6), s(10), s(16));
-    g.fillRect(x + s(2), y + s(6), s(10), s(16));
-
-    // Arms
-    g.fillStyle(0xF0C890);
-    g.fillRect(x - s(22), y - s(14), s(8), s(18));
-    g.fillRect(x + s(14), y - s(14), s(8), s(18));
-  }
-
-  private drawPlayerBack(g: Phaser.GameObjects.Graphics, x: number, y: number) {
-    // Player back view (smaller, facing away)
-    g.fillStyle(0x3050C0); // Blue jacket
-    g.fillRect(x - 14, y - 18, 28, 22);
-
-    g.fillStyle(0x603010); // Hair
-    g.fillRect(x - 12, y - 36, 24, 20);
-
-    g.fillStyle(0x202040); // Dark pants
-    g.fillRect(x - 12, y + 4, 10, 18);
-    g.fillRect(x + 2, y + 4, 10, 18);
-
-    g.fillStyle(0x3050C0); // Arms
-    g.fillRect(x - 20, y - 16, 6, 16);
-    g.fillRect(x + 14, y - 16, 6, 16);
-  }
-
+  // ─────────────────────────────────────────────
+  // createBattleUI — HP panels + question/answers
+  // ─────────────────────────────────────────────
   private createBattleUI(W: number, H: number) {
     const battleAreaH = H * 0.7;
+    const PANEL_RADIUS = 10;
 
-    // === Guest HP Panel (top-left) - LennyRPG style ===
-    const guestPanel = this.add.graphics();
-    guestPanel.fillStyle(0xFFFFFF, 0.95);
-    guestPanel.fillRoundedRect(10, 10, 260, 80, 10);
-    guestPanel.lineStyle(3, 0x202020);
-    guestPanel.strokeRoundedRect(10, 10, 260, 80, 10);
+    // ── Guest HP Panel (top-left, 280x90) ──
+    const gPanel = this.add.graphics();
+    gPanel.fillStyle(0xFFFFFF, 0.97);
+    gPanel.fillRoundedRect(10, 10, 280, 90, PANEL_RADIUS);
+    gPanel.lineStyle(3, 0x181818);
+    gPanel.strokeRoundedRect(10, 10, 280, 90, PANEL_RADIUS);
+    gPanel.setDepth(10);
 
-    // Guest name - bold, all caps
-    this.add.text(20, 20, this.guest.name.toUpperCase(), {
-      fontFamily: '"Press Start 2P"',
-      fontSize: '9px',
-      color: '#1a1a2e',
-      resolution: 2,
-    });
-
-    // Title smaller
-    this.add.text(20, 36, this.guest.title.slice(0, 24), {
-      fontFamily: '"Press Start 2P"',
-      fontSize: '6px',
-      color: '#555577',
-      resolution: 2,
-    });
-
-    // HP label
-    this.add.text(20, 50, 'HP', {
-      fontFamily: '"Press Start 2P"',
-      fontSize: '8px',
-      color: '#cc2222',
-      resolution: 2,
-    });
-
-    const guestHPBg = this.add.graphics();
-    guestHPBg.fillStyle(0x404040);
-    guestHPBg.fillRect(48, 50, 180, 10);
-
-    this.guestHPBar = this.add.graphics();
-    this.guestHPText = this.add.text(200, 62, '', {
-      fontFamily: '"Press Start 2P"',
-      fontSize: '7px',
-      color: '#303030',
-      resolution: 2,
-    });
-
-    // === Player HP Panel (bottom-right above battle menu) ===
-    const playerPanel = this.add.graphics();
-    playerPanel.fillStyle(0xFFFFFF, 0.95);
-    playerPanel.fillRoundedRect(W - 270, battleAreaH - 80, 260, 74, 10);
-    playerPanel.lineStyle(3, 0x202020);
-    playerPanel.strokeRoundedRect(W - 270, battleAreaH - 80, 260, 74, 10);
-
-    // Player name (trainer name from localStorage or PLAYER)
-    const trainerName = (typeof localStorage !== 'undefined' ? localStorage.getItem('a16z_username') : null) || 'PLAYER';
-    this.add.text(W - 258, battleAreaH - 72, trainerName.toUpperCase().slice(0, 10), {
+    // Guest name — bold, ALL CAPS
+    this.add.text(22, 20, this.guest.name.toUpperCase(), {
       fontFamily: '"Press Start 2P"',
       fontSize: '10px',
       color: '#1a1a2e',
       resolution: 2,
-    });
+    }).setDepth(11);
 
-    this.add.text(W - 258, battleAreaH - 56, 'HP', {
+    // Guest title — small, gray
+    this.add.text(22, 38, this.guest.title.slice(0, 28), {
+      fontFamily: '"Press Start 2P"',
+      fontSize: '7px',
+      color: '#666680',
+      resolution: 2,
+    }).setDepth(11);
+
+    // "HP" label — red, bold
+    this.add.text(22, 56, 'HP', {
       fontFamily: '"Press Start 2P"',
       fontSize: '8px',
       color: '#cc2222',
       resolution: 2,
-    });
+    }).setDepth(11);
 
-    const playerHPBg = this.add.graphics();
-    playerHPBg.fillStyle(0x404040);
-    playerHPBg.fillRect(W - 230, battleAreaH - 56, 180, 10);
+    // HP track (dark bg)
+    const gHPTrack = this.add.graphics();
+    gHPTrack.fillStyle(0x383838);
+    gHPTrack.fillRoundedRect(50, 56, 220, 12, 4);
+    gHPTrack.setDepth(11);
 
-    this.playerHPBar = this.add.graphics();
-    this.playerHPText = this.add.text(W - 258, battleAreaH - 42, '100 / 100', {
+    // HP bar (live, updated)
+    this.guestHPBar = this.add.graphics();
+    this.guestHPBar.setDepth(12);
+
+    // HP number — right-aligned below bar
+    this.guestHPText = this.add.text(268, 72, '', {
       fontFamily: '"Press Start 2P"',
       fontSize: '8px',
-      color: '#303030',
+      color: '#303050',
       resolution: 2,
-    });
+    }).setOrigin(1, 0).setDepth(11);
 
+    // ── Player HP Panel (bottom-right, 260x85) ──
+    const pPanel = this.add.graphics();
+    pPanel.fillStyle(0xFFFFFF, 0.97);
+    pPanel.fillRoundedRect(W - 270, battleAreaH - 95, 260, 85, PANEL_RADIUS);
+    pPanel.lineStyle(3, 0x181818);
+    pPanel.strokeRoundedRect(W - 270, battleAreaH - 95, 260, 85, PANEL_RADIUS);
+    pPanel.setDepth(10);
+
+    // Trainer name
+    const trainerName = (typeof localStorage !== 'undefined'
+      ? localStorage.getItem('a16z_username') : null) || 'PLAYER';
+    this.add.text(W - 258, battleAreaH - 88, trainerName.toUpperCase().slice(0, 10), {
+      fontFamily: '"Press Start 2P"',
+      fontSize: '10px',
+      color: '#1a1a2e',
+      resolution: 2,
+    }).setDepth(11);
+
+    // "HP" label
+    this.add.text(W - 258, battleAreaH - 68, 'HP', {
+      fontFamily: '"Press Start 2P"',
+      fontSize: '8px',
+      color: '#cc2222',
+      resolution: 2,
+    }).setDepth(11);
+
+    // HP track
+    const pHPTrack = this.add.graphics();
+    pHPTrack.fillStyle(0x383838);
+    pHPTrack.fillRoundedRect(W - 226, battleAreaH - 68, 208, 12, 4);
+    pHPTrack.setDepth(11);
+
+    // HP bar
+    this.playerHPBar = this.add.graphics();
+    this.playerHPBar.setDepth(12);
+
+    // HP number
+    this.playerHPText = this.add.text(W - 14, battleAreaH - 52, '', {
+      fontFamily: '"Press Start 2P"',
+      fontSize: '8px',
+      color: '#303050',
+      resolution: 2,
+    }).setOrigin(1, 0).setDepth(11);
+
+    // Initial render
     this.updateHPBars(W, battleAreaH);
 
-    // === Battle Menu / Question area ===
+    // ── Battle menu (full bottom 30%) — dark background ──
     const menuY = battleAreaH + 4;
     const menuH = H - menuY - 4;
 
     const menuBg = this.add.graphics();
-    menuBg.fillStyle(0xF0F0F0, 0.98);
+    menuBg.fillStyle(0x1a1a2e, 1.0);
     menuBg.fillRoundedRect(4, menuY, W - 8, menuH, 8);
-    menuBg.lineStyle(3, 0x303030);
+    menuBg.lineStyle(2, 0x3a3a5e);
     menuBg.strokeRoundedRect(4, menuY, W - 8, menuH, 8);
+    menuBg.setDepth(10);
 
-    // Question text
-    this.questionText = this.add.text(16, menuY + 10, '', {
+    // Question text — left half, white, word-wrapped
+    const qAreaW = W * 0.5 - 20;
+    this.questionText = this.add.text(16, menuY + 12, '', {
       fontFamily: '"Press Start 2P"',
       fontSize: '11px',
-      color: '#1a1a2e',
+      color: '#FFFFFF',
       resolution: 2,
-      wordWrap: { width: W - 40 },
-    });
+      wordWrap: { width: qAreaW },
+    }).setDepth(11);
 
-    // Answer options
-    const optionY = menuY + 50;
-    const optW = (W - 24) / 2 - 6;
+    // Q counter (Q1/5) — top-right of question area
+    this.add.text(W - 14, menuY + 12, 'Q1/5', {
+      fontFamily: '"Press Start 2P"',
+      fontSize: '9px',
+      color: '#8888AA',
+      resolution: 2,
+    }).setOrigin(1, 0).setDepth(11).setName('progress');
+
+    // 4 answer buttons — right half, 2 rows x 2 cols
+    const btnAreaX = W * 0.5 + 8;
+    const btnW = (W * 0.5 - 24) / 2;
+    const btnH = 32;
+    const btnGap = 8;
+    const btnStartY = menuY + 8;
+
     for (let i = 0; i < 4; i++) {
       const col = i % 2;
       const row = Math.floor(i / 2);
-      const ox = 8 + col * (optW + 8);
-      const oy = optionY + row * 36;
+      const bx = btnAreaX + col * (btnW + btnGap);
+      const by = btnStartY + row * (btnH + btnGap);
 
       const optBg = this.add.graphics();
-      optBg.fillStyle(0xE0E8FF);
-      optBg.fillRoundedRect(ox, oy, optW, 28, 6);
-      optBg.lineStyle(2, 0x6080C0);
-      optBg.strokeRoundedRect(ox, oy, optW, 28, 6);
+      optBg.fillStyle(0x2E2E4E);
+      optBg.fillRoundedRect(bx, by, btnW, btnH, 6);
+      optBg.lineStyle(2, 0x5555AA);
+      optBg.strokeRoundedRect(bx, by, btnW, btnH, 6);
+      optBg.setDepth(11);
       this.optionBgs.push(optBg);
 
-      this.add.text(ox + 6, oy + 8, `${i + 1}.`, {
+      // Number prefix
+      this.add.text(bx + 8, by + 10, `${i + 1}.`, {
         fontFamily: '"Press Start 2P"',
         fontSize: '9px',
-        color: '#4060A0',
+        color: '#AAAAFF',
         resolution: 2,
-      });
+      }).setDepth(12);
 
-      const optText = this.add.text(ox + 28, oy + 8, '', {
+      // Answer text
+      const optText = this.add.text(bx + 30, by + 10, '', {
         fontFamily: '"Press Start 2P"',
-        fontSize: '11px',
-        color: '#1a1a2e',
+        fontSize: '9px',
+        color: '#FFFFFF',
         resolution: 2,
-        wordWrap: { width: optW - 30 },
-      });
+        wordWrap: { width: btnW - 34 },
+      }).setDepth(12);
       this.optionTexts.push(optText);
     }
 
-    // Status text (feedback)
-    this.statusText = this.add.text(W / 2, menuY + 10, '', {
+    // Status/feedback text — centered in question area
+    this.statusText = this.add.text(W * 0.25, menuY + menuH * 0.5, '', {
       fontFamily: '"Press Start 2P"',
       fontSize: '11px',
-      color: '#C03028',
+      color: '#FF6060',
       resolution: 2,
       align: 'center',
-      wordWrap: { width: W - 40 },
-    });
-    this.statusText.setOrigin(0.5, 0);
-    this.statusText.setVisible(false);
-
-    // Progress indicator
-    this.add.text(W - 20, menuY + 12, `Q1/5`, {
-      fontFamily: '"Press Start 2P"',
-      fontSize: '11px',
-      color: '#808080',
-      resolution: 2,
-    }).setOrigin(1, 0).setName('progress');
+      wordWrap: { width: W * 0.5 - 20 },
+    }).setOrigin(0.5, 0.5).setDepth(12).setVisible(false);
   }
 
   private updateHPBars(W: number, battleAreaH: number) {
     // Guest HP bar
     this.guestHPBar.clear();
     const guestPct = Math.max(0, this.guestHP) / 100;
-    const guestColor = guestPct > 0.5 ? 0x40C840 : guestPct > 0.25 ? 0xC8C040 : 0xC84040;
+    const guestColor = guestPct > 0.5 ? 0x40D840 : guestPct > 0.25 ? 0xD8C040 : 0xD84040;
     this.guestHPBar.fillStyle(guestColor);
-    this.guestHPBar.fillRect(48, 50, Math.round(180 * guestPct), 10);
+    this.guestHPBar.fillRoundedRect(50, 56, Math.round(220 * guestPct), 12, 4);
     this.guestHPText.setText(`${Math.max(0, this.guestHP)}/100`);
 
     // Player HP bar
     this.playerHPBar.clear();
     const playerPct = Math.max(0, this.playerHP) / 100;
-    const playerColor = playerPct > 0.5 ? 0x40C840 : playerPct > 0.25 ? 0xC8C040 : 0xC84040;
+    const playerColor = playerPct > 0.5 ? 0x40D840 : playerPct > 0.25 ? 0xD8C040 : 0xD84040;
     this.playerHPBar.fillStyle(playerColor);
-    this.playerHPBar.fillRect(W - 230, battleAreaH - 56, Math.round(180 * playerPct), 10);
+    this.playerHPBar.fillRoundedRect(W - 226, battleAreaH - 68, Math.round(208 * playerPct), 12, 4);
     this.playerHPText.setText(`${Math.max(0, this.playerHP)}/100`);
   }
 
@@ -433,28 +404,33 @@ export class BattleScene extends Phaser.Scene {
     this.questionText.setVisible(true);
     this.statusText.setVisible(false);
 
-    // Reset option appearances
+    const W = this.cameras.main.width;
+    const battleAreaH = this.cameras.main.height * 0.7;
+    const menuY = battleAreaH + 4;
+    const menuH = this.cameras.main.height - menuY - 4;
+    const btnAreaX = W * 0.5 + 8;
+    const btnW = (W * 0.5 - 24) / 2;
+    const btnH = 32;
+    const btnGap = 8;
+    const btnStartY = menuY + 8;
+
     this.optionBgs.forEach((bg, i) => {
       bg.clear();
-      const W = this.cameras.main.width;
-      const battleAreaH = this.cameras.main.height * 0.7;
-      const menuY = battleAreaH + 4;
-      const optW = (W - 24) / 2 - 6;
       const col = i % 2;
       const row = Math.floor(i / 2);
-      const ox = 8 + col * (optW + 8);
-      const oy = menuY + 50 + row * 36;
-      bg.fillStyle(0xE0E8FF);
-      bg.fillRoundedRect(ox, oy, optW, 28, 6);
-      bg.lineStyle(2, 0x6080C0);
-      bg.strokeRoundedRect(ox, oy, optW, 28, 6);
+      const bx = btnAreaX + col * (btnW + btnGap);
+      const by = btnStartY + row * (btnH + btnGap);
+      bg.fillStyle(0x2E2E4E);
+      bg.fillRoundedRect(bx, by, btnW, btnH, 6);
+      bg.lineStyle(2, 0x5555AA);
+      bg.strokeRoundedRect(bx, by, btnW, btnH, 6);
     });
 
     q.options.forEach((opt, i) => {
       this.optionTexts[i].setText(opt);
     });
 
-    // Update progress
+    // Update Q counter
     const prog = this.children.list.find(
       (c) => c instanceof Phaser.GameObjects.Text && (c as Phaser.GameObjects.Text).name === 'progress'
     ) as Phaser.GameObjects.Text | undefined;
@@ -467,30 +443,34 @@ export class BattleScene extends Phaser.Scene {
     const W = this.cameras.main.width;
     const battleAreaH = this.cameras.main.height * 0.7;
     const menuY = battleAreaH + 4;
-    const optW = (W - 24) / 2 - 6;
+    const btnAreaX = W * 0.5 + 8;
+    const btnW = (W * 0.5 - 24) / 2;
+    const btnH = 32;
+    const btnGap = 8;
+    const btnStartY = menuY + 8;
 
     this.optionBgs.forEach((bg, i) => {
       bg.clear();
       const col = i % 2;
       const row = Math.floor(i / 2);
-      const ox = 8 + col * (optW + 8);
-      const oy = menuY + 50 + row * 36;
+      const bx = btnAreaX + col * (btnW + btnGap);
+      const by = btnStartY + row * (btnH + btnGap);
 
-      let fillColor = 0xE0E8FF;
-      let strokeColor = 0x6080C0;
+      let fillColor = 0x2E2E4E;
+      let strokeColor = 0x5555AA;
 
       if (i === this.questions[this.currentQ].correct) {
-        fillColor = 0x80FF80;
-        strokeColor = 0x00A000;
+        fillColor = 0x1A5C1A;
+        strokeColor = 0x40DD40;
       } else if (i === index && !correct) {
-        fillColor = 0xFF8080;
-        strokeColor = 0xC00000;
+        fillColor = 0x5C1A1A;
+        strokeColor = 0xDD4040;
       }
 
       bg.fillStyle(fillColor);
-      bg.fillRoundedRect(ox, oy, optW, 28, 6);
+      bg.fillRoundedRect(bx, by, btnW, btnH, 6);
       bg.lineStyle(2, strokeColor);
-      bg.strokeRoundedRect(ox, oy, optW, 28, 6);
+      bg.strokeRoundedRect(bx, by, btnW, btnH, 6);
     });
   }
 
@@ -503,32 +483,26 @@ export class BattleScene extends Phaser.Scene {
     this.highlightOption(index, correct);
 
     const W = this.cameras.main.width;
+    const battleAreaH = this.cameras.main.height * 0.7;
 
     if (correct) {
-      // Reduce guest HP
       this.guestHP -= 20;
-      const battleAreaH = this.cameras.main.height * 0.7;
       this.updateHPBars(W, battleAreaH);
-
-      this.statusText.setText('✓ Correct! Guest HP -20');
-      this.statusText.setStyle({ color: '#007000' });
+      this.statusText.setText('✓ Correct!  Guest HP -20');
+      this.statusText.setStyle({ color: '#40EE40' });
       this.statusText.setVisible(true);
       this.questionText.setVisible(false);
     } else {
-      // Reduce player HP
       this.playerHP -= 20;
-      const battleAreaH = this.cameras.main.height * 0.7;
       this.updateHPBars(W, battleAreaH);
-
-      this.statusText.setText(`✗ Wrong! Player HP -20`);
-      this.statusText.setStyle({ color: '#C03028' });
+      this.statusText.setText('✗ Wrong!  Player HP -20');
+      this.statusText.setStyle({ color: '#FF6060' });
       this.statusText.setVisible(true);
       this.questionText.setVisible(false);
     }
 
     this.waitingForNext = true;
 
-    // Auto-advance after delay
     this.time.delayedCall(1800, () => {
       this.currentQ++;
 
@@ -549,30 +523,24 @@ export class BattleScene extends Phaser.Scene {
   private endBattle() {
     this.battleOver = true;
 
-    // Hide question UI
     this.questionText.setVisible(false);
     this.optionTexts.forEach(t => t.setVisible(false));
     this.optionBgs.forEach(bg => bg.clear());
 
     if (this.playerHP > 50) {
-      // Victory!
       this.captureGuest();
       this.showVictory();
     } else {
-      // Barely survived or lost too much HP
       this.showDefeat();
     }
   }
 
   private captureGuest() {
-    // Save to localStorage (always, as fallback)
     const captured: string[] = JSON.parse(localStorage.getItem('a16z_captured') || '[]');
     if (!captured.includes(this.guest.id)) {
       captured.push(this.guest.id);
       localStorage.setItem('a16z_captured', JSON.stringify(captured));
     }
-
-    // Save to Supabase (async, fire-and-forget)
     saveCapture(this.playerId, this.guest.id).catch((err) => {
       console.warn('Failed to save capture to Supabase:', err);
     });
@@ -583,40 +551,39 @@ export class BattleScene extends Phaser.Scene {
     const H = this.cameras.main.height;
     const battleAreaH = H * 0.7;
     const menuY = battleAreaH + 4;
+    const menuH = H - menuY - 4;
 
-    // Victory overlay on battle menu
     const victoryBg = this.add.graphics();
-    victoryBg.fillStyle(0x003000, 0.95);
-    victoryBg.fillRoundedRect(4, menuY, W - 8, H - menuY - 4, 8);
+    victoryBg.fillStyle(0x003000, 0.97);
+    victoryBg.fillRoundedRect(4, menuY, W - 8, menuH, 8);
+    victoryBg.setDepth(20);
 
     const captured: string[] = JSON.parse(localStorage.getItem('a16z_captured') || '[]');
     const total = captured.length;
 
-    this.add.text(W / 2, menuY + 20, '🎉 VICTORY!', {
+    this.add.text(W / 2, menuY + 16, '🎉 VICTORY!', {
       fontFamily: '"Press Start 2P"',
       fontSize: '12px',
       color: '#FFD700',
       resolution: 2,
-    }).setOrigin(0.5, 0);
+    }).setOrigin(0.5, 0).setDepth(21);
 
-    this.add.text(W / 2, menuY + 50, `${this.guest.name} captured!`, {
+    this.add.text(W / 2, menuY + 44, `${this.guest.name} captured!`, {
       fontFamily: '"Press Start 2P"',
-      fontSize: '11px',
+      fontSize: '9px',
       color: '#FFFFFF',
       resolution: 2,
-    }).setOrigin(0.5, 0);
+    }).setOrigin(0.5, 0).setDepth(21);
 
-    this.add.text(W / 2, menuY + 70, `Total: ${total}/10 captured`, {
+    this.add.text(W / 2, menuY + 68, `Total: ${total}/25 captured`, {
       fontFamily: '"Press Start 2P"',
-      fontSize: '11px',
+      fontSize: '9px',
       color: '#80FF80',
       resolution: 2,
-    }).setOrigin(0.5, 0);
+    }).setOrigin(0.5, 0).setDepth(21);
 
-    // Pokéball animation
-    const pb = this.add.image(W / 2, menuY + 100, 'pokeball');
-    pb.setOrigin(0.5);
-    pb.setScale(2);
+    const pb = this.add.image(W / 2, menuY + 104, 'pokeball');
+    pb.setOrigin(0.5).setScale(2).setDepth(21);
     this.tweens.add({
       targets: pb,
       angle: 360,
@@ -625,17 +592,15 @@ export class BattleScene extends Phaser.Scene {
       ease: 'Linear',
     });
 
-    this.add.text(W / 2, menuY + 140, 'Press SPACE to continue', {
+    this.add.text(W / 2, menuY + 144, 'Press SPACE to continue', {
       fontFamily: '"Press Start 2P"',
-      fontSize: '11px',
+      fontSize: '9px',
       color: '#AAAAAA',
       resolution: 2,
-    }).setOrigin(0.5, 0);
+    }).setOrigin(0.5, 0).setDepth(21);
 
     this.time.delayedCall(500, () => {
-      this.keys.space.on('down', () => {
-        this.returnToWorld();
-      });
+      this.keys.space.on('down', () => this.returnToWorld());
     });
   }
 
@@ -644,36 +609,36 @@ export class BattleScene extends Phaser.Scene {
     const H = this.cameras.main.height;
     const battleAreaH = H * 0.7;
     const menuY = battleAreaH + 4;
+    const menuH = H - menuY - 4;
 
     const defeatBg = this.add.graphics();
-    defeatBg.fillStyle(0x200000, 0.95);
-    defeatBg.fillRoundedRect(4, menuY, W - 8, H - menuY - 4, 8);
+    defeatBg.fillStyle(0x200000, 0.97);
+    defeatBg.fillRoundedRect(4, menuY, W - 8, menuH, 8);
+    defeatBg.setDepth(20);
 
-    this.add.text(W / 2, menuY + 25, 'You lost...', {
+    this.add.text(W / 2, menuY + 24, 'You lost...', {
       fontFamily: '"Press Start 2P"',
-      fontSize: '10px',
+      fontSize: '12px',
       color: '#FF4040',
       resolution: 2,
-    }).setOrigin(0.5, 0);
+    }).setOrigin(0.5, 0).setDepth(21);
 
-    this.add.text(W / 2, menuY + 55, 'Study harder and try again!', {
+    this.add.text(W / 2, menuY + 54, 'Study harder and try again!', {
       fontFamily: '"Press Start 2P"',
-      fontSize: '11px',
+      fontSize: '9px',
       color: '#AAAAAA',
       resolution: 2,
-    }).setOrigin(0.5, 0);
+    }).setOrigin(0.5, 0).setDepth(21);
 
-    this.add.text(W / 2, menuY + 90, 'Press SPACE to return', {
+    this.add.text(W / 2, menuY + 84, 'Press SPACE to return', {
       fontFamily: '"Press Start 2P"',
-      fontSize: '11px',
-      color: '#AAAAAA',
+      fontSize: '9px',
+      color: '#888888',
       resolution: 2,
-    }).setOrigin(0.5, 0);
+    }).setOrigin(0.5, 0).setDepth(21);
 
     this.time.delayedCall(500, () => {
-      this.keys.space.on('down', () => {
-        this.returnToWorld();
-      });
+      this.keys.space.on('down', () => this.returnToWorld());
     });
   }
 
@@ -683,7 +648,6 @@ export class BattleScene extends Phaser.Scene {
     const W = this.cameras.main.width;
     const H = this.cameras.main.height;
 
-    // Flash to black
     const blackout = this.add.graphics();
     blackout.fillStyle(0x000000, 0);
     blackout.fillRect(0, 0, W, H);
@@ -709,9 +673,7 @@ export class BattleScene extends Phaser.Scene {
         }).setOrigin(0.5).setDepth(1001);
 
         this.time.delayedCall(500, () => {
-          this.keys.space.on('down', () => {
-            this.returnToWorld();
-          });
+          this.keys.space.on('down', () => this.returnToWorld());
         });
       },
     });
