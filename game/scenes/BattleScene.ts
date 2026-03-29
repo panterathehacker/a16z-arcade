@@ -61,37 +61,33 @@ export class BattleScene extends Phaser.Scene {
 
     this.drawBattleBG(W, H);
 
-    // Add AI sprites on battle platforms using direct path loading
-    // Find guest index by trying texture keys 0-24
-    for (let i = 0; i < 25; i++) {
-      const key = `npc_ai_${i}`;
-      if (this.textures.exists(key)) {
-        // Check if this texture matches our guest by loading order
-        // Just try all and use the one that was loaded for this guest
-      }
+    // Guest sprite - find the npc_ai_{index} key that matches this guest
+    // npc_ai keys are loaded in order matching the GUESTS array (0-24, excluding player)
+    const guestFileNames = [
+      'marc-andreessen','ben-horowitz','jensen-huang','lisa-su','alexandr-wang',
+      'sam-altman','satya-nadella','brian-chesky','patrick-collison','dario-amodei',
+      'chris-dixon','sarah-guo','elad-gil','andrew-chen','sonal-chokshi',
+      'david-george','wade-foster','tomer-london','balaji-srinivasan','naval-ravikant',
+      'reid-hoffman','steve-wozniak','nicole-brichtova','tomer-cohen','alex-karp'
+    ];
+    const gIdx = guestFileNames.indexOf(this.guest.id);
+    const guestTexKey = gIdx >= 0 && this.textures.exists(`npc_ai_${gIdx}`) ? `npc_ai_${gIdx}` : null;
+    
+    if (guestTexKey) {
+      // Guest is on RIGHT platform (upper), anchor feet to platform
+      this.guestSprite = this.add.image(this._gpX, this._gpY, guestTexKey)
+        .setDisplaySize(96, 128)
+        .setOrigin(0.5, 1.0)  // anchor at feet
+        .setDepth(5);
     }
     
-    // Load guest sprite directly from path if texture available
-    const guestImgKey = `battle_guest_${this.guest.id}`;
-    if (!this.textures.exists(guestImgKey)) {
-      this.load.image(guestImgKey, `/assets/sprites/guests/${this.guest.id}.png`);
-      this.load.once('complete', () => {
-        if (!this.guestSprite) {
-          this.guestSprite = this.add.image(this._gpX, this._gpY - 60, guestImgKey)
-            .setDisplaySize(96, 128).setOrigin(0.5, 1.0).setDepth(5);
-        }
-      });
-      this.load.start();
-    } else {
-      this.guestSprite = this.add.image(this._gpX, this._gpY - 60, guestImgKey)
-        .setDisplaySize(96, 128).setOrigin(0.5, 1.0).setDepth(5);
-    }
-    
-    // Player sprite (facing left for battle back-view)
-    const playerImgKey = 'player_ai';
-    if (this.textures.exists(playerImgKey)) {
-      this.playerSprite = this.add.image(this._ppX, this._ppY - 20, playerImgKey)
-        .setDisplaySize(80, 110).setFlipX(true).setOrigin(0.5, 1.0).setDepth(5);
+    // Player sprite - back-facing (flip horizontally to face away)
+    if (this.textures.exists('player_ai')) {
+      this.playerSprite = this.add.image(this._ppX, this._ppY, 'player_ai')
+        .setDisplaySize(72, 100)
+        .setFlipX(false)  // face LEFT (same direction as looking at guest on right)
+        .setOrigin(0.5, 1.0)  // anchor at feet so it stands ON the platform
+        .setDepth(5);
     }
 
     this.createBattleUI(W, H);
@@ -230,7 +226,7 @@ export class BattleScene extends Phaser.Scene {
       resolution: 2,
     });
 
-    this.add.text(20, 32, this.guest.title, {
+    this.add.text(20, 32, this.guest.title.slice(0, 22), {
       fontFamily: '"Press Start 2P"',
       fontSize: '11px',
       color: '#4a4a6e',
@@ -250,7 +246,7 @@ export class BattleScene extends Phaser.Scene {
     guestHPBg.fillRect(40, 46, 140, 12);
 
     this.guestHPBar = this.add.graphics();
-    this.guestHPText = this.add.text(190, 42, '100/100', {
+    this.guestHPText = this.add.text(175, 42, '100/100', {
       fontFamily: '"Press Start 2P"',
       fontSize: '11px',
       color: '#303030',
@@ -329,12 +325,12 @@ export class BattleScene extends Phaser.Scene {
 
       this.add.text(ox + 6, oy + 8, `${i + 1}.`, {
         fontFamily: '"Press Start 2P"',
-        fontSize: '11px',
+        fontSize: '9px',
         color: '#4060A0',
         resolution: 2,
       });
 
-      const optText = this.add.text(ox + 22, oy + 8, '', {
+      const optText = this.add.text(ox + 28, oy + 8, '', {
         fontFamily: '"Press Start 2P"',
         fontSize: '11px',
         color: '#1a1a2e',
