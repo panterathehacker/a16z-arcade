@@ -411,10 +411,10 @@ export default function Home() {
                   src="/assets/sprites/player-male/front.png"
                   alt="David"
                   style={{
-                    width: '88px',
-                    height: 'auto',
-                    marginLeft: '-22px',
-                    marginTop: '-15px',
+                    width: '132px',
+      height: 'auto',
+      marginLeft: '-44px',
+      marginTop: '-22px',
                     imageRendering: 'pixelated',
                     display: 'block',
                   }}
