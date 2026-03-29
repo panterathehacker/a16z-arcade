@@ -185,6 +185,11 @@ export class WorldScene extends Phaser.Scene {
     this.events.on('resume', () => {
       this.inBattleTransition = false; // Reset transition flag
       this.dialogueVisible = false;
+      // Force camera to follow player (fixes green screen after ESC)
+      if (this.player) {
+        this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
+        this.cameras.main.setPosition(0, 0);
+      }
       this.nearbyGuest = null;
       this.activeNPC = null;
       this.inBattleTransition = false;
