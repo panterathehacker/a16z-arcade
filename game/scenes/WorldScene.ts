@@ -209,7 +209,10 @@ export class WorldScene extends Phaser.Scene {
   private isOccupiedByNPC(tx: number, ty: number): boolean {
     // Use live NPC tile positions (LennyRPG approach: check npcs array tile coords)
     for(const [id, pos] of this.npcTilePositions) {
-      if(pos.tx === tx && pos.ty === ty) return true;
+      if(pos.tx === tx && pos.ty === ty) {
+        console.log('[Collision] NPC blocked:', id, 'at tile', tx, ty, '(player at', this.playerTileX, this.playerTileY, ')');
+        return true;
+      }
     }
     return false;
   }
@@ -1118,6 +1121,7 @@ export class WorldScene extends Phaser.Scene {
     }
 
     // Zero out velocity (tile-based movement uses tweens)
+    if (!this.player) return;
     this.player.setVelocity(0);
 
     if (Phaser.Input.Keyboard.JustDown(this.cKey)) {

@@ -406,8 +406,8 @@ export default function Home() {
                 width: '44px', height: '44px', flexShrink: 0,
                 borderRadius: '4px', border: '2px solid #FFD700',
                 backgroundImage: 'url(/assets/sprites/player-male/front.png)',
-                backgroundSize: '102px auto',
-                backgroundPosition: 'center top',
+                backgroundSize: 'contain',
+                backgroundPosition: 'center center',
                 backgroundRepeat: 'no-repeat',
                 imageRendering: 'pixelated',
               }} />
