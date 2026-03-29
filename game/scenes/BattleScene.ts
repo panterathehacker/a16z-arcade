@@ -124,10 +124,20 @@ export class BattleScene extends Phaser.Scene {
     console.log('[Battle] guest id:', this.guest.id, 'idx:', idx, 'key:', texKey);
 
     if (texKey && this.textures.exists(texKey)) {
-      this.guestSprite = this.add.image(this._gpX, this._gpY, texKey)
-        .setDisplaySize(180, 250)
+      // Start off-screen right, slide in with Back.easeOut
+      this.guestSprite = this.add.image(W + 200, this._gpY, texKey)
+        .setDisplaySize(200, 270)
         .setOrigin(0.5, 1.0)
-        .setDepth(5);
+        .setDepth(5)
+        .setAlpha(0);
+      this.tweens.add({
+        targets: this.guestSprite,
+        x: this._gpX,
+        alpha: 1,
+        duration: 500,
+        delay: 200,
+        ease: 'Back.easeOut',
+      });
     }
 
     // Player sprite — left mound, back-facing
@@ -136,10 +146,20 @@ export class BattleScene extends Phaser.Scene {
     const playerSpriteKey = this.textures.exists(pSet + '_back') ? (pSet + '_back')
                           : (this.textures.exists('player_ai') ? 'player_ai' : null);
     if (playerSpriteKey) {
-      this.playerSprite = this.add.image(this._ppX, this._ppY, playerSpriteKey)
-        .setDisplaySize(180, 250)
+      // Start off-screen left, slide in with Back.easeOut
+      this.playerSprite = this.add.image(-200, this._ppY, playerSpriteKey)
+        .setDisplaySize(160, 220)
         .setOrigin(0.5, 1.0)
-        .setDepth(5);
+        .setDepth(5)
+        .setAlpha(0);
+      this.tweens.add({
+        targets: this.playerSprite,
+        x: this._ppX,
+        alpha: 1,
+        duration: 500,
+        delay: 100,
+        ease: 'Back.easeOut',
+      });
     }
 
     this.createBattleUI(W, H);
@@ -170,10 +190,10 @@ export class BattleScene extends Phaser.Scene {
       .setDisplaySize(W, bgH)
       .setDepth(0);
 
-    this._gpX = W * 0.655;
-    this._gpY = H * 0.37;
-    this._ppX = W * 0.35;
-    this._ppY = H * 0.50;
+    this._gpX = W * 0.68;
+    this._gpY = H * 0.38;
+    this._ppX = W * 0.30;
+    this._ppY = H * 0.55;
   }
 
   // ─────────────────────────────────────────────
@@ -212,7 +232,7 @@ export class BattleScene extends Phaser.Scene {
     guestBox.id = 'a16z-guest-hp';
     guestBox.style.cssText = `
       position: fixed;
-      left: ${canvasRect.left + canvasRect.width * 0.30}px;
+      left: ${canvasRect.left + canvasRect.width * 0.25}px;
       top: ${canvasRect.top + 20}px;
       width: 260px;
       background: white;
@@ -253,7 +273,7 @@ export class BattleScene extends Phaser.Scene {
     playerBox.style.cssText = `
       position: fixed;
       left: ${canvasRect.left + canvasRect.width * 0.35}px;
-      bottom: ${window.innerHeight - canvasRect.bottom + canvasRect.height * 0.35}px;
+      bottom: ${window.innerHeight - canvasRect.bottom + 100}px;
       width: 240px;
       background: white;
       border: 3px solid #1a1a1a;
@@ -425,11 +445,19 @@ export class BattleScene extends Phaser.Scene {
 
       menuEl.appendChild(leftPanel);
       menuEl.appendChild(rightPanel);
+
+      // Slide up animation (LennyRPG style)
+      menuEl.style.transform = 'translateY(100%)';
+      menuEl.style.transition = 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)';
+
       document.body.appendChild(menuEl);
       this.battleMenuEl = menuEl;
       this.domAnswerBtns = answerBtns;
       this.domQText = qText;
       this.domQNum = qNum;
+
+      // Trigger slide-up animation after DOM insertion
+      setTimeout(() => { menuEl.style.transform = 'translateY(0)'; }, 50);
     }
 
     // ────────────────────────────────────────────

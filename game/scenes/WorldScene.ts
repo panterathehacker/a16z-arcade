@@ -32,7 +32,7 @@ export class WorldScene extends Phaser.Scene {
 
   private worldLayer!: Phaser.Tilemaps.TilemapLayer;
   private npcSprites: Map<string, Phaser.GameObjects.Container> = new Map();
-  private npcTilePositions: Map<string, {tx: number, ty: number}> = new Map();
+
   private npcGroup!: Phaser.Physics.Arcade.StaticGroup;
 
   private dialogueOverlay: HTMLDivElement | null = null;
@@ -184,17 +184,7 @@ export class WorldScene extends Phaser.Scene {
     // No 'resume' handler needed - WorldScene never pauses now (BattleScene runs as overlay)
   }
 
-  // ─── NPC tile collision (LennyRPG approach) ──────────────────────────────
-  private isOccupiedByNPC(tx: number, ty: number): boolean {
-    // Use live NPC tile positions (LennyRPG approach: check npcs array tile coords)
-    for(const [npcId, pos] of this.npcTilePositions) {
-      if(pos.tx === tx && pos.ty === ty) {
-        console.log('[Collision] NPC blocked:', npcId, 'at tile', tx, ty, '(player at', this.playerTileX, this.playerTileY, ')');
-        return true;
-      }
-    }
-    return false;
-  }
+
 
   // ─── Battle Transition (Feature 1: LennyRPG-inspired pixel swirl/flash) ──
   private startBattleTransition(guest: Guest) {
@@ -494,8 +484,6 @@ export class WorldScene extends Phaser.Scene {
       container.add([sprite, labelText]);
       container.setDepth(5);
       this.npcSprites.set(guest.id, container);
-      // Track tile position for collision (LennyRPG approach)
-      this.npcTilePositions.set(guest.id, { tx: Math.floor(guest.px/32), ty: Math.floor(guest.py/32) });
       
       this.tweens.add({
         targets: sprite,
@@ -682,7 +670,7 @@ export class WorldScene extends Phaser.Scene {
       } catch (_) { /* fallback to URL */ }
     }
 
-    // Inject LennyRPG-style keyframe animations once
+    // Inject arrowBounce animation once (dialogSlideUp removed — using JS transition instead)
     if (!document.getElementById('a16z-dialogue-styles')) {
       const style = document.createElement('style');
       style.id = 'a16z-dialogue-styles';
@@ -690,13 +678,6 @@ export class WorldScene extends Phaser.Scene {
         @keyframes arrowBounce {
           0%, 100% { transform: translateY(0); opacity: 1; }
           50% { transform: translateY(4px); opacity: 0.6; }
-        }
-        @keyframes dialogSlideUp {
-          from { transform: translateX(-50%) translateY(100px); opacity: 0; }
-          to { transform: translateX(-50%) translateY(0); opacity: 1; }
-        }
-        #a16z-dialogue-overlay {
-          animation: dialogSlideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
       `;
       document.head.appendChild(style);
@@ -708,6 +689,7 @@ export class WorldScene extends Phaser.Scene {
     const dialogBottom = canvasRect.bottom - canvasRect.height * 0.12; // more gap from bottom
     const dlgBottomFromViewport = window.innerHeight - dialogBottom;
     const dlgWidth = Math.min(canvasRect.width - 80, 800); // smaller, more margin
+    const canvasCenter = canvasRect.left + canvasRect.width / 2;
 
     const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
     const randomMsg = this.encounterMessages[Math.floor(Math.random() * this.encounterMessages.length)];
@@ -716,12 +698,15 @@ export class WorldScene extends Phaser.Scene {
     const overlay = document.createElement('div');
     overlay.id = 'a16z-dialogue-overlay';
     overlay.style.cssText = `
-      position:fixed;
-      left:${canvasRect.left + (canvasRect.width - dlgWidth) / 2}px;
-      width:${dlgWidth}px;
-      bottom:${dlgBottomFromViewport}px;
-      z-index:500;
-      box-sizing:border-box;
+      position: fixed;
+      left: ${canvasCenter}px;
+      bottom: ${dlgBottomFromViewport}px;
+      width: ${dlgWidth}px;
+      transform: translateX(-50%) translateY(60px);
+      opacity: 0;
+      z-index: 500;
+      box-sizing: border-box;
+      transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.35s ease;
     `;
 
     // Inner card — LennyRPG pokemon-textbox style
@@ -789,6 +774,14 @@ export class WorldScene extends Phaser.Scene {
     overlay.appendChild(card);
     document.body.appendChild(overlay);
     this.dialogueOverlay = overlay;
+
+    // Trigger slide-up transition after DOM insertion (LennyRPG style: center-anchored, no jump)
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        overlay.style.transform = 'translateX(-50%) translateY(0)';
+        overlay.style.opacity = '1';
+      });
+    });
   }
 
   private hideDialogue(): void {
@@ -1155,10 +1148,7 @@ export class WorldScene extends Phaser.Scene {
         const tile = this.worldLayer?.getTileAt(newTX, newTY);
         const tileBlocked = tile ? tile.collides : false;
 
-        // Check NPC tile collision (player can stand adjacent but not ON the NPC tile)
-        const npcBlocked = this.isOccupiedByNPC(newTX, newTY);
-
-        if (inBounds && !tileBlocked && !npcBlocked) {
+        if (inBounds && !tileBlocked) {
           this.playerTileX = newTX;
           this.playerTileY = newTY;
           this.isMoving = true;
