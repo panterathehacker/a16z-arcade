@@ -477,6 +477,39 @@ export class WorldScene extends Phaser.Scene {
     interactBtn.addEventListener('mouseup', () => { this.mobileInteract = false; });
 
     document.body.appendChild(interactBtn);
+
+    // Pokédex button - above interact button
+    const pokedexBtn = document.createElement('div');
+    pokedexBtn.id = 'mobile-pokedex';
+    pokedexBtn.style.cssText = `
+      position: fixed;
+      bottom: 90px;
+      right: 20px;
+      width: 52px;
+      height: 52px;
+      background: rgba(80, 150, 255, 0.7);
+      border: 2px solid rgba(120, 180, 255, 0.9);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      z-index: 1000;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: none;
+      cursor: pointer;
+    `;
+    pokedexBtn.textContent = '📖';
+    pokedexBtn.title = 'Pokédex';
+
+    pokedexBtn.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      this.togglePokedex();
+    }, { passive: false });
+    pokedexBtn.addEventListener('click', () => { this.togglePokedex(); });
+
+    document.body.appendChild(pokedexBtn);
   }
 
   // ─── Dialogue Box (DOM overlay — avoids Phaser scroll-factor clipping) ───────
@@ -549,7 +582,7 @@ export class WorldScene extends Phaser.Scene {
 
     // Portrait thumbnail - hidden on mobile
     const portrait = document.createElement('div');
-    portrait.style.cssText = isMobileView ? 'display:none;' : `
+    portrait.style.cssText = isMobileView ? `width:40px;height:50px;min-width:40px;background:#e8e8e8;border:1px solid #000;overflow:hidden;image-rendering:pixelated;margin-right:8px;` : `
       width: 80px; height: 100px; min-width: 80px;
       background: #e8e8e8;
       border: 2px solid #000;
@@ -569,7 +602,7 @@ export class WorldScene extends Phaser.Scene {
     right.style.cssText = `display: flex; flex-direction: column; flex: 1; overflow: hidden;`;
 
     const nameEl = document.createElement('div');
-    nameEl.style.cssText = `font-size: ${isMobileView ? '13px' : '20px'}; font-weight: bold; color: #000000; white-space: nowrap; letter-spacing: 1px; margin-bottom: ${isMobileView ? '3px' : '6px'}; font-family: "Press Start 2P", monospace;`;
+    nameEl.style.cssText = `font-size: ${isMobileView ? '8px' : '20px'}; font-weight: bold; color: #000000; white-space: nowrap; letter-spacing: 1px; margin-bottom: ${isMobileView ? '2px' : '6px'}; font-family: "Press Start 2P", monospace;`;
     nameEl.textContent = guest.name.toUpperCase();
 
     const titleEl = document.createElement('div');
@@ -577,10 +610,10 @@ export class WorldScene extends Phaser.Scene {
     titleEl.textContent = guest.title;
 
     const sep = document.createElement('hr');
-    sep.style.cssText = `border: none; border-top: 1px solid #000; margin: 0 0 8px 0; display: ${isMobileView ? 'none' : 'block'};`;
+    sep.style.cssText = `border: none; border-top: 1px solid #000; margin: 0 0 4px 0;`;
 
     const bodyEl = document.createElement('div');
-    bodyEl.style.cssText = `font-size: 15px; font-weight: bold; color: #000000; line-height: 1.8; font-family: "Press Start 2P", monospace;`;
+    bodyEl.style.cssText = `font-size: ${isMobileView ? "7px" : "15px"}; font-weight: bold; color: #000000; line-height: 1.5; font-family: "Press Start 2P", monospace;`;
     bodyEl.textContent = `${guest.name.split(' ')[0]} has a challenge for you!`;
 
     right.appendChild(nameEl);
@@ -678,6 +711,15 @@ export class WorldScene extends Phaser.Scene {
     this.pokedexContainer.setScrollFactor(0);
     this.pokedexContainer.setDepth(200);
     this.pokedexContainer.setVisible(false);
+  }
+
+  private togglePokedex(): void {
+    if (this.pokedexVisible) {
+      if (this.pokedexOverlay) { this.pokedexOverlay.remove(); this.pokedexOverlay = null; }
+      this.pokedexVisible = false;
+    } else {
+      this.showPokedex();
+    }
   }
 
   private showPokedex(): void {
