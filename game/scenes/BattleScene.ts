@@ -66,15 +66,6 @@ export class BattleScene extends Phaser.Scene {
     this.battleOver = false;
   }
 
-  preload() {
-    if (!this.textures.exists('battle-bg')) {
-      this.load.image('battle-bg', '/assets/battle/bg.png');
-    }
-    if (!this.textures.exists('battle-player-back')) {
-      this.load.image('battle-player-back', '/assets/battle/player-back.png');
-    }
-  }
-
   create() {
     const W = this.cameras.main.width;
     const H = this.cameras.main.height;
@@ -173,9 +164,9 @@ export class BattleScene extends Phaser.Scene {
     const PANEL_RADIUS = 10;
 
     // ── Guest HP Panel (upper-right, above guest sprite) ──
-    const gPanelX = W * 0.55;
-    const gPanelY = 20;
-    const gPanelW = W * 0.42;
+    const gPanelX = 14;
+    const gPanelY = 14;
+    const gPanelW = Math.min(320, W * 0.38);
 
     const gPanel = this.add.graphics();
     gPanel.fillStyle(0xFFFFFF, 0.97);
@@ -187,7 +178,7 @@ export class BattleScene extends Phaser.Scene {
     // Guest name — bold, ALL CAPS
     this.add.text(gPanelX + 12, gPanelY + 10, this.guest.name.toUpperCase(), {
       fontFamily: '"Press Start 2P"',
-      fontSize: '10px',
+      fontSize: '15px',
       color: '#1a1a2e',
       resolution: 2,
     }).setDepth(11);
@@ -201,7 +192,7 @@ export class BattleScene extends Phaser.Scene {
     gLvBadge.setDepth(11);
     this.add.text(gLvX + 5, gLvY + 2, 'Lv5', {
       fontFamily: '"Press Start 2P"',
-      fontSize: '7px',
+      fontSize: '12px',
       color: '#FFFFFF',
       resolution: 2,
     }).setDepth(12);
@@ -209,7 +200,7 @@ export class BattleScene extends Phaser.Scene {
     // Guest title — small, gray
     this.add.text(gPanelX + 12, gPanelY + 30, this.guest.title.slice(0, 28), {
       fontFamily: '"Press Start 2P"',
-      fontSize: '7px',
+      fontSize: '12px',
       color: '#666680',
       resolution: 2,
     }).setDepth(11);
@@ -217,7 +208,7 @@ export class BattleScene extends Phaser.Scene {
     // "HP" label — red
     this.add.text(gPanelX + 12, gPanelY + 50, 'HP', {
       fontFamily: '"Press Start 2P"',
-      fontSize: '8px',
+      fontSize: '13px',
       color: '#cc2222',
       resolution: 2,
     }).setDepth(11);
@@ -242,14 +233,14 @@ export class BattleScene extends Phaser.Scene {
     // Guest HP text — hidden per spec (no number shown in guest box)
     this.guestHPText = this.add.text(gPanelX + gPanelW - 10, gPanelY + 66, '', {
       fontFamily: '"Press Start 2P"',
-      fontSize: '8px',
+      fontSize: '13px',
       color: '#303050',
       resolution: 2,
     }).setOrigin(1, 0).setDepth(11).setVisible(false);
 
     // ── Player HP Panel (left side, near player sprite) ──
-    const pPanelX = 20;
-    const pPanelY = H * 0.45;
+    const pPanelX = Math.min(280, W * 0.32);
+    const pPanelY = H * 0.50;
     const pPanelW = 260;
 
     const pPanel = this.add.graphics();
@@ -264,7 +255,7 @@ export class BattleScene extends Phaser.Scene {
       ? localStorage.getItem('a16z_username') : null) || 'PLAYER';
     this.add.text(pPanelX + 12, pPanelY + 10, trainerName.toUpperCase().slice(0, 10), {
       fontFamily: '"Press Start 2P"',
-      fontSize: '10px',
+      fontSize: '15px',
       color: '#1a1a2e',
       resolution: 2,
     }).setDepth(11);
@@ -278,7 +269,7 @@ export class BattleScene extends Phaser.Scene {
     pLvBadge.setDepth(11);
     this.add.text(pLvX + 5, pLvY + 2, 'Lv1', {
       fontFamily: '"Press Start 2P"',
-      fontSize: '7px',
+      fontSize: '12px',
       color: '#FFFFFF',
       resolution: 2,
     }).setDepth(12);
@@ -286,7 +277,7 @@ export class BattleScene extends Phaser.Scene {
     // "HP" label — red
     this.add.text(pPanelX + 12, pPanelY + 34, 'HP', {
       fontFamily: '"Press Start 2P"',
-      fontSize: '8px',
+      fontSize: '13px',
       color: '#cc2222',
       resolution: 2,
     }).setDepth(11);
@@ -313,7 +304,7 @@ export class BattleScene extends Phaser.Scene {
     // Player HP number — right-aligned below bar
     this.playerHPText = this.add.text(this._pHPNumX, this._pHPNumY, '', {
       fontFamily: '"Press Start 2P"',
-      fontSize: '8px',
+      fontSize: '13px',
       color: '#303050',
       resolution: 2,
     }).setOrigin(1, 0).setDepth(11);
@@ -339,7 +330,7 @@ export class BattleScene extends Phaser.Scene {
     // Q counter (top-left of question panel)
     this.add.text(qPanelX, menuY + 10, `Q${this.currentQ + 1}/${this.questions.length}`, {
       fontFamily: '"Press Start 2P"',
-      fontSize: '9px',
+      fontSize: '14px',
       color: '#8888AA',
       resolution: 2,
     }).setDepth(11).setName('progress');
@@ -352,7 +343,7 @@ export class BattleScene extends Phaser.Scene {
     easyBadge.setDepth(11);
     this.add.text(easyBadgeX + 5, menuY + 10, 'EASY', {
       fontFamily: '"Press Start 2P"',
-      fontSize: '6px',
+      fontSize: '11px',
       color: '#1a1a2e',
       resolution: 2,
     }).setDepth(12);
@@ -360,7 +351,7 @@ export class BattleScene extends Phaser.Scene {
     // Question text — white pixel font, word-wrapped
     this.questionText = this.add.text(qPanelX, menuY + 32, '', {
       fontFamily: '"Press Start 2P"',
-      fontSize: '10px',
+      fontSize: '15px',
       color: '#FFFFFF',
       resolution: 2,
       wordWrap: { width: qPanelW },
@@ -369,7 +360,7 @@ export class BattleScene extends Phaser.Scene {
     // Keyboard hint at bottom-left
     this.add.text(qPanelX, menuY + menuH - 18, '↑↓ ENTER', {
       fontFamily: '"Press Start 2P"',
-      fontSize: '7px',
+      fontSize: '12px',
       color: '#555577',
       resolution: 2,
     }).setDepth(11);
@@ -396,7 +387,7 @@ export class BattleScene extends Phaser.Scene {
       // Answer text (number + text, no period)
       const optText = this.add.text(bx + 10, by + 10, '', {
         fontFamily: '"Press Start 2P"',
-        fontSize: '8px',
+        fontSize: '13px',
         color: '#1a1a2e',
         resolution: 2,
         wordWrap: { width: this._btnW - 20 },
@@ -407,7 +398,7 @@ export class BattleScene extends Phaser.Scene {
     // Status/feedback text — centered in question area
     this.statusText = this.add.text(W * 0.25, menuY + menuH * 0.5, '', {
       fontFamily: '"Press Start 2P"',
-      fontSize: '11px',
+      fontSize: '16px',
       color: '#FF6060',
       resolution: 2,
       align: 'center',
@@ -596,14 +587,14 @@ export class BattleScene extends Phaser.Scene {
 
     this.add.text(W / 2, menuY + 44, `${this.guest.name} captured!`, {
       fontFamily: '"Press Start 2P"',
-      fontSize: '9px',
+      fontSize: '14px',
       color: '#FFFFFF',
       resolution: 2,
     }).setOrigin(0.5, 0).setDepth(21);
 
     this.add.text(W / 2, menuY + 68, `Total: ${total}/25 captured`, {
       fontFamily: '"Press Start 2P"',
-      fontSize: '9px',
+      fontSize: '14px',
       color: '#80FF80',
       resolution: 2,
     }).setOrigin(0.5, 0).setDepth(21);
@@ -620,7 +611,7 @@ export class BattleScene extends Phaser.Scene {
 
     this.add.text(W / 2, menuY + 144, 'Press SPACE to continue', {
       fontFamily: '"Press Start 2P"',
-      fontSize: '9px',
+      fontSize: '14px',
       color: '#AAAAAA',
       resolution: 2,
     }).setOrigin(0.5, 0).setDepth(21);
@@ -651,14 +642,14 @@ export class BattleScene extends Phaser.Scene {
 
     this.add.text(W / 2, menuY + 54, 'Study harder and try again!', {
       fontFamily: '"Press Start 2P"',
-      fontSize: '9px',
+      fontSize: '14px',
       color: '#AAAAAA',
       resolution: 2,
     }).setOrigin(0.5, 0).setDepth(21);
 
     this.add.text(W / 2, menuY + 84, 'Press SPACE to return', {
       fontFamily: '"Press Start 2P"',
-      fontSize: '9px',
+      fontSize: '14px',
       color: '#888888',
       resolution: 2,
     }).setOrigin(0.5, 0).setDepth(21);
@@ -693,7 +684,7 @@ export class BattleScene extends Phaser.Scene {
 
         this.add.text(W / 2, H / 2 + 20, 'Press SPACE to return', {
           fontFamily: '"Press Start 2P"',
-          fontSize: '11px',
+          fontSize: '16px',
           color: '#AAAAAA',
           resolution: 2,
         }).setOrigin(0.5).setDepth(1001);

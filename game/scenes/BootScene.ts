@@ -44,6 +44,10 @@ export class BootScene extends Phaser.Scene {
     });
     // Also load player AI sprite
     this.load.image('player_ai', '/assets/sprites/guests/player.png');
+    
+    // Battle scene assets
+    this.load.image('battle-bg', '/assets/battle/bg.png');
+    this.load.image('battle-player-back', '/assets/battle/player-back.png');
   }
 
   create() {
