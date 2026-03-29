@@ -117,7 +117,8 @@ export class BattleScene extends Phaser.Scene {
     this.cameras.main.setBackgroundColor('transparent');
 
     // Meadow background fills top 65% of screen
-    const bgH = isMobileBattle ? H * 0.48 : H * 0.65;
+    const isMobileBattleCheck = H > W;
+    const bgH = isMobileBattleCheck ? H * 0.48 : H * 0.65;
     this.add.image(W * 0.5, bgH / 2, 'battle-bg')
       .setDisplaySize(W, bgH)
       .setDepth(0);
@@ -134,7 +135,7 @@ export class BattleScene extends Phaser.Scene {
   // ─────────────────────────────────────────────
   private createBattleUI(W: number, H: number) {
     // On mobile (portrait), shrink battle area so questions get more space
-    const isMobileBattle = H > W; // portrait = mobile
+
     const battleAreaH = isMobileBattle ? H * 0.48 : H * 0.65;
 
     // ────────────────────────────────────────────
