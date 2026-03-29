@@ -26,8 +26,8 @@ export const GUESTS: Guest[] = [
     name: 'Marc Andreessen',
     title: 'Co-Founder, a16z',
     color: 0x4169E1,
-    px: 336,  py: 560,
-    x: 10,   y: 17,
+    px: 144,  py: 944,
+    x: 4,   y: 29,
     questions: [
       {
         text: "What is one of the main differences between old media and new media as discussed in the podcast?",
@@ -62,8 +62,8 @@ export const GUESTS: Guest[] = [
     name: 'Ben Horowitz',
     title: 'Co-Founder, a16z',
     color: 0x8B0000,
-    px: 1200,  py: 976,
-    x: 37,   y: 30,
+    px: 1200,  py: 656,
+    x: 37,   y: 20,
     questions: [
       {
         text: "What is one key difference between old media and new media according to Ben Horowitz?",
@@ -98,8 +98,8 @@ export const GUESTS: Guest[] = [
     name: 'Jensen Huang',
     title: 'CEO, NVIDIA',
     color: 0x76B900,
-    px: 560,  py: 16,
-    x: 17,   y: 0,
+    px: 528,  py: 112,
+    x: 16,   y: 3,
     questions: [
       {
         text: "According to Jensen Huang, why is AI considered a general purpose technology?",
@@ -134,8 +134,8 @@ export const GUESTS: Guest[] = [
     name: 'Lisa Su',
     title: 'CEO, AMD',
     color: 0xFF6B00,
-    px: 848,  py: 400,
-    x: 26,   y: 12,
+    px: 816,  py: 1136,
+    x: 25,   y: 35,
     questions: [
       {
         text: "What is one of the key strategies Lisa Su mentions for AMD in the context of AI development?",
@@ -170,8 +170,8 @@ export const GUESTS: Guest[] = [
     name: 'Alexandr Wang',
     title: 'CEO, Scale AI',
     color: 0x00CED1,
-    px: 112,  py: 1168,
-    x: 3,   y: 36,
+    px: 80,  py: 368,
+    x: 2,   y: 11,
     questions: [
       {
         text: "What are the three pillars of AI that Alexandr Wang discusses as crucial for AI development?",
@@ -206,8 +206,8 @@ export const GUESTS: Guest[] = [
     name: 'Sam Altman',
     title: 'CEO, OpenAI',
     color: 0x1A1A2E,
-    px: 144,  py: 144,
-    x: 4,   y: 4,
+    px: 848,  py: 400,
+    x: 26,   y: 12,
     questions: [
       {
         text: "What does Sam Altman describe as the core mission of OpenAI?",
@@ -242,8 +242,8 @@ export const GUESTS: Guest[] = [
     name: 'Dr. Fei-Fei Li',
     title: 'AI Researcher & Stanford Professor',
     color: 0x8B2FC9,
-    px: 1072,  py: 624,
-    x: 33,   y: 19,
+    px: 560,  py: 720,
+    x: 17,   y: 22,
     questions: [
       {
         text: "What critical aspect of intelligence does Dr. Fei-Fei Li emphasize as being integral to AI development?",
@@ -277,8 +277,8 @@ export const GUESTS: Guest[] = [
     name: 'Michael Truell',
     title: 'CEO, Cursor',
     color: 0x00A8E0,
-    px: 656,  py: 848,
-    x: 20,   y: 26,
+    px: 1104,  py: 1008,
+    x: 34,   y: 31,
     questions: [
       {
         text: "What was one of the key reasons Michael Truell and his co-founders decided to start Cursor?",
@@ -312,8 +312,8 @@ export const GUESTS: Guest[] = [
     name: 'Mati Sheetrit',
     title: 'CEO & Co-Founder, ElevenLabs',
     color: 0xFF5733,
-    px: 80,  py: 720,
-    x: 2,   y: 22,
+    px: 208,  py: 144,
+    x: 6,   y: 4,
     questions: [
       {
         text: "According to Mati Sheetrit, which aspect of AI technology is poised to become a fundamental interface for human-computer interaction?",
@@ -347,8 +347,8 @@ export const GUESTS: Guest[] = [
     name: 'Dario Amodei',
     title: 'CEO & Co-Founder, Anthropic',
     color: 0xCC785C,
-    px: 112,  py: 432,
-    x: 3,   y: 13,
+    px: 912,  py: 784,
+    x: 28,   y: 24,
     questions: [
       {
         text: "What was the significant moment for Dario Amodei that led to the belief in the potential of scaling laws in AI?",
@@ -383,8 +383,8 @@ export const GUESTS: Guest[] = [
     name: 'Chris Dixon',
     title: 'General Partner, a16z Crypto',
     color: 0xF7931A,
-    px: 1200,  py: 560,
-    x: 37,   y: 17,
+    px: 240,  py: 624,
+    x: 7,   y: 19,
     questions: [
       {
         text: "What is one of the exponential forces mentioned by Chris Dixon that has significantly impacted the tech industry?",
@@ -419,8 +419,8 @@ export const GUESTS: Guest[] = [
     name: 'Vlad Tenev',
     title: 'CEO, Robinhood',
     color: 0x00C805,
-    px: 848,  py: 1168,
-    x: 26,   y: 36,
+    px: 976,  py: 560,
+    x: 30,   y: 17,
     questions: [
       {
         text: "What significant advantage did Robinhood have in the market when it first launched its trading platform?",
@@ -454,8 +454,8 @@ export const GUESTS: Guest[] = [
     name: 'Mark Zuckerberg',
     title: 'CEO, Meta',
     color: 0x1877F2,
-    px: 496,  py: 336,
-    x: 15,   y: 10,
+    px: 432,  py: 400,
+    x: 13,   y: 12,
     questions: [
       {
         text: "What is the main strategy of the Chan Zuckerberg Initiative (CZI) to accelerate the pace of scientific discovery?",
@@ -489,8 +489,8 @@ export const GUESTS: Guest[] = [
     name: 'Andrew Chen',
     title: 'General Partner, a16z',
     color: 0xFF8C00,
-    px: 752,  py: 592,
-    x: 23,   y: 18,
+    px: 688,  py: 496,
+    x: 21,   y: 15,
     questions: [
       {
         text: "According to Andrew Chen, what is a recurring phenomenon when new technologies emerge?",
@@ -525,8 +525,8 @@ export const GUESTS: Guest[] = [
     name: 'Andrew Huberman',
     title: 'Neuroscientist & Podcaster',
     color: 0xA0522D,
-    px: 304,  py: 48,
-    x: 9,   y: 1,
+    px: 1200,  py: 912,
+    x: 37,   y: 28,
     questions: [
       {
         text: "What is the primary concern with stimulating the sympathetic nervous system too much and too often, according to Andrew Huberman?",
@@ -560,8 +560,8 @@ export const GUESTS: Guest[] = [
     name: 'David George',
     title: 'General Partner, a16z Growth',
     color: 0xDC143C,
-    px: 944,  py: 880,
-    x: 29,   y: 27,
+    px: 592,  py: 336,
+    x: 18,   y: 10,
     questions: [
       {
         text: "What is one of the reasons why AI companies are growing faster than their SaaS counterparts?",
@@ -596,8 +596,8 @@ export const GUESTS: Guest[] = [
     name: 'Wade Foster',
     title: 'CEO & Co-Founder, Zapier',
     color: 0xFF4A00,
-    px: 304,  py: 912,
-    x: 9,   y: 28,
+    px: 464,  py: 1040,
+    x: 14,   y: 32,
     questions: [
       {
         text: "What was one of the key strategies Wade Foster used to acquire early customers for Zapier?",
@@ -632,8 +632,8 @@ export const GUESTS: Guest[] = [
     name: 'Tomer London',
     title: 'Co-Founder & CPO, Gusto',
     color: 0xF45D48,
-    px: 976,  py: 496,
-    x: 30,   y: 15,
+    px: 80,  py: 720,
+    x: 2,   y: 22,
     questions: [
       {
         text: "What was the initial target customer segment for Gusto when they first launched?",
@@ -668,8 +668,8 @@ export const GUESTS: Guest[] = [
     name: 'Balaji Srinivasan',
     title: 'Investor & Author',
     color: 0xF7A800,
-    px: 720,  py: 304,
-    x: 22,   y: 9,
+    px: 784,  py: 656,
+    x: 24,   y: 20,
     questions: [
       {
         text: "What is the primary reason Balaji Srinivasan mentions for the decline in the number of IPOs in the tech industry?",
@@ -704,8 +704,8 @@ export const GUESTS: Guest[] = [
     name: 'Emmett Shear',
     title: 'Former CEO, Twitch & OpenAI',
     color: 0x6441A4,
-    px: 1168,  py: 752,
-    x: 36,   y: 23,
+    px: 720,  py: 912,
+    x: 22,   y: 28,
     questions: [
       {
         text: "What is the main concept that Emmett Shear emphasizes regarding AI alignment?",
@@ -739,8 +739,8 @@ export const GUESTS: Guest[] = [
     name: 'Reid Hoffman',
     title: 'Co-Founder, LinkedIn',
     color: 0x0077B5,
-    px: 1040,  py: 1072,
-    x: 32,   y: 33,
+    px: 1008,  py: 912,
+    x: 31,   y: 28,
     questions: [
       {
         text: "What is one of the fundamental 'religions' of Silicon Valley, according to Reid Hoffman?",
@@ -775,8 +775,8 @@ export const GUESTS: Guest[] = [
     name: 'Steve Wozniak',
     title: 'Co-Founder, Apple',
     color: 0xA2AAAD,
-    px: 784,  py: 976,
-    x: 24,   y: 30,
+    px: 144,  py: 496,
+    x: 4,   y: 15,
     questions: [
       {
         text: "What was Steve Wozniak's primary motivation for starting Apple?",
@@ -811,8 +811,8 @@ export const GUESTS: Guest[] = [
     name: 'Nicole Brichtova',
     title: 'Group PM, Google DeepMind',
     color: 0x4285F4,
-    px: 432,  py: 144,
-    x: 13,   y: 4,
+    px: 752,  py: 304,
+    x: 23,   y: 9,
     questions: [
       {
         text: "What was a significant challenge that the Nano Banana model aimed to address in image generation?",
@@ -847,8 +847,8 @@ export const GUESTS: Guest[] = [
     name: 'Keith Rabois',
     title: 'Investor, Founders Fund',
     color: 0x2C3E50,
-    px: 848,  py: 688,
-    x: 26,   y: 21,
+    px: 1104,  py: 784,
+    x: 34,   y: 24,
     questions: [
       {
         text: "What is Keith Rabois's perspective on the role of AI in the future of nations?",
@@ -882,8 +882,8 @@ export const GUESTS: Guest[] = [
     name: 'Benedict Evans',
     title: 'Tech Analyst',
     color: 0x34495E,
-    px: 16,  py: 944,
-    x: 0,   y: 29,
+    px: 304,  py: 304,
+    x: 9,   y: 9,
     questions: [
       {
         text: "According to Benedict Evans, what is a common pattern observed when new, exciting, world-changing technologies emerge?",

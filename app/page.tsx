@@ -406,7 +406,7 @@ export default function Home() {
                 <img
                   src="/assets/sprites/player-male/front.png"
                   alt="David"
-                  style={{ width: '88px', height: 'auto', marginLeft: '-22px', marginTop: '-4px', imageRendering: 'pixelated', display: 'block' }}
+                  style={{ width: '102px', height: '153px', marginLeft: '-29px', marginTop: '0px', imageRendering: 'pixelated', display: 'block' }}
                 />
               </div>
               <a
@@ -424,7 +424,7 @@ export default function Home() {
                 href="https://github.com/panterathehacker/a16z-arcade"
                 target="_blank"
                 rel="noopener noreferrer"
-                style={{ ...linkStyle('github'), color: 'rgba(255,215,0,0.8)', display: 'flex', alignItems: 'center', gap: '4px' }}
+                style={{ ...linkStyle('github'), display: 'flex', alignItems: 'center', gap: '4px' }}
                 onMouseEnter={() => setHoveredLink('github')}
                 onMouseLeave={() => setHoveredLink(null)}
               >

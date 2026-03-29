@@ -226,8 +226,7 @@ export class WorldScene extends Phaser.Scene {
     const staleOverlay = document.getElementById('a16z-dialogue-overlay');
     if (staleOverlay) staleOverlay.remove();
     
-    // Pause WorldScene immediately to prevent any further updates/triggers
-    this.scene.pause('WorldScene');
+    // Input blocked by inBattleTransition flag during animation
 
     // Pixel swirl transition (LennyRPG style) using DOM canvas overlay
     const gameCanvas = document.querySelector('canvas');
@@ -300,6 +299,7 @@ export class WorldScene extends Phaser.Scene {
         ctx.fillRect(0, 0, W, H);
         setTimeout(() => {
           swirlCanvas.remove();
+          this.scene.pause('WorldScene');
           if (this.scene.get('BattleScene')) this.scene.stop('BattleScene');
           this.scene.launch('BattleScene', { guest, playerId: this.playerId });
         }, 150);
