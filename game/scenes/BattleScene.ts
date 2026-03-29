@@ -368,6 +368,19 @@ export class BattleScene extends Phaser.Scene {
           this.answerQuestion(capturedIndex);
         }
       });
+      // Desktop hover highlight
+      const hoverBg = this.optionBgs[capturedIndex];
+      tapZone.on('pointerover', () => {
+        if (this.waitingForNext || this.battleOver) return;
+        this.selectedOption = capturedIndex;
+        this.highlightSelected(capturedIndex);
+      });
+      tapZone.on('pointerout', () => {
+        // Only un-highlight if not arrow-key selected
+        if (this.selectedOption === capturedIndex && !this.waitingForNext && !this.battleOver) {
+          // Keep highlight - user moved cursor away but last selected
+        }
+      });
     }
 
     // Status/feedback text — centered in question area

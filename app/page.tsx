@@ -40,7 +40,7 @@ export default function Home() {
       }}
     >
       {/* Mobile desktop recommendation popup */}
-      {typeof window !== 'undefined' && (
+      {typeof window !== 'undefined' && /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(typeof navigator !== 'undefined' ? navigator.userAgent : '') && (
         <div
           id="mobile-hint"
           className="sm:hidden"
@@ -178,22 +178,86 @@ export default function Home() {
         <GameComponent />
       </div>
 
-      {/* Controls */}
+      {/* Info panel - LennyRPG style */}
       <div
-        className="mt-4 text-center hidden sm:block"
+        className="mt-4 w-full hidden sm:block"
         style={{
           position: 'relative',
           zIndex: 2,
+          maxWidth: '1100px',
+          background: '#110005',
+          border: '2px solid rgba(255,215,0,0.4)',
+          borderRadius: '4px',
+          padding: '20px 28px',
+          display: 'grid',
+          gridTemplateColumns: '1fr 1px 1fr',
+          gap: '0',
           fontFamily: '"Press Start 2P", monospace',
-          fontSize: '7px',
-          lineHeight: '1.8',
-          color: 'rgba(255,215,0,0.5)',
         }}
       >
-        <span style={{ color: 'rgba(255,215,0,0.8)' }}>WASD / Arrow Keys</span> to move &nbsp;|&nbsp;{' '}
-        <span style={{ color: 'rgba(255,215,0,0.8)' }}>SPACE</span> to interact &nbsp;|&nbsp;{' '}
-        <span style={{ color: 'rgba(255,215,0,0.8)' }}>1-4 / ↑↓</span> to answer &nbsp;|&nbsp;{' '}
-        <span style={{ color: 'rgba(255,215,0,0.8)' }}>C</span> for Pokédex
+        {/* Left: How to Play */}
+        <div style={{ paddingRight: '24px' }}>
+          <div style={{ color: '#FFD700', fontSize: '10px', marginBottom: '16px', textShadow: '1px 1px 0 #4A0315' }}>
+            How to Play:
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            {[
+              ['🕹', 'Arrow Keys or WASD to move'],
+              ['👾', 'Walk near guests to battle'],
+              ['⌨', 'Press 1-4 or ↑↓ + Enter to answer'],
+              ['📖', 'Press C to view collection'],
+            ].map(([icon, text]) => (
+              <div key={text as string} style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'rgba(255,215,0,0.75)', fontSize: '7px', lineHeight: 1.8 }}>
+                <span style={{ fontSize: '14px', minWidth: '20px' }}>{icon}</span>
+                <span>{text as string}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Divider */}
+        <div style={{ background: 'rgba(255,215,0,0.2)', margin: '0 4px' }} />
+
+        {/* Right: About */}
+        <div style={{ paddingLeft: '24px' }}>
+          <div style={{ color: '#FFD700', fontSize: '10px', marginBottom: '16px', textShadow: '1px 1px 0 #4A0315' }}>
+            About this game:
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '7px', color: 'rgba(255,215,0,0.75)' }}>
+              <span>Inspired by</span>
+              <span style={{ color: '#FFD700' }}>the a16z Show</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '7px', color: 'rgba(255,215,0,0.75)' }}>
+              <span>Made by</span>
+              <img
+                src="/assets/sprites/player-male/front.png"
+                alt="David"
+                style={{ width: '20px', height: '20px', imageRendering: 'pixelated', borderRadius: '2px' }}
+              />
+              <a
+                href="https://x.com/davidpantera_"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: '#FFD700', textDecoration: 'none', borderBottom: '1px solid rgba(255,215,0,0.4)' }}
+              >
+                David Pantera
+              </a>
+              <span style={{ color: 'rgba(255,215,0,0.4)' }}>◆</span>
+              <a
+                href="https://github.com/panterathehacker/a16z-arcade"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: 'rgba(255,215,0,0.8)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px' }}
+              >
+                <span>⭐</span> GitHub
+              </a>
+            </div>
+            <div style={{ fontSize: '6px', color: 'rgba(255,215,0,0.4)', lineHeight: 2, marginTop: '4px' }}>
+              Fan project. Not affiliated with a16z.<br />Some art is AI-generated.
+            </div>
+          </div>
+        </div>
       </div>
     </main>
   );

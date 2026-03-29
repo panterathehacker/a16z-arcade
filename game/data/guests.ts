@@ -206,8 +206,8 @@ export const GUESTS: Guest[] = [
     name: 'Sam Altman',
     title: 'CEO, OpenAI',
     color: 0x1A1A2E,
-    px: 944,  py: 1072,
-    x: 29,   y: 33,
+    px: 240,  py: 336,
+    x: 7,   y: 10,
     questions: [
       {
         text: "What does Sam Altman describe as the core mission of OpenAI?",
