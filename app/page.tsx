@@ -56,7 +56,16 @@ export default function Home() {
       } catch (_) { /* */ }
     };
     window.addEventListener('player-stats-updated', onStatsUpdate);
-    return () => window.removeEventListener('player-stats-updated', onStatsUpdate);
+    
+    // Fallback: also listen to storage events (cross-tab) and poll every 500ms during battles
+    window.addEventListener('storage', loadStats);
+    const pollInterval = setInterval(loadStats, 500);
+    
+    return () => {
+      window.removeEventListener('player-stats-updated', onStatsUpdate);
+      window.removeEventListener('storage', loadStats);
+      clearInterval(pollInterval);
+    };
   }, []);
 
   const xpPercent = Math.min(100, Math.round((stats.xp / stats.xpToNext) * 100));
