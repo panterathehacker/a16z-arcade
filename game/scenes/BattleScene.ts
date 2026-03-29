@@ -53,14 +53,16 @@ export class BattleScene extends Phaser.Scene {
   private playerHPText!: Phaser.GameObjects.Text;
   private guestHPText!: Phaser.GameObjects.Text;
 
-  private questionText!: Phaser.GameObjects.Text;
-  private optionTexts: Phaser.GameObjects.Text[] = [];
-  private optionBgs: Phaser.GameObjects.Graphics[] = [];
-
   private statusText!: Phaser.GameObjects.Text;
   private waitingForNext = false;
   private battleOver = false;
   private selectedOption = 0;
+
+  // DOM battle menu elements
+  private battleMenuEl: HTMLDivElement | null = null;
+  private domAnswerBtns: HTMLDivElement[] = [];
+  private domQText: HTMLElement | null = null;
+  private domQNum: HTMLElement | null = null;
 
   // Sprite foot positions (set by drawBattleBG)
   private _gpX = 0; private _gpY = 0;
@@ -72,10 +74,6 @@ export class BattleScene extends Phaser.Scene {
   private _gHPBarX = 0; private _gHPBarY = 0; private _gHPBarW = 0;
   private _pHPBarX = 0; private _pHPBarY = 0; private _pHPBarW = 0;
   private _pHPNumX = 0; private _pHPNumY = 0;
-
-  // Answer option layout (set by createBattleUI, used by showQuestion/highlightOption)
-  private _btnAreaX = 0; private _btnStartY = 0;
-  private _btnW = 0; private _btnH = 38; private _btnGap = 4;
 
   private keys!: {
     one: Phaser.Input.Keyboard.Key;
@@ -95,7 +93,7 @@ export class BattleScene extends Phaser.Scene {
     this.questions = [...this.guest.questions];
     this.currentQ = 0;
     this.playerStats = loadPlayerStats();
-    this.playerHP = this.playerStats.hp; // Use global HP (carries over between battles)
+    this.playerHP = this.playerStats.hp;
     this.guestHP = 100;
     this.correctAnswers = 0;
     this.waitingForNext = false;
@@ -103,16 +101,12 @@ export class BattleScene extends Phaser.Scene {
   }
 
   create() {
-    // Destroy any leftover children and timers from a previous run
     this.time.removeAllEvents();
     this.children.removeAll(true);
-    this.optionTexts = [];
-    this.optionBgs = [];
 
     const W = this.cameras.main.width;
     const H = this.cameras.main.height;
 
-    // Draw battle background — sets _gpX/Y and _ppX/Y
     this.drawBattleBG(W, H);
 
     // Guest sprite — right mound, anchored at feet
@@ -143,7 +137,7 @@ export class BattleScene extends Phaser.Scene {
     this.setupKeys();
     this.showQuestion();
 
-    // Fade in from black (transition in from WorldScene flash)
+    // Fade in from black
     const fadeIn = this.add.graphics().setDepth(2000).setScrollFactor(0);
     fadeIn.fillStyle(0x000000, 1);
     fadeIn.fillRect(0, 0, W, H);
@@ -156,37 +150,32 @@ export class BattleScene extends Phaser.Scene {
   }
 
   // ─────────────────────────────────────────────
-  // drawBattleBG — meadow bg image only, no drawn platforms
+  // drawBattleBG
   // ─────────────────────────────────────────────
   private drawBattleBG(W: number, H: number) {
-    // Transparent camera — the white dialog area below will show through
     this.cameras.main.setBackgroundColor('transparent');
 
-    // Meadow background fills top 65% of screen
     const isMobileBattleCheck = H > W;
     const bgH = isMobileBattleCheck ? H * 0.48 : H * 0.65;
     this.add.image(W * 0.5, bgH / 2, 'battle-bg')
       .setDisplaySize(W, bgH)
       .setDepth(0);
 
-    // Sprite foot positions that land on the two dirt mounds in the image
-    this._gpX = W * 0.655;   // right mound — guest feet X
-    this._gpY = H * 0.37;   // guest feet Y (origin 0.5, 1.0 so body extends upward)
-    this._ppX = W * 0.35;   // left mound — player feet X
-    this._ppY = H * 0.50;   // player feet Y
+    this._gpX = W * 0.655;
+    this._gpY = H * 0.37;
+    this._ppX = W * 0.35;
+    this._ppY = H * 0.50;
   }
 
   // ─────────────────────────────────────────────
-  // createBattleUI — HP panels + question/answers (LennyRPG layout)
+  // createBattleUI — HP panels (Phaser) + question/answers (DOM overlay)
   // ─────────────────────────────────────────────
   private createBattleUI(W: number, H: number) {
-    const isMobileBattle = H > W; // portrait orientation = mobile
-    // On mobile (portrait), shrink battle area so questions get more space
-
+    const isMobileBattle = H > W;
     const battleAreaH = isMobileBattle ? H * 0.48 : H * 0.65;
 
     // ────────────────────────────────────────────
-    // Guest HP box: position (W*0.30, H*0.03), 280×90px
+    // Guest HP box: Phaser canvas
     // ────────────────────────────────────────────
     const gBoxX = 170;
     const gBoxY = H * 0.03;
@@ -199,7 +188,6 @@ export class BattleScene extends Phaser.Scene {
     gPanel.lineStyle(3, 0x000000, 1.0);
     gPanel.strokeRoundedRect(gBoxX, gBoxY, gBoxW, gBoxH, 12);
 
-    // Name: shrink font if name is long to stay within 280px box
     const guestNameUpper = this.guest.name.toUpperCase();
     const nameFontSize = guestNameUpper.length > 14 ? '11px' : '14px';
     this.add.text(gBoxX + 12, gBoxY + 8, guestNameUpper, {
@@ -210,7 +198,6 @@ export class BattleScene extends Phaser.Scene {
       resolution: 2,
     }).setDepth(11);
 
-    // Title: truncate and shrink font if too long to fit HP box
     const titleText = this.guest.title.length > 20 ? this.guest.title.slice(0, 20) + '...' : this.guest.title;
     const titleFontSize = this.guest.title.length > 16 ? '9px' : '11px';
     this.add.text(gBoxX + 12, gBoxY + 30, titleText, {
@@ -220,7 +207,6 @@ export class BattleScene extends Phaser.Scene {
       resolution: 2,
     }).setDepth(11);
 
-    // "HP" 11px red (#e33)
     this.add.text(gBoxX + 12, gBoxY + 52, 'HP', {
       fontFamily: '"Press Start 2P"',
       fontSize: '11px',
@@ -228,7 +214,6 @@ export class BattleScene extends Phaser.Scene {
       resolution: 2,
     }).setDepth(11);
 
-    // HP track (light gray bg) — full width of box minus padding
     const gHPTrackX = gBoxX + 36;
     const gHPTrackY = gBoxY + 52;
     const gHPTrackW = gBoxW - 48;
@@ -242,8 +227,6 @@ export class BattleScene extends Phaser.Scene {
     this._gHPBarW = gHPTrackW;
 
     this.guestHPBar = this.add.graphics().setDepth(12);
-
-    // No number shown in guest box
     this.guestHPText = this.add.text(0, 0, '', {
       fontFamily: '"Press Start 2P"',
       fontSize: '10px',
@@ -252,7 +235,7 @@ export class BattleScene extends Phaser.Scene {
     }).setDepth(11).setVisible(false);
 
     // ────────────────────────────────────────────
-    // Player HP box: position (W*0.38, H*0.43), 240×90px
+    // Player HP box: Phaser canvas
     // ────────────────────────────────────────────
     const pBoxX = W * 0.48;
     const pBoxY = H * 0.35;
@@ -265,7 +248,6 @@ export class BattleScene extends Phaser.Scene {
     pPanel.lineStyle(3, 0x000000, 1.0);
     pPanel.strokeRoundedRect(pBoxX, pBoxY, pBoxW, pBoxH, 12);
 
-    // Trainer name: 14px ALL CAPS
     const trainerName = (typeof localStorage !== 'undefined'
       ? localStorage.getItem('a16z_username') : null) || 'PLAYER';
     this.add.text(pBoxX + 10, pBoxY + 8, trainerName.toUpperCase().slice(0, 10), {
@@ -275,7 +257,6 @@ export class BattleScene extends Phaser.Scene {
       resolution: 2,
     }).setDepth(11);
 
-    // "Lv1" gray badge
     const pLvX = pBoxX + pBoxW - 50;
     const pLvY = pBoxY + 6;
     const pLvBadge = this.add.graphics().setDepth(11);
@@ -288,7 +269,6 @@ export class BattleScene extends Phaser.Scene {
       resolution: 2,
     }).setDepth(12);
 
-    // "HP" 11px red
     this.add.text(pBoxX + 10, pBoxY + 36, 'HP', {
       fontFamily: '"Press Start 2P"',
       fontSize: '11px',
@@ -296,7 +276,6 @@ export class BattleScene extends Phaser.Scene {
       resolution: 2,
     }).setDepth(11);
 
-    // HP track
     const pHPTrackX = pBoxX + 34;
     const pHPTrackY = pBoxY + 36;
     const pHPTrackW = pBoxW - 44;
@@ -313,7 +292,6 @@ export class BattleScene extends Phaser.Scene {
 
     this.playerHPBar = this.add.graphics().setDepth(12);
 
-    // "HP / maxHP" 10px right-aligned below bar
     this.playerHPText = this.add.text(this._pHPNumX, this._pHPNumY, `${this.playerHP} / ${this.playerStats.maxHp}`, {
       fontFamily: '"Press Start 2P"',
       fontSize: '10px',
@@ -321,125 +299,149 @@ export class BattleScene extends Phaser.Scene {
       resolution: 2,
     }).setOrigin(1, 0).setDepth(12);
 
-    // Initial render
     this.updateHPBars();
 
     // ────────────────────────────────────────────
-    // Battle dialog area (bottom 35%)
-    // White background, 4px yellow (#FFD700) border
+    // Status text (Phaser) — shown in battle area during answer feedback
     // ────────────────────────────────────────────
     const menuY = battleAreaH;
     const menuH = H - menuY;
 
-    const menuBg = this.add.graphics().setDepth(9);
-    menuBg.fillStyle(0xFFFFFF, 1.0);
-    menuBg.fillRect(0, menuY, W, menuH);
-    menuBg.lineStyle(4, 0xFFD700, 1.0);
-    menuBg.strokeRect(0, menuY, W, menuH);
-
-    // ── Left 45%: question panel ──
-    const qPanelX = 20;
-    const qPanelW = W * 0.45 - 20;
-
-    // "Q1/5" 12px top-left, black
-    this.add.text(qPanelX, menuY + 12, `Q${this.currentQ + 1}/${this.questions.length}`, {
-      fontFamily: '"Press Start 2P"',
-      fontSize: '12px',
-      color: '#000000',
-      resolution: 2,
-    }).setDepth(11).setName('progress');
-
-    // Difficulty badge removed
-
-    // Question text: 20px Press Start 2P black, word-wrapped, 20px padding
-    this.questionText = this.add.text(qPanelX, menuY + (isMobileBattle ? 30 : 40), '', {
-      fontFamily: '"Press Start 2P"',
-      fontSize: '20px',
-      color: '#000000',
-      resolution: 2,
-      wordWrap: { width: qPanelW - 20 },
-    }).setDepth(11);
-
-    // "↕ ENTER" 9px bottom-left
-    // Arrow icon (big) + ENTER text (normal)
-    this.add.text(qPanelX + 4, menuY + menuH - 53, '↕', {
-      fontFamily: 'monospace',
-      fontSize: '28px',
-      color: '#111111',
-    }).setDepth(11);
-    this.add.text(qPanelX + 36, menuY + menuH - 40, 'ENTER', {
-      fontFamily: '"Press Start 2P"',
-      fontSize: '17px',
-      color: '#111111',
-      resolution: 2,
-    }).setDepth(11);
-
-    // ── Right 55%: vertical answer list ──
-    this._btnAreaX = W * 0.45 + 8;
-    this._btnW = W * 0.55 - 16;
-    this._btnH = isMobileBattle ? 52 : 46;
-    this._btnGap = 4;
-    this._btnStartY = menuY + (isMobileBattle ? 12 : 16);
-
-    for (let i = 0; i < 4; i++) {
-      const bx = this._btnAreaX;
-      const by = this._btnStartY + i * (this._btnH + this._btnGap);
-
-      const optBg = this.add.graphics().setDepth(11);
-      optBg.fillStyle(0xFFFFFF, 1.0);
-      optBg.fillRoundedRect(bx, by, this._btnW, this._btnH, 8);
-      optBg.lineStyle(2, 0x333333, 1.0);
-      optBg.strokeRoundedRect(bx, by, this._btnW, this._btnH, 8);
-      this.optionBgs.push(optBg);
-
-      // "1  Answer text" 14px Press Start 2P
-      const optText = this.add.text(bx + 10, by + (this._btnH / 2), '', {
-        fontFamily: '"Press Start 2P"',
-        fontSize: '14px',
-        color: '#000000',
-        resolution: 2,
-        wordWrap: { width: this._btnW - 20 },
-      }).setOrigin(0, 0.5).setDepth(12);
-      this.optionTexts.push(optText);
-
-      // Tap zone for mobile — covers the entire button area
-      const capturedIndex = i;
-      const tapZone = this.add.zone(bx, by, this._btnW, this._btnH)
-        .setOrigin(0, 0)
-        .setDepth(13)
-        .setScrollFactor(0)
-        .setInteractive();
-      tapZone.on('pointerdown', () => {
-        if (!this.waitingForNext && !this.battleOver) {
-          this.answerQuestion(capturedIndex);
-        }
-      });
-      // Desktop hover highlight
-      const hoverBg = this.optionBgs[capturedIndex];
-      tapZone.on('pointerover', () => {
-        if (this.waitingForNext || this.battleOver) return;
-        this.selectedOption = capturedIndex;
-        this.highlightSelected(capturedIndex);
-      });
-      tapZone.on('pointerout', () => {
-        // Only un-highlight if not arrow-key selected
-        if (this.selectedOption === capturedIndex && !this.waitingForNext && !this.battleOver) {
-          // Keep highlight - user moved cursor away but last selected
-        }
-      });
-    }
-
-    // Status/feedback text — centered in question area
-    this.statusText = this.add.text(qPanelX + qPanelW / 2, menuY + menuH * 0.55, '', {
+    this.statusText = this.add.text(W * 0.225, menuY + menuH * 0.4, '', {
       fontFamily: '"Press Start 2P"',
       fontSize: '13px',
       color: '#FF4040',
       resolution: 2,
       align: 'center',
-      wordWrap: { width: qPanelW - 20 },
+      wordWrap: { width: W * 0.45 - 40 },
     }).setOrigin(0.5, 0.5).setDepth(12).setVisible(false);
 
-    // X button — top right corner to quit battle
+    // ────────────────────────────────────────────
+    // DOM Battle Menu (replaces Phaser question/answer UI)
+    // ────────────────────────────────────────────
+    const canvas = document.querySelector('canvas');
+    if (canvas) {
+      const canvasRect = canvas.getBoundingClientRect();
+      const menuFrac = battleAreaH / H;
+      const menuTop = canvasRect.top + canvasRect.height * menuFrac;
+
+      const menuEl = document.createElement('div');
+      menuEl.id = 'a16z-battle-menu';
+      menuEl.style.cssText = `
+        position: fixed;
+        left: ${canvasRect.left}px;
+        top: ${menuTop}px;
+        width: ${canvasRect.width}px;
+        height: ${canvasRect.height - canvasRect.height * menuFrac}px;
+        background: #ffffff;
+        border: 4px solid #000;
+        font-family: "Press Start 2P", monospace;
+        z-index: 500;
+        box-sizing: border-box;
+        display: flex;
+        overflow: hidden;
+      `;
+
+      // Left panel (40%)
+      const leftPanel = document.createElement('div');
+      leftPanel.style.cssText = `
+        flex: 0 0 40%;
+        display: flex;
+        flex-direction: column;
+        padding: 12px 14px;
+        border-right: 3px solid #e0e0e0;
+        box-sizing: border-box;
+      `;
+
+      const qHeader = document.createElement('div');
+      qHeader.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding-bottom:8px;border-bottom:2px solid #f0f0f0;margin-bottom:10px;';
+      const qNum = document.createElement('span');
+      qNum.id = 'battle-q-num';
+      qNum.style.cssText = 'font-size:11px;color:#000;font-weight:bold;';
+      qNum.textContent = `Q1/${this.questions.length}`;
+      qHeader.appendChild(qNum);
+      leftPanel.appendChild(qHeader);
+
+      const qText = document.createElement('div');
+      qText.id = 'battle-q-text';
+      qText.style.cssText = 'flex:1;font-size:13px;line-height:1.8;color:#000;word-wrap:break-word;overflow-wrap:break-word;white-space:normal;';
+      qText.textContent = '';
+      leftPanel.appendChild(qText);
+
+      const controls = document.createElement('div');
+      controls.style.cssText = 'display:flex;align-items:center;gap:8px;margin-top:auto;padding-top:8px;';
+      const arrowKey = document.createElement('span');
+      arrowKey.style.cssText = 'font-size:20px;font-weight:bold;';
+      arrowKey.textContent = '↕';
+      const enterKey = document.createElement('span');
+      enterKey.style.cssText = 'font-size:11px;';
+      enterKey.textContent = 'ENTER';
+      controls.appendChild(arrowKey);
+      controls.appendChild(enterKey);
+      leftPanel.appendChild(controls);
+
+      // Right panel (60%)
+      const rightPanel = document.createElement('div');
+      rightPanel.id = 'battle-answers-panel';
+      rightPanel.style.cssText = `
+        flex: 0 0 60%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 6px;
+        padding: 12px;
+        box-sizing: border-box;
+      `;
+
+      // Create 4 answer buttons
+      const answerBtns: HTMLDivElement[] = [];
+      for (let i = 0; i < 4; i++) {
+        const btn = document.createElement('div');
+        btn.id = `battle-answer-${i}`;
+        btn.style.cssText = `
+          display:flex;align-items:flex-start;gap:10px;
+          padding:10px 12px;
+          background:#f8f8f8;border:2px solid #d0d0d0;border-radius:3px;
+          cursor:pointer;min-height:42px;box-sizing:border-box;
+        `;
+        const num = document.createElement('span');
+        num.style.cssText = 'font-size:11px;font-weight:bold;color:#000;flex-shrink:0;min-width:14px;';
+        num.textContent = `${i + 1}`;
+        const text = document.createElement('span');
+        text.id = `battle-answer-text-${i}`;
+        text.style.cssText = 'font-size:10px;line-height:1.5;color:#000;flex:1;word-wrap:break-word;overflow-wrap:break-word;white-space:normal;';
+        btn.appendChild(num);
+        btn.appendChild(text);
+
+        btn.addEventListener('click', () => {
+          if (!this.waitingForNext && !this.battleOver) {
+            this.selectedOption = i;
+            this.answerQuestion(i);
+          }
+        });
+        btn.addEventListener('mouseenter', () => {
+          if (!this.waitingForNext && !this.battleOver) {
+            this.selectedOption = i;
+            this.highlightDOMAnswer(i);
+          }
+        });
+
+        rightPanel.appendChild(btn);
+        answerBtns.push(btn);
+      }
+
+      menuEl.appendChild(leftPanel);
+      menuEl.appendChild(rightPanel);
+      document.body.appendChild(menuEl);
+      this.battleMenuEl = menuEl;
+      this.domAnswerBtns = answerBtns;
+      this.domQText = qText;
+      this.domQNum = qNum;
+    }
+
+    // ────────────────────────────────────────────
+    // X button — top right corner to quit battle (Phaser)
+    // ────────────────────────────────────────────
     const exitBtnW = 44;
     const exitBtnH = 44;
     const exitBtnX = W - exitBtnW - 10;
@@ -457,7 +459,6 @@ export class BattleScene extends Phaser.Scene {
       color: '#FFFFFF',
     }).setOrigin(0.5).setDepth(201).setScrollFactor(0);
 
-    // Make it interactive
     const exitZone = this.add.zone(exitBtnX, exitBtnY, exitBtnW, exitBtnH)
       .setOrigin(0, 0)
       .setDepth(202)
@@ -468,14 +469,12 @@ export class BattleScene extends Phaser.Scene {
       this.returnToWorld();
     });
 
-    // Also add ESC key to exit
     this.input.keyboard?.on('keydown-ESC', () => {
       this.returnToWorld();
     });
   }
 
   private updateHPBars() {
-    // Guest HP bar — green (#22cc44), fades to yellow/red as HP drops
     this.guestHPBar.clear();
     const guestPct = Math.max(0, this.guestHP) / 100;
     const guestColor = guestPct > 0.5 ? 0x22cc44 : guestPct > 0.25 ? 0xD8C040 : 0xD84040;
@@ -485,7 +484,6 @@ export class BattleScene extends Phaser.Scene {
       Math.max(0, Math.round(this._gHPBarW * guestPct)), 12, 3
     );
 
-    // Player HP bar — green (#22cc44), fades as HP drops
     this.playerHPBar.clear();
     const playerPct = Math.max(0, this.playerHP) / this.playerStats.maxHp;
     const playerColor = playerPct > 0.5 ? 0x22cc44 : playerPct > 0.25 ? 0xD8C040 : 0xD84040;
@@ -495,7 +493,6 @@ export class BattleScene extends Phaser.Scene {
       Math.max(0, Math.round(this._pHPBarW * playerPct)), 12, 3
     );
 
-    // "HP / maxHP" right-aligned below player bar
     this.playerHPText.setText(`${Math.max(0, this.playerHP)} / ${this.playerStats.maxHp}`);
   }
 
@@ -508,7 +505,6 @@ export class BattleScene extends Phaser.Scene {
       four: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.FOUR),
       space: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE),
     };
-    // Arrow key navigation
     this.input.keyboard.on('keydown-UP', () => this.navigateOption(-1));
     this.input.keyboard.on('keydown-DOWN', () => this.navigateOption(1));
     this.input.keyboard.on('keydown-W', () => this.navigateOption(-1));
@@ -524,64 +520,53 @@ export class BattleScene extends Phaser.Scene {
 
     const q = this.questions[this.currentQ];
     this.selectedOption = 0;
-    this.questionText.setText(q.text);
-    this.questionText.setVisible(true);
-    this.statusText.setVisible(false);
-
-    // Reset option button styles
-    this.optionBgs.forEach((bg, i) => {
-      bg.clear();
-      const bx = this._btnAreaX;
-      const by = this._btnStartY + i * (this._btnH + this._btnGap);
-      bg.fillStyle(0xFFFFFF, 1.0);
-      bg.fillRoundedRect(bx, by, this._btnW, this._btnH, 8);
-      bg.lineStyle(2, 0x333333, 1.0);
-      bg.strokeRoundedRect(bx, by, this._btnW, this._btnH, 8);
-    });
-
-    // Set answer text: "1  Answer text" format — ensure visible and reset style
-    q.options.forEach((opt, i) => {
-      this.optionTexts[i].setText(`${i + 1}  ${opt}`);
-      this.optionTexts[i].setVisible(true);
-      this.optionTexts[i].setColor('#222222');
-    });
-
-    // Update Q counter
-    const prog = this.children.list.find(
-      (c) => c instanceof Phaser.GameObjects.Text && (c as Phaser.GameObjects.Text).name === 'progress'
-    ) as Phaser.GameObjects.Text | undefined;
-    if (prog) prog.setText(`Q${this.currentQ + 1}/${this.questions.length}`);
-
     this.waitingForNext = false;
+
+    // Update DOM elements
+    if (this.domQText) this.domQText.textContent = q.text;
+    if (this.domQNum) this.domQNum.textContent = `Q${this.currentQ + 1}/${this.questions.length}`;
+    q.options.forEach((opt, i) => {
+      const el = document.getElementById('battle-answer-text-' + i);
+      if (el) el.textContent = opt;
+    });
+
+    // Reset answer button styles and show menu
+    if (this.battleMenuEl) this.battleMenuEl.style.display = 'flex';
+    this.highlightDOMAnswer(0);
+
+    // Hide status text
+    if (this.statusText) this.statusText.setVisible(false);
   }
 
-  private highlightOption(index: number, correct: boolean) {
-    this.optionBgs.forEach((bg, i) => {
-      bg.clear();
-      const bx = this._btnAreaX;
-      const by = this._btnStartY + i * (this._btnH + this._btnGap);
-
-      let fillColor = 0xFFFFFF;
-      let strokeColor = 0x333333;
-
-      if (i === this.questions[this.currentQ].correct) {
-        // Correct answer: green
-        fillColor = 0x1A5C1A;
-        strokeColor = 0x40DD40;
-      } else if (i === index && !correct) {
-        // Wrong selection: red
-        fillColor = 0x5C1A1A;
-        strokeColor = 0xDD4040;
-      } else if (i === index && correct) {
-        // Selected correct: yellow highlight (LennyRPG style)
-        fillColor = 0xFFD700;
-        strokeColor = 0x000000;
+  private highlightDOMAnswer(idx: number) {
+    this.domAnswerBtns.forEach((btn, i) => {
+      if (i === idx) {
+        btn.style.background = '#fffbea';
+        btn.style.borderColor = '#000';
+        btn.style.boxShadow = 'inset 0 0 0 2px #ffd700';
+      } else {
+        btn.style.background = '#f8f8f8';
+        btn.style.borderColor = '#d0d0d0';
+        btn.style.boxShadow = 'none';
       }
+    });
+  }
 
-      bg.fillStyle(fillColor, 1.0);
-      bg.fillRoundedRect(bx, by, this._btnW, this._btnH, 8);
-      bg.lineStyle(2, strokeColor, 1.0);
-      bg.strokeRoundedRect(bx, by, this._btnW, this._btnH, 8);
+  private highlightDOMAnswerResult(selectedIdx: number, correctIdx: number) {
+    this.domAnswerBtns.forEach((btn, i) => {
+      if (i === correctIdx) {
+        btn.style.background = '#e6ffe6';
+        btn.style.borderColor = '#22cc44';
+        btn.style.boxShadow = 'inset 0 0 0 2px #22cc44';
+      } else if (i === selectedIdx && selectedIdx !== correctIdx) {
+        btn.style.background = '#ffe6e6';
+        btn.style.borderColor = '#dd4040';
+        btn.style.boxShadow = 'inset 0 0 0 2px #dd4040';
+      } else {
+        btn.style.background = '#f8f8f8';
+        btn.style.borderColor = '#d0d0d0';
+        btn.style.boxShadow = 'none';
+      }
     });
   }
 
@@ -611,20 +596,19 @@ export class BattleScene extends Phaser.Scene {
     const q = this.questions[this.currentQ];
     const correct = index === q.correct;
 
-    this.highlightOption(index, correct);
+    // Highlight DOM buttons with result
+    this.highlightDOMAnswerResult(index, q.correct);
 
     if (correct) {
+      this.correctAnswers++;
       this.guestHP -= 20;
       this.updateHPBars();
       this.statusText.setText('✓ Correct!\nGuest HP -20');
       this.statusText.setStyle({ ...this.statusText.style, color: '#00aa00' });
       this.statusText.setVisible(true);
-      this.questionText.setVisible(false);
 
-      // XP gain
       const xpGain = xpPerCorrect(this.playerStats.level);
       this.playerStats.xp += xpGain;
-      // Check level up
       while (this.playerStats.xp >= this.playerStats.xpToNext) {
         this.playerStats.xp -= this.playerStats.xpToNext;
         this.playerStats.level++;
@@ -633,7 +617,6 @@ export class BattleScene extends Phaser.Scene {
       }
       savePlayerStats(this.playerStats);
 
-      // Damage floats
       this.showDamageFloat(this._gHPBarX + this._gHPBarW / 2, this._gHPBarY - 10, '-20 HP', 0xFF4444);
       this.showDamageFloat(this._pHPBarX + this._pHPBarW / 2, this._pHPBarY - 10, `+${xpGain} XP`, 0xFFD700);
     } else {
@@ -644,9 +627,7 @@ export class BattleScene extends Phaser.Scene {
       this.statusText.setText('✗ Wrong!\nPlayer HP -20');
       this.statusText.setStyle({ ...this.statusText.style, color: '#FF4040' });
       this.statusText.setVisible(true);
-      this.questionText.setVisible(false);
 
-      // Damage float on player
       this.showDamageFloat(this._pHPBarX + this._pHPBarW / 2, this._pHPBarY - 10, '-20 HP', 0xFF4444);
     }
 
@@ -655,14 +636,12 @@ export class BattleScene extends Phaser.Scene {
     this.time.delayedCall(1800, () => {
       this.currentQ++;
 
-      // Win early if 3 correct answers
       if (this.correctAnswers >= 3) {
         this.endBattle();
         return;
       }
-      
+
       if (this.playerHP <= 0 || this.playerStats.hp <= 0) {
-        // HP completely drained - game over but keep progress
         this.playerStats.hp = 0;
         savePlayerStats(this.playerStats);
         this.showGameOver();
@@ -681,9 +660,9 @@ export class BattleScene extends Phaser.Scene {
   private endBattle() {
     this.battleOver = true;
 
-    this.questionText.setVisible(false);
-    this.optionTexts.forEach(t => t.setVisible(false));
-    this.optionBgs.forEach(bg => bg.clear());
+    // Hide DOM battle menu
+    if (this.battleMenuEl) this.battleMenuEl.style.display = 'none';
+    if (this.statusText) this.statusText.setVisible(false);
 
     if (this.playerHP > 50) {
       this.captureGuest();
@@ -699,7 +678,6 @@ export class BattleScene extends Phaser.Scene {
       captured.push(this.guest.id);
       localStorage.setItem('a16z_captured', JSON.stringify(captured));
     }
-    // Restore HP on victory and persist
     this.playerStats.hp = this.playerStats.maxHp;
     savePlayerStats(this.playerStats);
     saveCapture(this.playerId, this.guest.id).catch((err) => {
@@ -762,7 +740,6 @@ export class BattleScene extends Phaser.Scene {
 
     this.time.delayedCall(500, () => {
       this.keys.space.on('down', () => this.returnToWorld());
-      // Mobile: tap anywhere to exit
       this.input.on('pointerdown', () => this.returnToWorld());
     });
   }
@@ -802,32 +779,33 @@ export class BattleScene extends Phaser.Scene {
 
     this.time.delayedCall(500, () => {
       this.keys.space.on('down', () => this.returnToWorld());
-      // Mobile: tap anywhere to exit
       this.input.on('pointerdown', () => this.returnToWorld());
     });
   }
 
   private showGameOver() {
     this.battleOver = true;
+
+    // Hide DOM battle menu
+    if (this.battleMenuEl) this.battleMenuEl.style.display = 'none';
+
     const W = this.cameras.main.width;
     const H = this.cameras.main.height;
     const menuY = H * 0.65;
     const menuH = H - menuY;
-    
+
     const bg = this.add.graphics().setDepth(20);
     bg.fillStyle(0x1a0008, 0.97);
     bg.fillRect(0, menuY, W, menuH);
     bg.lineStyle(4, 0xFFD700, 1.0);
     bg.strokeRect(0, menuY, W, menuH);
-    
+
     this.add.text(W/2, menuY+20, 'GAME OVER', { fontFamily: '"Press Start 2P"', fontSize: '20px', color: '#FFD700', resolution: 2 }).setOrigin(0.5,0).setDepth(21);
     this.add.text(W/2, menuY+55, 'You ran out of HP!', { fontFamily: '"Press Start 2P"', fontSize: '11px', color: '#FFFFFF', resolution: 2 }).setOrigin(0.5,0).setDepth(21);
     this.add.text(W/2, menuY+80, 'Your Pokédex & Level are saved.', { fontFamily: '"Press Start 2P"', fontSize: '9px', color: '#AAAAAA', resolution: 2 }).setOrigin(0.5,0).setDepth(21);
     this.add.text(W/2, menuY+110, typeof window !== 'undefined' && 'ontouchstart' in window ? 'TAP to continue' : 'Press SPACE to continue', { fontFamily: '"Press Start 2P"', fontSize: '10px', color: '#888888', resolution: 2 }).setOrigin(0.5,0).setDepth(21);
-    
-    // Reset HP to max and XP to start of current level (keep level/captures)
+
     this.playerStats.hp = this.playerStats.maxHp;
-    // XP reset: go back to start of current level
     const xpForCurrentLevel = (level: number) => {
       let total = 0;
       for(let i=1; i<level; i++) {
@@ -838,80 +816,43 @@ export class BattleScene extends Phaser.Scene {
     this.playerStats.xp = xpForCurrentLevel(this.playerStats.level);
     this.playerStats.xpToNext = 24 * Math.min(10+5*(this.playerStats.level-1), 50);
     savePlayerStats(this.playerStats);
-    
+
     this.time.delayedCall(500, () => {
       this.keys.space.on('down', () => this.returnToWorld());
       this.input.on('pointerdown', () => this.returnToWorld());
     });
   }
 
-  private showBlackout() {
-    this.battleOver = true;
-
-    const W = this.cameras.main.width;
-    const H = this.cameras.main.height;
-
-    const blackout = this.add.graphics().setDepth(1000);
-    blackout.fillStyle(0x000000, 0);
-    blackout.fillRect(0, 0, W, H);
-
-    this.tweens.add({
-      targets: blackout,
-      alpha: 1,
-      duration: 800,
-      onComplete: () => {
-        this.add.text(W / 2, H / 2 - 30, 'You blacked out!', {
-          fontFamily: '"Press Start 2P"',
-          fontSize: '14px',
-          color: '#FFFFFF',
-          resolution: 2,
-        }).setOrigin(0.5).setDepth(1001);
-
-        this.add.text(W / 2, H / 2 + 20, ('ontouchstart' in window ? 'TAP to return' : 'Press SPACE to return'), {
-          fontFamily: '"Press Start 2P"',
-          fontSize: '12px',
-          color: '#AAAAAA',
-          resolution: 2,
-        }).setOrigin(0.5).setDepth(1001);
-
-        this.time.delayedCall(500, () => {
-          this.keys.space.on('down', () => this.returnToWorld());
-        });
-      },
-    });
-  }
-
   shutdown() {
-    // Called automatically by Phaser when scene.stop() runs
-    // Safe cleanup - don't removeAllListeners from input (causes crashes on re-launch)
     this.time.removeAllEvents();
     this.tweens.killAll();
-    // Don't call this.children.removeAll() here - causes crashes on second battle
-    // Don't call this.input.keyboard.removeAllListeners() - causes crashes
-    // Don't call this.events.removeAllListeners() - interferes with Phaser internals
+    // Remove DOM battle menu
+    if (this.battleMenuEl) {
+      this.battleMenuEl.remove();
+      this.battleMenuEl = null;
+    }
+    this.domAnswerBtns = [];
+    this.domQText = null;
+    this.domQNum = null;
   }
 
   private returnToWorld() {
-    // WorldScene was never paused - just clean up and stop BattleScene
     const worldScene = this.scene.get('WorldScene') as any;
     if (worldScene) {
       worldScene.inBattleTransition = false;
       worldScene.dialogueVisible = false;
       worldScene.nearbyGuest = null;
       worldScene.activeNPC = null;
-      // Remove any stale dialogue overlay
       const overlay = document.getElementById('a16z-dialogue-overlay');
       if (overlay) overlay.remove();
       if (worldScene.dialogueOverlay) {
         worldScene.dialogueOverlay.remove();
         worldScene.dialogueOverlay = null;
       }
-      // Grace period so player doesn't immediately re-trigger dialogue
       worldScene.dialogueGracePeriod = true;
       if (worldScene.time) {
         worldScene.time.delayedCall(800, () => { worldScene.dialogueGracePeriod = false; });
       }
-      // Re-show mobile controls
       if (worldScene.mobileDpad) worldScene.mobileDpad.style.display = 'block';
       const interactBtn = document.getElementById('mobile-interact');
       if (interactBtn) (interactBtn as HTMLDivElement).style.display = 'flex';
@@ -922,30 +863,7 @@ export class BattleScene extends Phaser.Scene {
   private navigateOption(dir: number) {
     if (this.waitingForNext || this.battleOver) return;
     this.selectedOption = (this.selectedOption + dir + 4) % 4;
-    this.highlightSelected(this.selectedOption);
-  }
-
-  private highlightSelected(idx: number) {
-    this.optionBgs.forEach((bg, i) => {
-      bg.clear();
-      const bx = this._btnAreaX;
-      const by = this._btnStartY + i * (this._btnH + this._btnGap);
-      if (i === idx) {
-        bg.fillStyle(0xFFD700, 1.0);
-        bg.fillRoundedRect(bx, by, this._btnW, this._btnH, 8);
-        bg.lineStyle(3, 0x000000, 1.0);
-        bg.strokeRoundedRect(bx, by, this._btnW, this._btnH, 8);
-      } else {
-        bg.fillStyle(0xFFFFFF, 1.0);
-        bg.fillRoundedRect(bx, by, this._btnW, this._btnH, 8);
-        bg.lineStyle(2, 0x333333, 1.0);
-        bg.strokeRoundedRect(bx, by, this._btnW, this._btnH, 8);
-      }
-    });
-    // Update text color for selected
-    this.optionTexts.forEach((t, i) => {
-      t.setColor(i === idx ? '#000000' : '#222222');
-    });
+    this.highlightDOMAnswer(this.selectedOption);
   }
 
   update() {
