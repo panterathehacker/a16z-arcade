@@ -23,6 +23,11 @@ export class WorldScene extends Phaser.Scene {
   private cKey!: Phaser.Input.Keyboard.Key;
   private escKey!: Phaser.Input.Keyboard.Key;
 
+  // Mobile controls
+  private mobileDir: string | null = null;
+  private mobileDpad: HTMLDivElement | null = null;
+  private mobileInteract = false;
+
   private dialogueGracePeriod = true;
 
   private worldLayer!: Phaser.Tilemaps.TilemapLayer;
@@ -121,6 +126,7 @@ export class WorldScene extends Phaser.Scene {
 
     // ── Input ─────────────────────────────────────────────────────────────
     this.setupInput();
+    this.setupMobileControls();
 
     // ── UI overlays ───────────────────────────────────────────────────────
     // Dialogue box is now a DOM overlay — no Phaser container needed
@@ -145,6 +151,10 @@ export class WorldScene extends Phaser.Scene {
       // Short grace period after battle so player doesn't immediately re-trigger
       this.dialogueGracePeriod = true;
       this.time.delayedCall(800, () => { this.dialogueGracePeriod = false; });
+      // Re-show mobile controls
+      if (this.mobileDpad) this.mobileDpad.style.display = 'block';
+      const interactBtn = document.getElementById('mobile-interact');
+      if (interactBtn) (interactBtn as HTMLDivElement).style.display = 'flex';
     });
   }
 
@@ -377,6 +387,98 @@ export class WorldScene extends Phaser.Scene {
     this.escKey   = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
   }
 
+  private setupMobileControls(): void {
+    const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    if (!isMobile) return;
+
+    const dpad = document.createElement('div');
+    dpad.id = 'mobile-dpad';
+    dpad.style.cssText = `
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      width: 150px;
+      height: 150px;
+      z-index: 1000;
+      user-select: none;
+      -webkit-user-select: none;
+    `;
+
+    const dirs = [
+      { dir: 'up',    icon: '▲', top: '0px',   left: '50px',  w: '50px', h: '50px' },
+      { dir: 'down',  icon: '▼', top: '100px',  left: '50px',  w: '50px', h: '50px' },
+      { dir: 'left',  icon: '◄', top: '50px',  left: '0px',   w: '50px', h: '50px' },
+      { dir: 'right', icon: '►', top: '50px',  left: '100px', w: '50px', h: '50px' },
+    ];
+
+    dirs.forEach(({ dir, icon, top, left, w, h }) => {
+      const btn = document.createElement('div');
+      btn.style.cssText = `
+        position: absolute;
+        top: ${top}; left: ${left};
+        width: ${w}; height: ${h};
+        background: rgba(255,255,255,0.3);
+        border: 2px solid rgba(255,255,255,0.6);
+        border-radius: 8px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 20px;
+        color: white;
+        touch-action: none;
+        cursor: pointer;
+      `;
+      btn.textContent = icon;
+
+      const startMove = () => { this.mobileDir = dir; };
+      const stopMove = () => { if (this.mobileDir === dir) this.mobileDir = null; };
+
+      btn.addEventListener('touchstart', (e) => { e.preventDefault(); startMove(); }, { passive: false });
+      btn.addEventListener('touchend', stopMove);
+      btn.addEventListener('touchcancel', stopMove);
+      btn.addEventListener('mousedown', startMove);
+      btn.addEventListener('mouseup', stopMove);
+
+      dpad.appendChild(btn);
+    });
+
+    document.body.appendChild(dpad);
+    this.mobileDpad = dpad;
+
+    // Interact / battle button on the right side
+    const interactBtn = document.createElement('div');
+    interactBtn.id = 'mobile-interact';
+    interactBtn.style.cssText = `
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 60px;
+      height: 60px;
+      background: rgba(255, 200, 50, 0.5);
+      border: 2px solid rgba(255, 220, 80, 0.9);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      z-index: 1000;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: none;
+      cursor: pointer;
+    `;
+    interactBtn.textContent = '⚔';
+
+    interactBtn.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      this.mobileInteract = true;
+    }, { passive: false });
+    interactBtn.addEventListener('touchend', () => { this.mobileInteract = false; });
+    interactBtn.addEventListener('touchcancel', () => { this.mobileInteract = false; });
+    interactBtn.addEventListener('mousedown', () => { this.mobileInteract = true; });
+    interactBtn.addEventListener('mouseup', () => { this.mobileInteract = false; });
+
+    document.body.appendChild(interactBtn);
+  }
+
   // ─── Dialogue Box (DOM overlay — avoids Phaser scroll-factor clipping) ───────
   private showDialogue(guest: Guest): void {
     if (this.dialogueVisible) return;
@@ -498,6 +600,8 @@ export class WorldScene extends Phaser.Scene {
       gap: 8px;
     `;
 
+    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
     const spacePill = document.createElement('span');
     spacePill.style.cssText = `
       background: #000; color: #fff;
@@ -505,11 +609,22 @@ export class WorldScene extends Phaser.Scene {
       font-size: 11px; padding: 5px 10px;
       border-radius: 2px;
     `;
-    spacePill.textContent = 'SPACE';
+    spacePill.textContent = isTouchDevice ? '⚔ BATTLE' : 'SPACE';
 
     const hintEl = document.createElement('span');
     hintEl.style.cssText = `font-size: 11px; color: #333333;`;
-    hintEl.textContent = 'to battle  •  Walk away to cancel';
+    hintEl.textContent = isTouchDevice ? 'tap ⚔ to battle' : 'to battle  •  Walk away to cancel';
+
+    // On mobile, make the pill a tappable button that triggers battle
+    if (isTouchDevice) {
+      spacePill.style.cursor = 'pointer';
+      spacePill.style.touchAction = 'manipulation';
+      spacePill.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        this.mobileInteract = true;
+      }, { passive: false });
+      spacePill.addEventListener('touchend', () => { this.mobileInteract = false; });
+    }
 
     const arrowEl = document.createElement('span');
     arrowEl.style.cssText = `margin-left: auto; font-size: 10px; color: #000;`;
@@ -806,6 +921,15 @@ export class WorldScene extends Phaser.Scene {
     this.miniMapContainer.add(bg);
   }
 
+  shutdown(): void {
+    if (this.mobileDpad) {
+      this.mobileDpad.remove();
+      this.mobileDpad = null;
+    }
+    const interactBtn = document.getElementById('mobile-interact');
+    if (interactBtn) interactBtn.remove();
+  }
+
   // ─── Update loop ──────────────────────────────────────────────────────────
   update(_time: number, delta: number): void {
     if (this.scene.isActive('BattleScene')) return;
@@ -842,14 +966,21 @@ export class WorldScene extends Phaser.Scene {
     let vx = 0;
     let vy = 0;
 
+    // Mobile D-pad input (keyboard can still override below)
+    if (this.mobileDir === 'up') { vy = -speed; this.playerDir = 'up'; }
+    else if (this.mobileDir === 'down') { vy = speed; this.playerDir = 'down'; }
+    else if (this.mobileDir === 'left') { vx = -speed; this.playerDir = 'left'; }
+    else if (this.mobileDir === 'right') { vx = speed; this.playerDir = 'right'; }
+
+    // Keyboard input (overrides mobile if both active)
     if (this.cursors.left.isDown || this.wasd.left.isDown) {
-      vx = -speed; this.playerDir = 'left';
+      vx = -speed; vy = 0; this.playerDir = 'left';
     } else if (this.cursors.right.isDown || this.wasd.right.isDown) {
-      vx = speed; this.playerDir = 'right';
+      vx = speed; vy = 0; this.playerDir = 'right';
     } else if (this.cursors.up.isDown || this.wasd.up.isDown) {
-      vy = -speed; this.playerDir = 'up';
+      vy = -speed; vx = 0; this.playerDir = 'up';
     } else if (this.cursors.down.isDown || this.wasd.down.isDown) {
-      vy = speed; this.playerDir = 'down';
+      vy = speed; vx = 0; this.playerDir = 'down';
     }
 
     // Allow movement even during dialogue — walking away dismisses it
@@ -889,11 +1020,17 @@ export class WorldScene extends Phaser.Scene {
       if (this.escKey && Phaser.Input.Keyboard.JustDown(this.escKey)) {
         this.dismissDialogue();
       }
-      // SPACE to start battle
-      if (Phaser.Input.Keyboard.JustDown(this.spaceKey)) {
+      // SPACE or mobile interact button to start battle
+      const interactPressed = Phaser.Input.Keyboard.JustDown(this.spaceKey) || this.mobileInteract;
+      if (interactPressed) {
         if (this.nearbyGuest) {
           const guest = this.nearbyGuest;
+          this.mobileInteract = false;
           this.hideDialogue();
+          // Hide mobile controls during battle
+          if (this.mobileDpad) this.mobileDpad.style.display = 'none';
+          const interactBtn = document.getElementById('mobile-interact');
+          if (interactBtn) (interactBtn as HTMLDivElement).style.display = 'none';
           // Stop any existing BattleScene first to prevent double-render
           if (this.scene.get('BattleScene')) {
             this.scene.stop('BattleScene');

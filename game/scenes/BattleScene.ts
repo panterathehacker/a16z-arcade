@@ -359,6 +359,19 @@ export class BattleScene extends Phaser.Scene {
         wordWrap: { width: this._btnW - 20 },
       }).setOrigin(0, 0.5).setDepth(12);
       this.optionTexts.push(optText);
+
+      // Tap zone for mobile — covers the entire button area
+      const capturedIndex = i;
+      const tapZone = this.add.zone(bx, by, this._btnW, this._btnH)
+        .setOrigin(0, 0)
+        .setDepth(13)
+        .setScrollFactor(0)
+        .setInteractive();
+      tapZone.on('pointerdown', () => {
+        if (!this.waitingForNext && !this.battleOver) {
+          this.answerQuestion(capturedIndex);
+        }
+      });
     }
 
     // Status/feedback text — centered in question area

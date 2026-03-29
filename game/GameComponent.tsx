@@ -58,9 +58,9 @@ export default function GameComponent() {
     <div
       ref={gameRef}
       style={{
-        width: '1100px',
-        height: '660px',
-        maxWidth: '100%',
+        width: '100%',
+        maxWidth: '1100px',
+        aspectRatio: '1100 / 660',
         margin: '0 auto',
         display: 'block',
         imageRendering: 'pixelated',
