@@ -19,7 +19,8 @@ const GameComponent = dynamic(() => import('../game/GameComponent'), {
 export default function Home() {
   return (
     <main
-      className="min-h-screen flex flex-col items-center justify-center p-4"
+      className="min-h-screen flex flex-col items-center justify-center"
+      style={{ padding: 'env(safe-area-inset-top, 8px) 8px env(safe-area-inset-bottom, 8px) 8px' }}
       style={{
         background: '#1a0008',
         backgroundImage: `
@@ -35,6 +36,80 @@ export default function Home() {
         overflow: 'hidden',
       }}
     >
+      {/* Mobile desktop recommendation popup */}
+      {typeof window !== 'undefined' && (
+        <div
+          id="mobile-hint"
+          className="sm:hidden"
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(26, 0, 8, 0.96)',
+            zIndex: 9999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '24px',
+          }}
+          onClick={(e) => {
+            if ((e.target as HTMLElement).id === 'mobile-hint') {
+              (e.target as HTMLElement).style.display = 'none';
+            }
+          }}
+        >
+          <div style={{
+            border: '3px solid #FFD700',
+            borderRadius: '8px',
+            padding: '28px 24px',
+            maxWidth: '340px',
+            textAlign: 'center',
+            background: '#1a0008',
+            boxShadow: '0 0 30px rgba(255,215,0,0.2)',
+          }}>
+            <div style={{ fontSize: '40px', marginBottom: '16px' }}>🎮</div>
+            <div style={{
+              fontFamily: '"Press Start 2P", monospace',
+              fontSize: '13px',
+              color: '#FFD700',
+              marginBottom: '16px',
+              lineHeight: 1.8,
+              textShadow: '1px 1px 0 #4A0315',
+            }}>
+              Best on Desktop
+            </div>
+            <div style={{
+              fontFamily: '"Press Start 2P", monospace',
+              fontSize: '8px',
+              color: 'rgba(255,215,0,0.75)',
+              lineHeight: 2,
+              marginBottom: '24px',
+            }}>
+              a16z Arcade is designed for desktop. For the best experience, play on a laptop or computer.
+            </div>
+            <button
+              onClick={() => {
+                const el = document.getElementById('mobile-hint');
+                if (el) el.style.display = 'none';
+              }}
+              style={{
+                fontFamily: '"Press Start 2P", monospace',
+                fontSize: '9px',
+                background: '#4A0315',
+                color: '#FFD700',
+                border: '2px solid #FFD700',
+                borderRadius: '4px',
+                padding: '12px 24px',
+                cursor: 'pointer',
+                width: '100%',
+                textShadow: '1px 1px 0 #000',
+              }}
+            >
+              Play Anyway →
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Retro scanline texture overlay */}
       <div
         style={{
