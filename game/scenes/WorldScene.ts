@@ -641,13 +641,13 @@ export class WorldScene extends Phaser.Scene {
     spacePill.style.cssText = `
       background: #000; color: #fff;
       font-family: "Press Start 2P", monospace;
-      font-size: 11px; padding: 5px 10px;
+      font-size: ${isMobileView ? '8px' : '11px'}; padding: ${isMobileView ? '3px 6px' : '5px 10px'};
       border-radius: 2px;
     `;
     spacePill.textContent = isTouchDevice ? '⚔ BATTLE' : 'SPACE';
 
     const hintEl = document.createElement('span');
-    hintEl.style.cssText = `font-size: 11px; color: #333333;`;
+    hintEl.style.cssText = `font-size: ${isMobileView ? '8px' : '11px'}; color: #333333;`;
     hintEl.textContent = isTouchDevice ? 'tap ⚔ to battle' : 'to battle  •  Walk away to cancel';
 
     // On mobile, make the pill a tappable button that triggers battle
@@ -868,7 +868,7 @@ export class WorldScene extends Phaser.Scene {
       }
 
       const nameEl = document.createElement('div');
-      nameEl.style.cssText = `font-size: 11px; color: ${isCaptured ? '#ffffff' : '#404050'}; text-align: center; line-height: 1.5;`;
+      nameEl.style.cssText = `font-size: 9px; color: ${isCaptured ? '#ffffff' : '#404050'}; text-align: center; line-height: 1.4; word-break: break-word;`;
       nameEl.textContent = isCaptured ? guest.name : '???';
 
       card.appendChild(numEl);

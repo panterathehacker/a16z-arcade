@@ -645,6 +645,8 @@ export class BattleScene extends Phaser.Scene {
 
     this.time.delayedCall(500, () => {
       this.keys.space.on('down', () => this.returnToWorld());
+      // Mobile: tap anywhere to exit
+      this.input.on('pointerdown', () => this.returnToWorld());
     });
   }
 
@@ -674,7 +676,7 @@ export class BattleScene extends Phaser.Scene {
       resolution: 2,
     }).setOrigin(0.5, 0).setDepth(21);
 
-    this.add.text(W / 2, menuY + 80, 'Press SPACE to return', {
+    this.add.text(W / 2, menuY + 80, ('ontouchstart' in window ? 'TAP to return' : 'Press SPACE to return'), {
       fontFamily: '"Press Start 2P"',
       fontSize: '11px',
       color: '#888888',
@@ -683,6 +685,8 @@ export class BattleScene extends Phaser.Scene {
 
     this.time.delayedCall(500, () => {
       this.keys.space.on('down', () => this.returnToWorld());
+      // Mobile: tap anywhere to exit
+      this.input.on('pointerdown', () => this.returnToWorld());
     });
   }
 
@@ -708,7 +712,7 @@ export class BattleScene extends Phaser.Scene {
           resolution: 2,
         }).setOrigin(0.5).setDepth(1001);
 
-        this.add.text(W / 2, H / 2 + 20, 'Press SPACE to return', {
+        this.add.text(W / 2, H / 2 + 20, ('ontouchstart' in window ? 'TAP to return' : 'Press SPACE to return'), {
           fontFamily: '"Press Start 2P"',
           fontSize: '12px',
           color: '#AAAAAA',
