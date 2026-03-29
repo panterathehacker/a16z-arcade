@@ -185,11 +185,12 @@ export class WorldScene extends Phaser.Scene {
     this.events.on('resume', () => {
       this.inBattleTransition = false; // Reset transition flag
       this.dialogueVisible = false;
-      // Force camera to follow player (fixes green screen after ESC)
-      if (this.player) {
-        this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
-        this.cameras.main.setPosition(0, 0);
-      }
+      // Re-attach camera after battle (deferred to avoid undefined camera on resume)
+      this.time.delayedCall(50, () => {
+        if (this.player && this.cameras && this.cameras.main) {
+          this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
+        }
+      });
       this.nearbyGuest = null;
       this.activeNPC = null;
       this.inBattleTransition = false;
