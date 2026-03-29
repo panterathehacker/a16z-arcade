@@ -31,6 +31,7 @@ export class WorldScene extends Phaser.Scene {
 
   private dialogueOverlay: HTMLDivElement | null = null;
   private playerNameLabel!: Phaser.GameObjects.Text;
+  private playerSpriteSet = "player-male";
   private dialogueVisible = false;
   private nearbyGuest: Guest | null = null;
   private activeNPC: Guest | null = null;
@@ -81,7 +82,10 @@ export class WorldScene extends Phaser.Scene {
 
     // ── Create player with physics ────────────────────────────────────────
     // Spawn in safe open area at bottom-center of map, away from all NPCs
-    this.player = this.physics.add.image(352, 1216, 'player_ai');
+    const playerGender = localStorage.getItem('a16z_gender') || 'male';
+    const pSet = playerGender === 'female' ? 'player-female' : 'player-male';
+    this.playerSpriteSet = pSet;
+    this.player = this.physics.add.image(352, 1216, pSet + '_front');
     this.player.setDisplaySize(64, 80);
     this.player.setOrigin(0.5);
     this.player.setDepth(5);
@@ -786,16 +790,18 @@ export class WorldScene extends Phaser.Scene {
     // Update player sprite direction
     if (vx !== 0 || vy !== 0) {
       if (this.playerDir === 'up') {
-        this.player.setTexture('player_ai');
-        this.player.setFlipX(false);
+        this.player.setTexture(this.playerSpriteSet + '_back');
       } else if (this.playerDir === 'down') {
-        this.player.setTexture('player_ai');
+        this.player.setTexture(this.playerSpriteSet + '_front');
         this.player.setFlipX(false);
       } else if (this.playerDir === 'left') {
-        this.player.setTexture('player_ai');
-        this.player.setFlipX(true);
+        this.player.setTexture(this.playerSpriteSet + '_left');
+        this.player.setFlipX(false);
+      } else if (this.playerDir === 'right') {
+        this.player.setTexture(this.playerSpriteSet + '_right');
+        this.player.setFlipX(false);
       } else {
-        this.player.setTexture('player_ai');
+        this.player.setTexture(this.playerSpriteSet + '_back');
         this.player.setFlipX(false);
       }
     }

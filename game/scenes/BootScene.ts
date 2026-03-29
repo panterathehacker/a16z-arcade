@@ -45,6 +45,13 @@ export class BootScene extends Phaser.Scene {
     // Also load player AI sprite
     this.load.image('player_ai', '/assets/sprites/guests/player.png');
     
+    // Load both male and female player sprite sets
+    for(const set of ['player-male', 'player-female']) {
+      for(const dir of ['front','back','left','right']) {
+        this.load.image(`${set}_${dir}`, `/assets/sprites/${set}/${dir}.png`);
+      }
+    }
+    
     // Battle scene assets
     this.load.image('battle-bg', '/assets/battle/bg-meadow.png');
     this.load.image('battle-player-back', '/assets/battle/player-back.png');

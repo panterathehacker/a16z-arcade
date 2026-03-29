@@ -92,7 +92,9 @@ export class BattleScene extends Phaser.Scene {
     }
 
     // Player sprite — left mound, back-facing
-    const playerSpriteKey = this.textures.exists('player_ai') ? 'player_ai'
+    const pGender = typeof localStorage !== 'undefined' ? localStorage.getItem('a16z_gender') || 'male' : 'male';
+    const pSet = pGender === 'female' ? 'player-female' : 'player-male';
+    const playerSpriteKey = this.textures.exists(pSet + '_back') ? (pSet + '_back')
                           : (this.textures.exists('player_ai') ? 'player_ai' : null);
     if (playerSpriteKey) {
       this.playerSprite = this.add.image(this._ppX, this._ppY, playerSpriteKey)
