@@ -108,15 +108,12 @@ export class BattleScene extends Phaser.Scene {
     const battleH = H * 0.65;
 
     // Background: LennyRPG meadow bg
-    // Log all available texture keys for debugging
-    const allKeys = this.textures.getTextureKeys();
-    console.log('[Battle] Available textures:', allKeys.slice(0, 10));
-    console.log('[Battle] Has battle-bg:', allKeys.includes('battle-bg'));
+    // Clear camera background so depth 0 image shows properly
+    this.cameras.main.setBackgroundColor('rgba(0,0,0,0)');
     
-    // Add bg image - will show missing texture placeholder if not loaded
     this.add.image(W / 2, battleH / 2, 'battle-bg')
       .setDisplaySize(W, battleH)
-      .setDepth(-1);
+      .setDepth(0);
 
     const bg = this.add.graphics();
     bg.setDepth(1);
