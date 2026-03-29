@@ -53,6 +53,13 @@ export class BattleScene extends Phaser.Scene {
   private playerHPText!: Phaser.GameObjects.Text;
   private guestHPText!: Phaser.GameObjects.Text;
 
+  // DOM HP box elements (LennyRPG-style overlays)
+  private domGuestHP: HTMLDivElement | null = null;
+  private domPlayerHP: HTMLDivElement | null = null;
+  private domGuestHPBar: HTMLDivElement | null = null;
+  private domPlayerHPBar: HTMLDivElement | null = null;
+  private domPlayerHPText: HTMLElement | null = null;
+
   private statusText!: Phaser.GameObjects.Text;
   private waitingForNext = false;
   private battleOver = false;
@@ -175,129 +182,110 @@ export class BattleScene extends Phaser.Scene {
     const battleAreaH = isMobileBattle ? H * 0.48 : H * 0.65;
 
     // ────────────────────────────────────────────
-    // Guest HP box: Phaser canvas
+    // HP boxes: DOM overlays (LennyRPG-style)
     // ────────────────────────────────────────────
-    const gBoxX = 170;
-    const gBoxY = H * 0.03;
-    const gBoxW = 280;
-    const gBoxH = 90;
 
-    const gPanel = this.add.graphics().setDepth(10);
-    gPanel.fillStyle(0xFFFFFF, 1.0);
-    gPanel.fillRoundedRect(gBoxX, gBoxY, gBoxW, gBoxH, 12);
-    gPanel.lineStyle(3, 0x000000, 1.0);
-    gPanel.strokeRoundedRect(gBoxX, gBoxY, gBoxW, gBoxH, 12);
+    // Inject battle HP animations once
+    if (!document.getElementById('a16z-battle-hp-styles')) {
+      const style = document.createElement('style');
+      style.id = 'a16z-battle-hp-styles';
+      style.textContent = `
+        @keyframes slideInFromTop {
+          from { transform: translateY(-60px); opacity: 0; }
+          to { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes slideInFromBottom {
+          from { transform: translateY(60px); opacity: 0; }
+          to { transform: translateY(0); opacity: 1; }
+        }
+      `;
+      document.head.appendChild(style);
+    }
 
+    const canvas = document.querySelector('canvas');
+    const canvasRect = canvas ? canvas.getBoundingClientRect() : { left: 0, top: 0, right: window.innerWidth, bottom: window.innerHeight, width: window.innerWidth, height: window.innerHeight };
+
+    // Guest HP box (top-left)
+    const guestBox = document.createElement('div');
+    guestBox.id = 'a16z-guest-hp';
+    guestBox.style.cssText = `
+      position: fixed;
+      left: ${canvasRect.left + 20}px;
+      top: ${canvasRect.top + 20}px;
+      width: 260px;
+      background: white;
+      border: 3px solid #1a1a1a;
+      border-radius: 12px;
+      padding: 14px 16px;
+      font-family: "Press Start 2P", monospace;
+      z-index: 600;
+      box-shadow: 3px 3px 0 #000;
+      animation: slideInFromTop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s both;
+      box-sizing: border-box;
+    `;
     const guestNameUpper = this.guest.name.toUpperCase();
-    const nameFontSize = guestNameUpper.length > 14 ? '11px' : '14px';
-    this.add.text(gBoxX + 12, gBoxY + 8, guestNameUpper, {
-      fontFamily: '"Press Start 2P"',
-      fontSize: nameFontSize,
-      fontStyle: 'bold',
-      color: '#000000',
-      resolution: 2,
-    }).setDepth(11);
+    const guestNameFontSize = guestNameUpper.length > 14 ? '10px' : '14px';
+    const titleText = this.guest.title.length > 24 ? this.guest.title.slice(0, 24) + '...' : this.guest.title;
+    guestBox.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+        <div style="font-size:${guestNameFontSize};font-weight:bold;color:#000;text-transform:uppercase;">${guestNameUpper}</div>
+        <div style="background:#888;color:#fff;border-radius:6px;padding:2px 6px;font-size:9px;">Lv1</div>
+      </div>
+      <div style="font-size:9px;color:#666;margin-bottom:8px;">${titleText}</div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:11px;color:#ee3333;flex-shrink:0;">HP</span>
+        <div style="flex:1;background:#ddd;border-radius:3px;height:8px;overflow:hidden;">
+          <div id="a16z-guest-hp-bar" style="height:100%;background:#22cc44;border-radius:3px;width:100%;transition:width 0.3s;"></div>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(guestBox);
+    this.domGuestHP = guestBox;
+    this.domGuestHPBar = document.getElementById('a16z-guest-hp-bar') as HTMLDivElement;
 
-    const titleText = this.guest.title.length > 20 ? this.guest.title.slice(0, 20) + '...' : this.guest.title;
-    const titleFontSize = this.guest.title.length > 16 ? '9px' : '11px';
-    this.add.text(gBoxX + 12, gBoxY + 30, titleText, {
-      fontFamily: '"Press Start 2P"',
-      fontSize: titleFontSize,
-      color: '#666666',
-      resolution: 2,
-    }).setDepth(11);
-
-    this.add.text(gBoxX + 12, gBoxY + 52, 'HP', {
-      fontFamily: '"Press Start 2P"',
-      fontSize: '11px',
-      color: '#ee3333',
-      resolution: 2,
-    }).setDepth(11);
-
-    const gHPTrackX = gBoxX + 36;
-    const gHPTrackY = gBoxY + 52;
-    const gHPTrackW = gBoxW - 48;
-
-    const gHPTrack = this.add.graphics().setDepth(11);
-    gHPTrack.fillStyle(0xDDDDDD, 1.0);
-    gHPTrack.fillRoundedRect(gHPTrackX, gHPTrackY, gHPTrackW, 12, 3);
-
-    this._gHPBarX = gHPTrackX;
-    this._gHPBarY = gHPTrackY;
-    this._gHPBarW = gHPTrackW;
-
-    this.guestHPBar = this.add.graphics().setDepth(12);
-    this.guestHPText = this.add.text(0, 0, '', {
-      fontFamily: '"Press Start 2P"',
-      fontSize: '10px',
-      color: '#000000',
-      resolution: 2,
-    }).setDepth(11).setVisible(false);
-
-    // ────────────────────────────────────────────
-    // Player HP box: Phaser canvas
-    // ────────────────────────────────────────────
-    const pBoxX = W * 0.48;
-    const pBoxY = H * 0.35;
-    const pBoxW = 240;
-    const pBoxH = 90;
-
-    const pPanel = this.add.graphics().setDepth(10);
-    pPanel.fillStyle(0xFFFFFF, 1.0);
-    pPanel.fillRoundedRect(pBoxX, pBoxY, pBoxW, pBoxH, 12);
-    pPanel.lineStyle(3, 0x000000, 1.0);
-    pPanel.strokeRoundedRect(pBoxX, pBoxY, pBoxW, pBoxH, 12);
-
+    // Player HP box (bottom-right)
     const trainerName = (typeof localStorage !== 'undefined'
       ? localStorage.getItem('a16z_username') : null) || 'PLAYER';
-    this.add.text(pBoxX + 10, pBoxY + 8, trainerName.toUpperCase().slice(0, 10), {
-      fontFamily: '"Press Start 2P"',
-      fontSize: '14px',
-      color: '#000000',
-      resolution: 2,
-    }).setDepth(11);
+    const playerBox = document.createElement('div');
+    playerBox.id = 'a16z-player-hp';
+    playerBox.style.cssText = `
+      position: fixed;
+      right: ${window.innerWidth - canvasRect.right + 20}px;
+      bottom: ${window.innerHeight - canvasRect.bottom + canvasRect.height * 0.38}px;
+      width: 240px;
+      background: white;
+      border: 3px solid #1a1a1a;
+      border-radius: 12px;
+      padding: 14px 16px;
+      font-family: "Press Start 2P", monospace;
+      z-index: 600;
+      box-shadow: 3px 3px 0 #000;
+      animation: slideInFromBottom 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s both;
+      box-sizing: border-box;
+    `;
+    playerBox.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <div style="font-size:13px;font-weight:bold;color:#000;text-transform:uppercase;">${trainerName.slice(0, 10)}</div>
+        <div style="background:#888;color:#fff;border-radius:6px;padding:2px 6px;font-size:9px;">Lv${this.playerStats.level}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+        <span style="font-size:11px;color:#ee3333;flex-shrink:0;">HP</span>
+        <div style="flex:1;background:#ddd;border-radius:3px;height:8px;overflow:hidden;">
+          <div id="a16z-player-hp-bar" style="height:100%;background:#22cc44;border-radius:3px;width:100%;transition:width 0.3s;"></div>
+        </div>
+      </div>
+      <div id="a16z-player-hp-text" style="font-size:10px;color:#000;text-align:right;">${this.playerHP} / ${this.playerStats.maxHp}</div>
+    `;
+    document.body.appendChild(playerBox);
+    this.domPlayerHP = playerBox;
+    this.domPlayerHPBar = document.getElementById('a16z-player-hp-bar') as HTMLDivElement;
+    this.domPlayerHPText = document.getElementById('a16z-player-hp-text');
 
-    const pLvX = pBoxX + pBoxW - 50;
-    const pLvY = pBoxY + 6;
-    const pLvBadge = this.add.graphics().setDepth(11);
-    pLvBadge.fillStyle(0x888888, 1.0);
-    pLvBadge.fillRoundedRect(pLvX, pLvY, 38, 16, 6);
-    this.add.text(pLvX + 5, pLvY + 2, 'Lv1', {
-      fontFamily: '"Press Start 2P"',
-      fontSize: '9px',
-      color: '#FFFFFF',
-      resolution: 2,
-    }).setDepth(12);
-
-    this.add.text(pBoxX + 10, pBoxY + 36, 'HP', {
-      fontFamily: '"Press Start 2P"',
-      fontSize: '11px',
-      color: '#ee3333',
-      resolution: 2,
-    }).setDepth(11);
-
-    const pHPTrackX = pBoxX + 34;
-    const pHPTrackY = pBoxY + 36;
-    const pHPTrackW = pBoxW - 44;
-
-    const pHPTrack = this.add.graphics().setDepth(11);
-    pHPTrack.fillStyle(0xDDDDDD, 1.0);
-    pHPTrack.fillRoundedRect(pHPTrackX, pHPTrackY, pHPTrackW, 12, 3);
-
-    this._pHPBarX = pHPTrackX;
-    this._pHPBarY = pHPTrackY;
-    this._pHPBarW = pHPTrackW;
-    this._pHPNumX = pBoxX + pBoxW - 8;
-    this._pHPNumY = pBoxY + 54;
-
-    this.playerHPBar = this.add.graphics().setDepth(12);
-
-    this.playerHPText = this.add.text(this._pHPNumX, this._pHPNumY, `${this.playerHP} / ${this.playerStats.maxHp}`, {
-      fontFamily: '"Press Start 2P"',
-      fontSize: '10px',
-      color: '#000000',
-      resolution: 2,
-    }).setOrigin(1, 0).setDepth(12);
+    // Stub out legacy Phaser HP objects to avoid null errors
+    this.guestHPBar = this.add.graphics().setDepth(12).setVisible(false);
+    this.guestHPText = this.add.text(0, 0, '', { fontFamily: '"Press Start 2P"', fontSize: '10px', color: '#000' }).setDepth(11).setVisible(false);
+    this.playerHPBar = this.add.graphics().setDepth(12).setVisible(false);
+    this.playerHPText = this.add.text(0, 0, '', { fontFamily: '"Press Start 2P"', fontSize: '10px', color: '#000' }).setDepth(12).setVisible(false);
 
     this.updateHPBars();
 
@@ -319,9 +307,9 @@ export class BattleScene extends Phaser.Scene {
     // ────────────────────────────────────────────
     // DOM Battle Menu (replaces Phaser question/answer UI)
     // ────────────────────────────────────────────
-    const canvas = document.querySelector('canvas');
-    if (canvas) {
-      const canvasRect = canvas.getBoundingClientRect();
+    const menuCanvas = document.querySelector('canvas');
+    if (menuCanvas) {
+      const canvasRect = menuCanvas.getBoundingClientRect();
       const menuFrac = battleAreaH / H;
       const menuTop = canvasRect.top + canvasRect.height * menuFrac;
 
@@ -475,25 +463,26 @@ export class BattleScene extends Phaser.Scene {
   }
 
   private updateHPBars() {
-    this.guestHPBar.clear();
+    this.updateDOMHPBars();
+  }
+
+  private updateDOMHPBars() {
     const guestPct = Math.max(0, this.guestHP) / 100;
-    const guestColor = guestPct > 0.5 ? 0x22cc44 : guestPct > 0.25 ? 0xD8C040 : 0xD84040;
-    this.guestHPBar.fillStyle(guestColor, 1.0);
-    this.guestHPBar.fillRoundedRect(
-      this._gHPBarX, this._gHPBarY,
-      Math.max(0, Math.round(this._gHPBarW * guestPct)), 12, 3
-    );
+    const guestColor = guestPct > 0.5 ? '#22cc44' : guestPct > 0.25 ? '#D8C040' : '#D84040';
+    if (this.domGuestHPBar) {
+      this.domGuestHPBar.style.width = `${Math.round(guestPct * 100)}%`;
+      this.domGuestHPBar.style.background = guestColor;
+    }
 
-    this.playerHPBar.clear();
     const playerPct = Math.max(0, this.playerHP) / this.playerStats.maxHp;
-    const playerColor = playerPct > 0.5 ? 0x22cc44 : playerPct > 0.25 ? 0xD8C040 : 0xD84040;
-    this.playerHPBar.fillStyle(playerColor, 1.0);
-    this.playerHPBar.fillRoundedRect(
-      this._pHPBarX, this._pHPBarY,
-      Math.max(0, Math.round(this._pHPBarW * playerPct)), 12, 3
-    );
-
-    this.playerHPText.setText(`${Math.max(0, this.playerHP)} / ${this.playerStats.maxHp}`);
+    const playerColor = playerPct > 0.5 ? '#22cc44' : playerPct > 0.25 ? '#D8C040' : '#D84040';
+    if (this.domPlayerHPBar) {
+      this.domPlayerHPBar.style.width = `${Math.round(playerPct * 100)}%`;
+      this.domPlayerHPBar.style.background = playerColor;
+    }
+    if (this.domPlayerHPText) {
+      this.domPlayerHPText.textContent = `${Math.max(0, this.playerHP)} / ${this.playerStats.maxHp}`;
+    }
   }
 
   private setupKeys() {
@@ -834,6 +823,17 @@ export class BattleScene extends Phaser.Scene {
     this.domAnswerBtns = [];
     this.domQText = null;
     this.domQNum = null;
+    // Remove DOM HP boxes
+    if (this.domGuestHP) { this.domGuestHP.remove(); this.domGuestHP = null; }
+    if (this.domPlayerHP) { this.domPlayerHP.remove(); this.domPlayerHP = null; }
+    this.domGuestHPBar = null;
+    this.domPlayerHPBar = null;
+    this.domPlayerHPText = null;
+    // Also clean up by ID as fallback
+    const gEl = document.getElementById('a16z-guest-hp');
+    if (gEl) gEl.remove();
+    const pEl = document.getElementById('a16z-player-hp');
+    if (pEl) pEl.remove();
   }
 
   private returnToWorld() {

@@ -682,99 +682,83 @@ export class WorldScene extends Phaser.Scene {
       } catch (_) { /* fallback to URL */ }
     }
 
-    const canvas = document.querySelector('canvas');
-    const canvasRect = canvas ? canvas.getBoundingClientRect() : { left: 0, bottom: window.innerHeight, width: window.innerWidth };
-    const dlgLeft = canvasRect.left;
-    const dlgWidth = canvasRect.width;
-    const dlgBottom = window.innerHeight - (canvas ? canvas.getBoundingClientRect().bottom : 0);
-
-    const isMobileView = window.innerWidth < 768;
-    const dlgHeight = isMobileView ? 80 : 200;
-    const overlay = document.createElement('div');
-    overlay.style.cssText = `
-      position: fixed;
-      left: ${dlgLeft}px;
-      width: ${dlgWidth}px;
-      bottom: ${dlgBottom}px;
-      height: ${dlgHeight}px;
-      background: #ffffff;
-      border: 5px solid #000000;
-      font-family: "Press Start 2P", monospace;
-      z-index: 500;
-      box-sizing: border-box;
-    `;
-
-    const inner = document.createElement('div');
-    inner.style.cssText = `display: flex; align-items: ${isMobileView ? 'center' : 'flex-start'}; padding: ${isMobileView ? '6px 12px' : '12px 14px 8px 12px'}; height: ${isMobileView ? dlgHeight - 36 : dlgHeight - 44}px; overflow: hidden;`;
-
-    const portrait = document.createElement('div');
-    portrait.style.cssText = isMobileView ? `width:40px;height:50px;min-width:40px;background:#e8e8e8;border:1px solid #000;overflow:hidden;image-rendering:pixelated;margin-right:8px;` : `
-      width: 80px; height: 100px; min-width: 80px;
-      background: #e8e8e8;
-      border: 2px solid #000;
-      overflow: hidden;
-      image-rendering: pixelated;
-      margin-right: 14px;
-    `;
-    if (portraitSrc) {
-      const img = document.createElement('img');
-      img.src = portraitSrc;
-      img.style.cssText = `width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated;`;
-      portrait.appendChild(img);
+    // Inject LennyRPG-style keyframe animations once
+    if (!document.getElementById('a16z-dialogue-styles')) {
+      const style = document.createElement('style');
+      style.id = 'a16z-dialogue-styles';
+      style.textContent = `
+        @keyframes arrowBounce {
+          0%, 100% { transform: translateY(0); opacity: 1; }
+          50% { transform: translateY(4px); opacity: 0.6; }
+        }
+        @keyframes dialogSlideUp {
+          from { transform: translateX(-50%) translateY(100px); opacity: 0; }
+          to { transform: translateX(-50%) translateY(0); opacity: 1; }
+        }
+        #a16z-dialogue-overlay {
+          animation: dialogSlideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+      `;
+      document.head.appendChild(style);
     }
 
-    const right = document.createElement('div');
-    right.style.cssText = `display: flex; flex-direction: column; flex: 1; overflow: hidden;`;
-
-    const nameEl = document.createElement('div');
-    nameEl.style.cssText = `font-size: ${isMobileView ? '8px' : '20px'}; font-weight: bold; color: #000000; white-space: nowrap; letter-spacing: 1px; margin-bottom: ${isMobileView ? '2px' : '6px'}; font-family: "Press Start 2P", monospace;`;
-    nameEl.textContent = guest.name.toUpperCase();
-
-    const titleEl = document.createElement('div');
-    titleEl.style.cssText = `font-size: 12px; color: #555555; white-space: nowrap; margin-bottom: 10px; display: ${isMobileView ? 'none' : 'block'};`;
-    titleEl.textContent = guest.title;
-
-    const sep = document.createElement('hr');
-    sep.style.cssText = `border: none; border-top: 1px solid #000; margin: 0 0 4px 0;`;
-
-    const bodyEl = document.createElement('div');
-    bodyEl.style.cssText = `font-size: ${isMobileView ? "7px" : "15px"}; font-weight: bold; color: #000000; line-height: 1.5; font-family: "Press Start 2P", monospace;`;
-    const randomMsg = this.encounterMessages[Math.floor(Math.random() * this.encounterMessages.length)];
-    bodyEl.textContent = `${guest.name.split(' ')[0]} ${randomMsg}`;
-
-    right.appendChild(nameEl);
-    right.appendChild(titleEl);
-    right.appendChild(sep);
-    right.appendChild(bodyEl);
-
-    inner.appendChild(portrait);
-    inner.appendChild(right);
-
-    const bottomBar = document.createElement('div');
-    bottomBar.style.cssText = `
-      border-top: 2px solid #000;
-      height: 34px;
-      display: flex;
-      align-items: center;
-      padding: 0 12px;
-      gap: 8px;
-    `;
+    const canvas = document.querySelector('canvas');
+    const canvasRect = canvas ? canvas.getBoundingClientRect() : { left: 0, bottom: window.innerHeight, top: 0, width: window.innerWidth, height: window.innerHeight, right: window.innerWidth };
+    // Position like LennyRPG: inside canvas, with gap at bottom (8% from bottom of canvas)
+    const dialogBottom = canvasRect.bottom - canvasRect.height * 0.08;
+    const dlgBottomFromViewport = window.innerHeight - dialogBottom;
+    const dlgWidth = Math.min(canvasRect.width - 40, 880);
 
     const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    const randomMsg = this.encounterMessages[Math.floor(Math.random() * this.encounterMessages.length)];
+    const randomMessage = `${guest.name.split(' ')[0]} ${randomMsg}`;
 
+    const overlay = document.createElement('div');
+    overlay.id = 'a16z-dialogue-overlay';
+    overlay.style.cssText = `position:fixed;bottom:${dlgBottomFromViewport}px;left:50%;transform:translateX(-50%);width:${dlgWidth}px;z-index:500;box-sizing:border-box;`;
+
+    // Inner card — LennyRPG pokemon-textbox style
+    const card = document.createElement('div');
+    card.style.cssText = `position:relative;background:#fff;border:8px solid #000;box-shadow:inset 0 0 0 4px #e8e8e8, 0 8px 0 #000, 0 12px 24px rgba(0,0,0,0.5);padding:20px 28px;font-family:"Press Start 2P",monospace;`;
+
+    // Inner decorative border
+    const innerBorder = document.createElement('div');
+    innerBorder.style.cssText = `position:absolute;top:12px;left:12px;right:12px;bottom:12px;border:2px solid #d0d0d0;pointer-events:none;`;
+    card.appendChild(innerBorder);
+
+    // Header: portrait + name + title
+    const header = document.createElement('div');
+    header.style.cssText = `display:flex;align-items:center;gap:12px;margin-bottom:12px;padding-bottom:8px;border-bottom:3px solid #000;`;
+    const portraitImg = document.createElement('img');
+    portraitImg.src = portraitSrc;
+    portraitImg.style.cssText = `width:40px;height:40px;object-fit:contain;image-rendering:pixelated;border:2px solid #000;border-radius:4px;background:#f0f0f0;`;
+    const headerText = document.createElement('div');
+    const nameDiv = document.createElement('div');
+    nameDiv.style.cssText = `font-size:16px;color:#000;text-transform:uppercase;letter-spacing:1px;`;
+    nameDiv.textContent = guest.name;
+    const titleDiv = document.createElement('div');
+    titleDiv.style.cssText = `font-size:10px;color:#666;margin-top:4px;`;
+    titleDiv.textContent = guest.title;
+    headerText.appendChild(nameDiv);
+    headerText.appendChild(titleDiv);
+    header.appendChild(portraitImg);
+    header.appendChild(headerText);
+    card.appendChild(header);
+
+    // Message
+    const msgDiv = document.createElement('div');
+    msgDiv.style.cssText = `font-size:14px;line-height:1.8;color:#000;min-height:60px;margin-bottom:12px;`;
+    msgDiv.textContent = randomMessage;
+    card.appendChild(msgDiv);
+
+    // Footer
+    const footer = document.createElement('div');
+    footer.style.cssText = `display:flex;align-items:center;justify-content:space-between;padding-top:12px;border-top:3px solid #000;`;
+    const footerLeft = document.createElement('div');
+    footerLeft.style.cssText = `font-size:10px;color:#666;display:flex;align-items:center;gap:8px;`;
     const spacePill = document.createElement('span');
-    spacePill.style.cssText = `
-      background: #000; color: #fff;
-      font-family: "Press Start 2P", monospace;
-      font-size: ${isMobileView ? '8px' : '11px'}; padding: ${isMobileView ? '3px 6px' : '5px 10px'};
-      border-radius: 2px;
-    `;
+    spacePill.style.cssText = `display:inline-block;padding:4px 8px;background:#000;color:#fff;border-radius:3px;font-size:9px;`;
     spacePill.textContent = isTouchDevice ? '⚔ BATTLE' : 'SPACE';
-
-    const hintEl = document.createElement('span');
-    hintEl.style.cssText = `font-size: ${isMobileView ? '8px' : '11px'}; color: #333333;`;
-    hintEl.textContent = isTouchDevice ? 'tap ⚔ to battle' : 'to battle  •  Walk away to cancel';
-
     if (isTouchDevice) {
       spacePill.style.cursor = 'pointer';
       spacePill.style.touchAction = 'manipulation';
@@ -784,18 +768,18 @@ export class WorldScene extends Phaser.Scene {
       }, { passive: false });
       spacePill.addEventListener('touchend', () => { this.mobileInteract = false; });
     }
-
-    const arrowEl = document.createElement('span');
-    arrowEl.style.cssText = `margin-left: auto; font-size: 10px; color: #000;`;
+    const hintText = document.createTextNode(isTouchDevice ? ' tap to battle' : ' to battle \u2022 Walk away to cancel');
+    footerLeft.appendChild(spacePill);
+    footerLeft.appendChild(hintText);
+    const arrowEl = document.createElement('div');
+    arrowEl.id = 'a16z-dialogue-arrow';
+    arrowEl.style.cssText = `font-size:16px;color:#000;animation:arrowBounce 1s ease-in-out infinite;font-family:monospace;`;
     arrowEl.textContent = '▼';
+    footer.appendChild(footerLeft);
+    footer.appendChild(arrowEl);
+    card.appendChild(footer);
 
-    bottomBar.appendChild(spacePill);
-    bottomBar.appendChild(hintEl);
-    bottomBar.appendChild(arrowEl);
-
-    overlay.appendChild(inner);
-    overlay.appendChild(bottomBar);
-    overlay.id = 'a16z-dialogue-overlay';
+    overlay.appendChild(card);
     document.body.appendChild(overlay);
     this.dialogueOverlay = overlay;
   }
