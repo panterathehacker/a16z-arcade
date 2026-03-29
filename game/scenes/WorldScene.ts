@@ -154,6 +154,10 @@ export class WorldScene extends Phaser.Scene {
     // ── Spawn NPCs ────────────────────────────────────────────────────────
     this.npcGroup = this.physics.add.staticGroup();
     this.spawnNPCs();
+    console.log('[WorldScene] NPC tile positions tracked:', this.npcTilePositions.size);
+    this.npcTilePositions.forEach((pos, id) => {
+      console.log(' ', id, '->', pos.tx, pos.ty);
+    });
 
     // ── Camera ────────────────────────────────────────────────────────────
     this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
