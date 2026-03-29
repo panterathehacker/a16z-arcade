@@ -705,9 +705,9 @@ export class WorldScene extends Phaser.Scene {
     const canvas = document.querySelector('canvas');
     const canvasRect = canvas ? canvas.getBoundingClientRect() : { left: 0, bottom: window.innerHeight, top: 0, width: window.innerWidth, height: window.innerHeight, right: window.innerWidth };
     // Position like LennyRPG: inside canvas, with gap at bottom (8% from bottom of canvas)
-    const dialogBottom = canvasRect.bottom - canvasRect.height * 0.08;
+    const dialogBottom = canvasRect.bottom - canvasRect.height * 0.12; // more gap from bottom
     const dlgBottomFromViewport = window.innerHeight - dialogBottom;
-    const dlgWidth = Math.min(canvasRect.width - 40, 880);
+    const dlgWidth = Math.min(canvasRect.width - 80, 800); // smaller, more margin
 
     const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
     const randomMsg = this.encounterMessages[Math.floor(Math.random() * this.encounterMessages.length)];
@@ -715,11 +715,11 @@ export class WorldScene extends Phaser.Scene {
 
     const overlay = document.createElement('div');
     overlay.id = 'a16z-dialogue-overlay';
-    overlay.style.cssText = `position:fixed;bottom:${dlgBottomFromViewport}px;left:50%;transform:translateX(-50%);width:${dlgWidth}px;z-index:500;box-sizing:border-box;`;
+    overlay.style.cssText = `position:fixed;bottom:${dlgBottomFromViewport}px;left:${canvasRect.left + 40}px;width:${dlgWidth}px;z-index:500;box-sizing:border-box;`;
 
     // Inner card — LennyRPG pokemon-textbox style
     const card = document.createElement('div');
-    card.style.cssText = `position:relative;background:#fff;border:8px solid #000;box-shadow:inset 0 0 0 4px #e8e8e8, 0 8px 0 #000, 0 12px 24px rgba(0,0,0,0.5);padding:20px 28px;font-family:"Press Start 2P",monospace;`;
+    card.style.cssText = `position:relative;background:#fff;border:5px solid #000;box-shadow:inset 0 0 0 3px #e8e8e8, 0 5px 0 #000, 0 8px 16px rgba(0,0,0,0.4);padding:14px 20px;font-family:"Press Start 2P",monospace;`;
 
     // Inner decorative border
     const innerBorder = document.createElement('div');

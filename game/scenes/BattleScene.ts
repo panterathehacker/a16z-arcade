@@ -45,6 +45,7 @@ export class BattleScene extends Phaser.Scene {
   private playerHP = 100;
   private guestHP = 100;
   private correctAnswers = 0;
+  private wrongAnswers = 0;
   private playerId: string | null = null;
   private playerStats!: PlayerStats;
 
@@ -103,6 +104,7 @@ export class BattleScene extends Phaser.Scene {
     this.playerHP = this.playerStats.hp;
     this.guestHP = 100;
     this.correctAnswers = 0;
+    this.wrongAnswers = 0;
     this.waitingForNext = false;
     this.battleOver = false;
   }
@@ -250,8 +252,8 @@ export class BattleScene extends Phaser.Scene {
     playerBox.id = 'a16z-player-hp';
     playerBox.style.cssText = `
       position: fixed;
-      right: ${window.innerWidth - canvasRect.right + 20}px;
-      bottom: ${window.innerHeight - canvasRect.bottom + canvasRect.height * 0.38}px;
+      left: ${canvasRect.left + canvasRect.width * 0.35}px;
+      bottom: ${window.innerHeight - canvasRect.bottom + canvasRect.height * 0.35}px;
       width: 240px;
       background: white;
       border: 3px solid #1a1a1a;
@@ -596,7 +598,7 @@ export class BattleScene extends Phaser.Scene {
       this.statusText.setStyle({ ...this.statusText.style, color: '#00aa00' });
       this.statusText.setVisible(true);
 
-      const xpGain = xpPerCorrect(this.playerStats.level);
+      const xpGain = 10; // Fixed 10 XP per correct answer
       this.playerStats.xp += xpGain;
       while (this.playerStats.xp >= this.playerStats.xpToNext) {
         this.playerStats.xp -= this.playerStats.xpToNext;
@@ -609,7 +611,8 @@ export class BattleScene extends Phaser.Scene {
       this.showDamageFloat(this._gHPBarX + this._gHPBarW / 2, this._gHPBarY - 10, '-20 HP', 0xFF4444);
       this.showDamageFloat(this._pHPBarX + this._pHPBarW / 2, this._pHPBarY - 10, `+${xpGain} XP`, 0xFFD700);
     } else {
-      this.playerHP -= 20;
+      this.wrongAnswers++;
+      this.playerHP -= 10;
       this.playerStats.hp = Math.max(0, this.playerHP);
       savePlayerStats(this.playerStats);
       this.updateHPBars();
@@ -845,6 +848,13 @@ export class BattleScene extends Phaser.Scene {
       worldScene.activeNPC = null;
       const overlay = document.getElementById('a16z-dialogue-overlay');
       if (overlay) overlay.remove();
+      // Remove battle menu DOM overlay
+      const battleMenu = document.getElementById('a16z-battle-menu');
+      if (battleMenu) battleMenu.remove();
+      const guestHPBox = document.getElementById('a16z-guest-hp');
+      if (guestHPBox) guestHPBox.remove();
+      const playerHPBox = document.getElementById('a16z-player-hp');
+      if (playerHPBox) playerHPBox.remove();
       if (worldScene.dialogueOverlay) {
         worldScene.dialogueOverlay.remove();
         worldScene.dialogueOverlay = null;
