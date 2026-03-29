@@ -287,9 +287,12 @@ export class WorldScene extends Phaser.Scene {
       // Update sprite set based on chosen gender
       const chosenGender = localStorage.getItem('a16z_gender') || 'male';
       this.playerSpriteSet = chosenGender === 'female' ? 'player-female' : 'player-male';
-      if (this.player && this.textures.exists(this.playerSpriteSet + '_front')) {
-        this.player.setTexture(this.playerSpriteSet + '_front');
+      const frontKey = this.playerSpriteSet + '_front';
+      console.log('[WorldScene] Gender:', chosenGender, 'Set:', this.playerSpriteSet, 'Texture exists:', this.textures.exists(frontKey));
+      if (this.player) {
+        this.player.setTexture(frontKey);
         this.player.setFlipX(false);
+        console.log('[WorldScene] Player texture set to', frontKey);
       }
       this.gameReady = true;
       // Update player name label
@@ -688,7 +691,7 @@ export class WorldScene extends Phaser.Scene {
         if (spriteDataUrl) {
           const img = document.createElement('img');
           img.src = spriteDataUrl;
-          img.style.cssText = `width: 52px; height: 52px; object-fit: contain; image-rendering: pixelated;`;
+          img.style.cssText = `width: 90px; height: 90px; object-fit: contain; image-rendering: pixelated;`;
           imgWrapper.appendChild(img);
         } else {
           imgWrapper.style.cssText += `background: #202040; border-radius: 50%;`;
@@ -703,7 +706,7 @@ export class WorldScene extends Phaser.Scene {
       }
 
       const nameEl = document.createElement('div');
-      nameEl.style.cssText = `font-size: 9px; color: ${isCaptured ? '#ffffff' : '#404050'}; text-align: center; line-height: 1.5;`;
+      nameEl.style.cssText = `font-size: 11px; color: ${isCaptured ? '#ffffff' : '#404050'}; text-align: center; line-height: 1.5;`;
       nameEl.textContent = isCaptured ? guest.name : '???';
 
       card.appendChild(numEl);

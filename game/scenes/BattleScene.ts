@@ -98,7 +98,7 @@ export class BattleScene extends Phaser.Scene {
                           : (this.textures.exists('player_ai') ? 'player_ai' : null);
     if (playerSpriteKey) {
       this.playerSprite = this.add.image(this._ppX, this._ppY, playerSpriteKey)
-        .setDisplaySize(140, 195)
+        .setDisplaySize(180, 250)
         .setOrigin(0.5, 1.0)
         .setDepth(5);
     }
