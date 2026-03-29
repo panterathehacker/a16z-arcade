@@ -21,10 +21,16 @@ export default function Home() {
     <main
       className="min-h-screen flex flex-col items-center justify-center p-4"
       style={{
-        background: `
-          radial-gradient(ellipse at top, #2d0010 0%, #1a0008 50%, #0d0004 100%)
+        background: '#1a0008',
+        backgroundImage: `
+          linear-gradient(45deg, #2a0010 25%, transparent 25%),
+          linear-gradient(-45deg, #2a0010 25%, transparent 25%),
+          linear-gradient(45deg, transparent 75%, #110005 75%),
+          linear-gradient(-45deg, transparent 75%, #110005 75%)
         `,
-        backgroundAttachment: 'fixed',
+        backgroundSize: '8px 8px',
+        backgroundPosition: '0 0, 0 4px, 4px -4px, -4px 0px',
+        imageRendering: 'pixelated' as const,
         position: 'relative',
         overflow: 'hidden',
       }}
