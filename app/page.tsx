@@ -21,13 +21,13 @@ export default function Home() {
       <div className="mb-4 text-center">
         <h1
           className="text-white mb-1 tracking-tight"
-          style={{ fontFamily: '"Press Start 2P", monospace', fontSize: '20px' }}
+          style={{ fontFamily: '"Press Start 2P", monospace', fontSize: '32px' }}
         >
           a16z Arcade
         </h1>
         <p
           className="text-gray-400"
-          style={{ fontFamily: '"Press Start 2P", monospace', fontSize: '8px' }}
+          style={{ fontFamily: '"Press Start 2P", monospace', fontSize: '13px' }}
         >
           Battle the greatest minds in tech
         </p>

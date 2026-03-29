@@ -166,20 +166,61 @@ export class WorldScene extends Phaser.Scene {
     box.style.cssText = `
       background: #1a1a3e;
       border: 3px solid #4060C0;
-      border-radius: 12px;
-      padding: 32px;
+      border-radius: 16px;
+      padding: 40px 36px;
       text-align: center;
-      max-width: 360px;
-      width: 90%;
+      max-width: 460px;
+      width: 92%;
     `;
 
     const title = document.createElement('div');
-    title.style.cssText = `color: #60A0FF; font-size: 12px; margin-bottom: 8px;`;
+    title.style.cssText = `color: #60A0FF; font-size: 20px; margin-bottom: 12px; letter-spacing: 2px;`;
     title.textContent = 'a16z ARCADE';
 
     const subtitle = document.createElement('div');
-    subtitle.style.cssText = `color: #8080C0; font-size: 7px; margin-bottom: 28px; line-height: 2;`;
+    subtitle.style.cssText = `color: #8080C0; font-size: 11px; margin-bottom: 32px; line-height: 2;`;
     subtitle.textContent = 'Enter your trainer name:';
+
+    // Gender selector
+    const genderRow = document.createElement('div');
+    genderRow.style.cssText = `display: flex; gap: 16px; justify-content: center; margin-bottom: 24px;`;
+    
+    let selectedGender = 'male';
+    const genderBtns: HTMLButtonElement[] = [];
+    
+    [{ id: 'male', icon: '\u{1F466}', label: 'HE/HIM' }, { id: 'female', icon: '\u{1F467}', label: 'SHE/HER' }].forEach(({ id, icon, label }) => {
+      const gb = document.createElement('button');
+      gb.style.cssText = \`
+        font-family: "Press Start 2P", monospace;
+        font-size: 9px;
+        background: \${id === 'male' ? '#3050C0' : '#0a0a2a'};
+        color: #fff;
+        border: 2px solid \${id === 'male' ? '#80A0FF' : '#303060'};
+        border-radius: 8px;
+        padding: 12px 18px;
+        cursor: pointer;
+        flex: 1;
+        display: flex; flex-direction: column; align-items: center; gap: 6px;
+      \`;
+      const iconEl = document.createElement('span');
+      iconEl.style.fontSize = '28px';
+      iconEl.textContent = icon;
+      const labelEl = document.createElement('span');
+      labelEl.textContent = label;
+      gb.appendChild(iconEl);
+      gb.appendChild(labelEl);
+      gb.addEventListener('click', () => {
+        selectedGender = id;
+        localStorage.setItem('a16z_gender', id);
+        genderBtns.forEach((b, i) => {
+          const sel = i === (id === 'male' ? 0 : 1);
+          b.style.background = sel ? '#3050C0' : '#0a0a2a';
+          b.style.borderColor = sel ? '#80A0FF' : '#303060';
+        });
+      });
+      genderBtns.push(gb);
+      genderRow.appendChild(gb);
+    });
 
     const input = document.createElement('input');
     input.type = 'text';
@@ -187,15 +228,15 @@ export class WorldScene extends Phaser.Scene {
     input.placeholder = 'Trainer';
     input.style.cssText = `
       width: 100%;
-      padding: 10px 12px;
+      padding: 14px 16px;
       font-family: "Press Start 2P", monospace;
-      font-size: 10px;
+      font-size: 12px;
       background: #0a0a1a;
       border: 2px solid #4060C0;
-      border-radius: 6px;
+      border-radius: 8px;
       color: #FFFFFF;
       text-align: center;
-      margin-bottom: 20px;
+      margin-bottom: 24px;
       box-sizing: border-box;
       outline: none;
     `;
@@ -204,12 +245,12 @@ export class WorldScene extends Phaser.Scene {
     btn.textContent = 'START GAME';
     btn.style.cssText = `
       font-family: "Press Start 2P", monospace;
-      font-size: 8px;
+      font-size: 11px;
       background: #3050C0;
       color: #FFFFFF;
       border: 2px solid #6080FF;
-      border-radius: 6px;
-      padding: 12px 24px;
+      border-radius: 8px;
+      padding: 16px 24px;
       cursor: pointer;
       width: 100%;
     `;
@@ -244,6 +285,7 @@ export class WorldScene extends Phaser.Scene {
 
     box.appendChild(title);
     box.appendChild(subtitle);
+    box.appendChild(genderRow);
     box.appendChild(input);
     box.appendChild(btn);
     overlay.appendChild(box);
