@@ -298,10 +298,10 @@ export class BattleScene extends Phaser.Scene {
       resolution: 2,
     }).setDepth(12);
 
-    // Question text: 13px Press Start 2P black, word-wrapped, 20px padding
+    // Question text: 20px Press Start 2P black, word-wrapped, 20px padding
     this.questionText = this.add.text(qPanelX, menuY + 40, '', {
       fontFamily: '"Press Start 2P"',
-      fontSize: '13px',
+      fontSize: '20px',
       color: '#000000',
       resolution: 2,
       wordWrap: { width: qPanelW - 20 },
@@ -324,9 +324,9 @@ export class BattleScene extends Phaser.Scene {
     // ── Right 55%: vertical answer list ──
     this._btnAreaX = W * 0.45 + 8;
     this._btnW = W * 0.55 - 16;
-    this._btnH = 38;
-    this._btnGap = 4;
-    this._btnStartY = menuY + 8;
+    this._btnH = 52;
+    this._btnGap = 6;
+    this._btnStartY = menuY + 20;
 
     for (let i = 0; i < 4; i++) {
       const bx = this._btnAreaX;
@@ -339,10 +339,10 @@ export class BattleScene extends Phaser.Scene {
       optBg.strokeRoundedRect(bx, by, this._btnW, this._btnH, 8);
       this.optionBgs.push(optBg);
 
-      // "1  Answer text" 11px Press Start 2P
+      // "1  Answer text" 14px Press Start 2P
       const optText = this.add.text(bx + 10, by + (this._btnH / 2), '', {
         fontFamily: '"Press Start 2P"',
-        fontSize: '11px',
+        fontSize: '14px',
         color: '#000000',
         resolution: 2,
         wordWrap: { width: this._btnW - 20 },

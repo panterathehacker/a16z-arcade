@@ -90,11 +90,11 @@ export class WorldScene extends Phaser.Scene {
     const savedName = localStorage.getItem('a16z_username') || 'You';
     this.playerNameLabel = this.add.text(352, 1216 - 84, savedName, {
       fontFamily: '"Press Start 2P", monospace',
-      fontSize: '5px',
+      fontSize: '9px',
       color: '#FFFF00',
       resolution: 2,
       stroke: '#000000',
-      strokeThickness: 3,
+      strokeThickness: 4,
     }).setOrigin(0.5).setDepth(6);
 
     // Slightly smaller body so player fits through tight paths
@@ -305,11 +305,11 @@ export class WorldScene extends Phaser.Scene {
 
       const labelText = this.add.text(0, -84, guest.name, {
         fontFamily: '"Press Start 2P", monospace',
-        fontSize: '5px',
+        fontSize: '8px',
         color: '#FFFFFF',
         resolution: 2,
         stroke: '#000000',
-        strokeThickness: 2,
+        strokeThickness: 3,
       });
       labelText.setOrigin(0.5);
 

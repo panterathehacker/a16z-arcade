@@ -34,7 +34,7 @@ export default function Home() {
       </div>
 
       {/* Game container */}
-      <div className="w-full max-w-[800px] border-4 border-gray-700 rounded-lg overflow-hidden shadow-2xl shadow-blue-900/30">
+      <div className="w-fit">
         <GameComponent />
       </div>
 
