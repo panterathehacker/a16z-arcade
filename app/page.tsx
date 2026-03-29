@@ -407,7 +407,7 @@ export default function Home() {
                 borderRadius: '4px', border: '2px solid #FFD700',
                 backgroundImage: 'url(/assets/sprites/player-male/front.png)',
                 backgroundSize: '102px auto',
-                backgroundPosition: '-29px 0px',
+                backgroundPosition: 'center top',
                 backgroundRepeat: 'no-repeat',
                 imageRendering: 'pixelated',
               }} />

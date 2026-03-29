@@ -895,8 +895,9 @@ export class BattleScene extends Phaser.Scene {
       }
     }
     
-    this.scene.stop('BattleScene');
+    // Resume WorldScene first, then stop BattleScene
     this.scene.resume('WorldScene');
+    this.scene.stop('BattleScene');
   }
 
   private navigateOption(dir: number) {
