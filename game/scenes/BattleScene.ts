@@ -27,6 +27,7 @@ export class BattleScene extends Phaser.Scene {
   private statusText!: Phaser.GameObjects.Text;
   private waitingForNext = false;
   private battleOver = false;
+  private selectedOption = 0;
 
   // Sprite foot positions (set by drawBattleBG)
   private _gpX = 0; private _gpY = 0;
@@ -128,7 +129,7 @@ export class BattleScene extends Phaser.Scene {
     // ────────────────────────────────────────────
     // Guest HP box: position (W*0.30, H*0.03), 280×90px
     // ────────────────────────────────────────────
-    const gBoxX = 100;
+    const gBoxX = 60;
     const gBoxY = H * 0.03;
     const gBoxW = 280;
     const gBoxH = 90;
@@ -388,6 +389,12 @@ export class BattleScene extends Phaser.Scene {
       four: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.FOUR),
       space: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE),
     };
+    // Arrow key navigation
+    this.input.keyboard.on('keydown-UP', () => this.navigateOption(-1));
+    this.input.keyboard.on('keydown-DOWN', () => this.navigateOption(1));
+    this.input.keyboard.on('keydown-W', () => this.navigateOption(-1));
+    this.input.keyboard.on('keydown-S', () => this.navigateOption(1));
+    this.input.keyboard.on('keydown-ENTER', () => { if (!this.waitingForNext && !this.battleOver) this.answerQuestion(this.selectedOption); });
   }
 
   private showQuestion() {
@@ -397,6 +404,7 @@ export class BattleScene extends Phaser.Scene {
     }
 
     const q = this.questions[this.currentQ];
+    this.selectedOption = 0;
     this.questionText.setText(q.text);
     this.questionText.setVisible(true);
     this.statusText.setVisible(false);
@@ -660,6 +668,35 @@ export class BattleScene extends Phaser.Scene {
   private returnToWorld() {
     this.scene.stop('BattleScene');
     this.scene.resume('WorldScene');
+  }
+
+  private navigateOption(dir: number) {
+    if (this.waitingForNext || this.battleOver) return;
+    this.selectedOption = (this.selectedOption + dir + 4) % 4;
+    this.highlightOption(this.selectedOption);
+  }
+
+  private highlightOption(idx: number) {
+    this.optionBgs.forEach((bg, i) => {
+      bg.clear();
+      const bx = this._btnAreaX;
+      const by = this._btnStartY + i * (this._btnH + this._btnGap);
+      if (i === idx) {
+        bg.fillStyle(0xFFD700, 1.0);
+        bg.fillRoundedRect(bx, by, this._btnW, this._btnH, 8);
+        bg.lineStyle(3, 0x000000, 1.0);
+        bg.strokeRoundedRect(bx, by, this._btnW, this._btnH, 8);
+      } else {
+        bg.fillStyle(0xFFFFFF, 1.0);
+        bg.fillRoundedRect(bx, by, this._btnW, this._btnH, 8);
+        bg.lineStyle(2, 0x333333, 1.0);
+        bg.strokeRoundedRect(bx, by, this._btnW, this._btnH, 8);
+      }
+    });
+    // Update text color for selected
+    this.optionTexts.forEach((t, i) => {
+      t.setColor(i === idx ? '#000000' : '#222222');
+    });
   }
 
   update() {
