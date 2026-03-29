@@ -324,9 +324,9 @@ export class BattleScene extends Phaser.Scene {
     // ── Right 55%: vertical answer list ──
     this._btnAreaX = W * 0.45 + 8;
     this._btnW = W * 0.55 - 16;
-    this._btnH = 52;
-    this._btnGap = 6;
-    this._btnStartY = menuY + 20;
+    this._btnH = 46;
+    this._btnGap = 4;
+    this._btnStartY = menuY + 16;
 
     for (let i = 0; i < 4; i++) {
       const bx = this._btnAreaX;
