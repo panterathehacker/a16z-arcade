@@ -38,6 +38,7 @@ export class WorldScene extends Phaser.Scene {
 
   private pokedexContainer!: Phaser.GameObjects.Container;
   private pokedexVisible = false;
+  private pokedexOverlay: HTMLDivElement | null = null;
 
   private miniMapContainer!: Phaser.GameObjects.Container;
   private miniMapTimer = 0;
@@ -110,9 +111,9 @@ export class WorldScene extends Phaser.Scene {
     this.physics.add.collider(this.player, this.worldLayer);
 
     // ── Spawn NPCs ────────────────────────────────────────────────────────
-    this.npcGroup = this.physics.add.staticGroup();
+    this.npcGroup = this.physics.add.staticGroup(); // kept for type compatibility but not used for collision
     this.spawnNPCs();
-    this.physics.add.collider(this.player, this.npcGroup);
+    // NPC collision removed — players walk up to NPCs freely; dialogue triggers at close range
 
     // ── Camera ────────────────────────────────────────────────────────────
     this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
@@ -345,12 +346,6 @@ export class WorldScene extends Phaser.Scene {
       container.setDepth(5);
       this.npcSprites.set(guest.id, container);
       
-      // Add invisible physics body for collision
-      const npcBody = this.physics.add.staticImage(guest.px, guest.py - 24, '__DEFAULT')
-        .setDisplaySize(32, 48)
-        .setVisible(false);
-      this.npcGroup.add(npcBody);
-
       this.tweens.add({
         targets: sprite,
         y: -3,
@@ -555,139 +550,193 @@ export class WorldScene extends Phaser.Scene {
 
   // ─── Pokédex ──────────────────────────────────────────────────────────────
   private createPokedex(): void {
-    const camW = this.cameras.main.width;
-    const camH = this.cameras.main.height;
-
+    // Create a minimal Phaser container (kept for compatibility) but actual UI is DOM-based
     this.pokedexContainer = this.add.container(0, 0);
     this.pokedexContainer.setScrollFactor(0);
     this.pokedexContainer.setDepth(200);
     this.pokedexContainer.setVisible(false);
-
-    const overlay = this.add.graphics();
-    overlay.fillStyle(0x000000, 0.85);
-    overlay.fillRect(0, 0, camW, camH);
-    this.pokedexContainer.add(overlay);
-
-    const panelW = camW - 40;
-    const panelH = camH - 40;
-    const panel = this.add.graphics();
-    panel.fillStyle(0x1a1a3e, 0.98);
-    panel.fillRoundedRect(20, 20, panelW, panelH, 12);
-    panel.lineStyle(3, 0x4060C0);
-    panel.strokeRoundedRect(20, 20, panelW, panelH, 12);
-    this.pokedexContainer.add(panel);
-
-    const titleT = this.add.text(camW / 2, 40, 'a16z ARCADE DEX', {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '10px',
-      color: '#60A0FF',
-      resolution: 2,
-    });
-    titleT.setOrigin(0.5, 0);
-    this.pokedexContainer.add(titleT);
   }
 
   private showPokedex(): void {
     this.pokedexVisible = true;
-    this.pokedexContainer.setVisible(true);
 
-    const children = this.pokedexContainer.list;
-    while (children.length > 3) {
-      const child = children[children.length - 1] as Phaser.GameObjects.GameObject;
-      this.pokedexContainer.remove(child, true);
+    if (this.pokedexOverlay) {
+      this.pokedexOverlay.remove();
+      this.pokedexOverlay = null;
     }
 
     const captured: string[] = JSON.parse(localStorage.getItem('a16z_captured') || '[]');
-    const camW = this.cameras.main.width;
 
-    const countText = this.add.text(camW / 2, 58, `${captured.length}/10 Captured`, {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '7px',
-      color: '#FFFFFF',
-      resolution: 2,
-    });
-    countText.setOrigin(0.5, 0);
-    this.pokedexContainer.add(countText);
+    // Get canvas position/size to anchor overlay
+    const canvas = document.querySelector('canvas');
+    const rect = canvas ? canvas.getBoundingClientRect() : { left: 0, top: 0, width: window.innerWidth, height: window.innerHeight };
 
-    const cols = 2;
-    const startX = 35;
-    const startY = 80;
-    const cellW = (camW - 70) / cols;
-    const cellH = 55;
+    const overlay = document.createElement('div');
+    overlay.style.cssText = `
+      position: fixed;
+      left: ${rect.left}px;
+      top: ${rect.top}px;
+      width: ${rect.width}px;
+      height: ${rect.height}px;
+      background: rgba(0,0,0,0.92);
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      font-family: "Press Start 2P", monospace;
+      box-sizing: border-box;
+      overflow: hidden;
+    `;
+
+    // Header
+    const header = document.createElement('div');
+    header.style.cssText = `
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px 8px;
+      border-bottom: 2px solid #4060C0;
+      flex-shrink: 0;
+    `;
+
+    const titleEl = document.createElement('div');
+    titleEl.style.cssText = `color: #60A0FF; font-size: 14px; letter-spacing: 2px;`;
+    titleEl.textContent = 'a16z ARCADE DEX';
+
+    const countEl = document.createElement('div');
+    countEl.style.cssText = `color: #80FF80; font-size: 10px;`;
+    countEl.textContent = `${captured.length}/${GUESTS.filter(g => g.id !== 'player').length} Captured`;
+
+    const closeBtn = document.createElement('button');
+    closeBtn.textContent = '✕';
+    closeBtn.style.cssText = `
+      font-family: "Press Start 2P", monospace;
+      font-size: 16px;
+      color: #fff;
+      background: #cc2222;
+      border: 2px solid #ff4444;
+      border-radius: 6px;
+      width: 36px;
+      height: 36px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    `;
+    closeBtn.addEventListener('click', () => this.hidePokedex());
+
+    header.appendChild(titleEl);
+    header.appendChild(countEl);
+    header.appendChild(closeBtn);
+
+    // Scrollable grid area
+    const grid = document.createElement('div');
+    grid.style.cssText = `
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      padding: 12px;
+      overflow-y: auto;
+      flex: 1;
+    `;
 
     GUESTS.forEach((guest, i) => {
-      const col = i % cols;
-      const row = Math.floor(i / cols);
-      const cx = startX + col * cellW;
-      const cy = startY + row * cellH;
+      if (guest.id === 'player') return;
       const isCaptured = captured.includes(guest.id);
 
-      const cardBg = this.add.graphics();
-      cardBg.fillStyle(isCaptured ? 0x203060 : 0x1a1a2a, 0.9);
-      cardBg.fillRoundedRect(cx, cy, cellW - 8, cellH - 4, 6);
-      cardBg.lineStyle(2, isCaptured ? 0x4080FF : 0x404060);
-      cardBg.strokeRoundedRect(cx, cy, cellW - 8, cellH - 4, 6);
-      this.pokedexContainer.add(cardBg);
+      const card = document.createElement('div');
+      card.style.cssText = `
+        background: ${isCaptured ? '#1a2a4e' : '#1a1a2a'};
+        border: 2px solid ${isCaptured ? '#4080FF' : '#303050'};
+        border-radius: 8px;
+        padding: 8px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        min-height: 110px;
+      `;
 
-      const numText = this.add.text(cx + 6, cy + 6, `#${String(i + 1).padStart(2, '0')}`, {
-        fontFamily: '"Press Start 2P", monospace',
-        fontSize: '5px',
-        color: isCaptured ? '#60A0FF' : '#606060',
-        resolution: 2,
-      });
-      this.pokedexContainer.add(numText);
+      const numEl = document.createElement('div');
+      numEl.style.cssText = `font-size: 9px; color: ${isCaptured ? '#60A0FF' : '#505060'}; align-self: flex-start;`;
+      numEl.textContent = `#${String(i + 1).padStart(2, '0')}`;
+
+      // Sprite image
+      const imgWrapper = document.createElement('div');
+      imgWrapper.style.cssText = `width: 56px; height: 56px; display: flex; align-items: center; justify-content: center;`;
 
       if (isCaptured) {
+        // Try to extract sprite from Phaser texture as data URL
+        let spriteDataUrl = '';
         const aiKey = `npc_ai_${i}`;
-        const miniSprite = this.add.image(cx + cellW - 26, cy + cellH / 2 - 2, this.textures.exists(aiKey) ? aiKey : `npc_${i}`);
-        miniSprite.setOrigin(0.5);
-        if (this.textures.exists(aiKey)) {
-          miniSprite.setDisplaySize(28, 28);
+        const texKey = this.textures.exists(aiKey) ? aiKey : `npc_${i}`;
+        try {
+          const frame = this.textures.getFrame(texKey);
+          const src = frame?.source?.image as HTMLImageElement | HTMLCanvasElement | null;
+          if (src) {
+            const tmpCanvas = document.createElement('canvas');
+            tmpCanvas.width = frame.realWidth;
+            tmpCanvas.height = frame.realHeight;
+            const ctx = tmpCanvas.getContext('2d');
+            if (ctx) {
+              ctx.drawImage(src as CanvasImageSource, frame.cutX, frame.cutY, frame.realWidth, frame.realHeight, 0, 0, frame.realWidth, frame.realHeight);
+              spriteDataUrl = tmpCanvas.toDataURL('image/png');
+            }
+          }
+        } catch (_) { /* use fallback */ }
+
+        if (spriteDataUrl) {
+          const img = document.createElement('img');
+          img.src = spriteDataUrl;
+          img.style.cssText = `width: 52px; height: 52px; object-fit: contain; image-rendering: pixelated;`;
+          imgWrapper.appendChild(img);
         } else {
-          miniSprite.setScale(0.9);
+          imgWrapper.style.cssText += `background: #202040; border-radius: 50%;`;
+          imgWrapper.textContent = '👤';
         }
-        this.pokedexContainer.add(miniSprite);
       } else {
-        const spriteCircle = this.add.graphics();
-        spriteCircle.fillStyle(0x404040);
-        spriteCircle.fillCircle(cx + cellW - 26, cy + cellH / 2 - 2, 14);
-        this.pokedexContainer.add(spriteCircle);
+        imgWrapper.style.cssText += `background: #202020; border-radius: 50%;`;
+        const q = document.createElement('div');
+        q.style.cssText = `font-size: 24px; color: #404040;`;
+        q.textContent = '?';
+        imgWrapper.appendChild(q);
       }
 
-      const nameT = this.add.text(cx + 6, cy + 18, isCaptured ? guest.name : '???', {
-        fontFamily: '"Press Start 2P", monospace',
-        fontSize: '5px',
-        color: isCaptured ? '#FFFFFF' : '#404040',
-        resolution: 2,
-        wordWrap: { width: cellW - 50 },
-      });
-      this.pokedexContainer.add(nameT);
+      const nameEl = document.createElement('div');
+      nameEl.style.cssText = `font-size: 9px; color: ${isCaptured ? '#ffffff' : '#404050'}; text-align: center; line-height: 1.5;`;
+      nameEl.textContent = isCaptured ? guest.name : '???';
 
-      if (isCaptured) {
-        const titleT = this.add.text(cx + 6, cy + 32, guest.title, {
-          fontFamily: '"Press Start 2P", monospace',
-          fontSize: '4px',
-          color: '#8080C0',
-          resolution: 2,
-          wordWrap: { width: cellW - 50 },
-        });
-        this.pokedexContainer.add(titleT);
-      }
+      card.appendChild(numEl);
+      card.appendChild(imgWrapper);
+      card.appendChild(nameEl);
+      grid.appendChild(card);
     });
 
-    const closeHint = this.add.text(camW / 2, camW > 400 ? 600 : 580, 'Press C to close', {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '6px',
-      color: '#606090',
-      resolution: 2,
-    });
-    closeHint.setOrigin(0.5, 0);
-    this.pokedexContainer.add(closeHint);
+    const hint = document.createElement('div');
+    hint.style.cssText = `
+      text-align: center;
+      font-size: 9px;
+      color: #606090;
+      padding: 8px;
+      border-top: 1px solid #303050;
+      flex-shrink: 0;
+    `;
+    hint.textContent = 'Press C or ESC to close';
+
+    overlay.appendChild(header);
+    overlay.appendChild(grid);
+    overlay.appendChild(hint);
+    document.body.appendChild(overlay);
+    this.pokedexOverlay = overlay;
   }
 
   private hidePokedex(): void {
     this.pokedexVisible = false;
     this.pokedexContainer.setVisible(false);
+    if (this.pokedexOverlay) {
+      this.pokedexOverlay.remove();
+      this.pokedexOverlay = null;
+    }
   }
 
   // ─── Mini-map ─────────────────────────────────────────────────────────────
@@ -772,7 +821,13 @@ export class WorldScene extends Phaser.Scene {
       }
     }
 
-    if (this.pokedexVisible) return;
+    if (this.pokedexVisible) {
+      // ESC closes Pokédex
+      if (this.escKey && Phaser.Input.Keyboard.JustDown(this.escKey)) {
+        this.hidePokedex();
+      }
+      return;
+    }
 
     // Movement via velocity (physics-based) — always allow movement
     this.moveTimer -= delta;

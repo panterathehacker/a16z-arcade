@@ -471,9 +471,11 @@ export class BattleScene extends Phaser.Scene {
       bg.strokeRoundedRect(bx, by, this._btnW, this._btnH, 8);
     });
 
-    // Set answer text: "1  Answer text" format
+    // Set answer text: "1  Answer text" format — ensure visible and reset style
     q.options.forEach((opt, i) => {
       this.optionTexts[i].setText(`${i + 1}  ${opt}`);
+      this.optionTexts[i].setVisible(true);
+      this.optionTexts[i].setColor('#222222');
     });
 
     // Update Q counter
