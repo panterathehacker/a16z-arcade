@@ -1112,13 +1112,14 @@ export class WorldScene extends Phaser.Scene {
   update(time: number, delta: number): void {
     if (this.scene.isActive('BattleScene')) return;
     if (!this.gameReady) return;
+    if (!this.player || !this.player.body) return; // Guard against destroyed physics body
 
     if (this.playerNameLabel && this.player) {
       this.playerNameLabel.setPosition(this.player.x, this.player.y - 60);
     }
 
     // Zero out velocity (tile-based movement uses tweens)
-    this.player?.setVelocity(0);
+    if (this.player && this.player.body) this.player.setVelocity(0);
 
     if (Phaser.Input.Keyboard.JustDown(this.cKey)) {
       if (this.pokedexVisible) {
