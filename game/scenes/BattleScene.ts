@@ -359,6 +359,40 @@ export class BattleScene extends Phaser.Scene {
       align: 'center',
       wordWrap: { width: qPanelW - 20 },
     }).setOrigin(0.5, 0.5).setDepth(12).setVisible(false);
+
+    // X button — top right corner to quit battle
+    const exitBtnW = 44;
+    const exitBtnH = 44;
+    const exitBtnX = W - exitBtnW - 10;
+    const exitBtnY = 10;
+
+    const exitBg = this.add.graphics().setDepth(200).setScrollFactor(0);
+    exitBg.fillStyle(0xCC2222, 1.0);
+    exitBg.fillRoundedRect(exitBtnX, exitBtnY, exitBtnW, exitBtnH, 8);
+    exitBg.lineStyle(2, 0xFFFFFF, 0.8);
+    exitBg.strokeRoundedRect(exitBtnX, exitBtnY, exitBtnW, exitBtnH, 8);
+
+    this.add.text(exitBtnX + exitBtnW / 2, exitBtnY + exitBtnH / 2, '✕', {
+      fontFamily: 'monospace',
+      fontSize: '22px',
+      color: '#FFFFFF',
+    }).setOrigin(0.5).setDepth(201).setScrollFactor(0);
+
+    // Make it interactive
+    const exitZone = this.add.zone(exitBtnX, exitBtnY, exitBtnW, exitBtnH)
+      .setOrigin(0, 0)
+      .setDepth(202)
+      .setScrollFactor(0)
+      .setInteractive();
+
+    exitZone.on('pointerdown', () => {
+      this.returnToWorld();
+    });
+
+    // Also add ESC key to exit
+    this.input.keyboard?.on('keydown-ESC', () => {
+      this.returnToWorld();
+    });
   }
 
   private updateHPBars() {

@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic';
 const GameComponent = dynamic(() => import('../game/GameComponent'), {
   ssr: false,
   loading: () => (
-    <div className="flex items-center justify-center w-full h-full min-h-[900px] bg-gray-900 text-white font-mono">
+    <div className="flex items-center justify-center w-full h-full min-h-[660px] bg-gray-900 text-white font-mono">
       <div className="text-center">
         <div className="text-2xl mb-4 animate-pulse">Loading a16z Arcade...</div>
         <div className="text-sm text-gray-400">Press Start 2P</div>

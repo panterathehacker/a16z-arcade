@@ -18,8 +18,8 @@ export default function GameComponent() {
 
       const config: Phaser.Types.Core.GameConfig = {
         type: Phaser.AUTO,
-        width: 900,
-        height: 900,
+        width: 1100,
+        height: 660,
         parent: gameRef.current!,
         backgroundColor: '#78C850',
         scene: [BootScene, WorldScene, BattleScene],
@@ -36,8 +36,8 @@ export default function GameComponent() {
         scale: {
           mode: Phaser.Scale.FIT,
           autoCenter: Phaser.Scale.CENTER_BOTH,
-          width: 900,
-          height: 900,
+          width: 1100,
+          height: 660,
         },
       };
 
@@ -58,8 +58,8 @@ export default function GameComponent() {
     <div
       ref={gameRef}
       style={{
-        width: '900px',
-        height: '900px',
+        width: '1100px',
+        height: '660px',
         maxWidth: '100%',
         margin: '0 auto',
         display: 'block',

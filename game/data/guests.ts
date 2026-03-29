@@ -26,8 +26,8 @@ export const GUESTS: Guest[] = [
     name: 'Marc Andreessen',
     title: 'Co-Founder, a16z',
     color: 0x4169E1,
-    px: 200,  py: 640,   // safe open area bottom half
-    x: 15,   y: 7,
+    px: 448,  py: 256,   // center path area
+    x: 14,   y: 8,
     questions: [
       {
         text: 'Marc co-founded a16z with whom?',
@@ -61,8 +61,8 @@ export const GUESTS: Guest[] = [
     name: 'Ben Horowitz',
     title: 'Co-Founder, a16z',
     color: 0x8B0000,
-    px: 900,  py: 680,   // safe open area bottom half
-    x: 25,   y: 8,
+    px: 736,  py: 288,   // path area top
+    x: 23,   y: 9,
     questions: [
       {
         text: 'Ben Horowitz wrote which best-selling book for startup CEOs?',
@@ -96,8 +96,8 @@ export const GUESTS: Guest[] = [
     name: 'Jensen Huang',
     title: 'CEO, NVIDIA',
     color: 0x76B900,
-    px: 400,  py: 720,   // safe open area bottom half
-    x: 9,   y: 10,
+    px: 352,  py: 416,   // path top section
+    x: 11,   y: 13,
     questions: [
       {
         text: 'Jensen Huang co-founded NVIDIA in which year?',
@@ -131,8 +131,8 @@ export const GUESTS: Guest[] = [
     name: 'Lisa Su',
     title: 'CEO, AMD',
     color: 0xFF6B00,
-    px: 700,  py: 640,   // safe open area bottom half
-    x: 20,   y: 6,
+    px: 608,  py: 192,   // path near top
+    x: 19,   y: 6,
     questions: [
       {
         text: 'Lisa Su became CEO of AMD in which year?',
@@ -166,8 +166,8 @@ export const GUESTS: Guest[] = [
     name: 'Alexandr Wang',
     title: 'CEO, Scale AI',
     color: 0x00CED1,
-    px: 1000, py: 760,   // safe open area bottom half
-    x: 29,   y: 10,
+    px: 864,  py: 352,   // path top section
+    x: 27,   y: 11,
     questions: [
       {
         text: 'Alexandr Wang founded Scale AI at what age?',
@@ -201,8 +201,8 @@ export const GUESTS: Guest[] = [
     name: 'Sam Altman',
     title: 'CEO, OpenAI',
     color: 0x1A1A2E,
-    px: 200,  py: 820,   // safe open area bottom half
-    x: 6,   y: 13,
+    px: 192,  py: 544,   // middle section
+    x: 6,   y: 17,
     questions: [
       {
         text: 'Before becoming CEO of OpenAI, Sam Altman was president of which startup accelerator?',
@@ -236,8 +236,8 @@ export const GUESTS: Guest[] = [
     name: 'Satya Nadella',
     title: 'CEO, Microsoft',
     color: 0x00A4EF,
-    px: 500,  py: 780,   // safe open area bottom half
-    x: 17,   y: 15,
+    px: 544,  py: 512,   // middle section
+    x: 17,   y: 16,
     questions: [
       {
         text: 'Satya Nadella became Microsoft\'s CEO in which year?',
@@ -271,8 +271,8 @@ export const GUESTS: Guest[] = [
     name: 'Brian Chesky',
     title: 'CEO & Co-Founder, Airbnb',
     color: 0xFF5A5F,
-    px: 800,  py: 860,   // safe open area bottom half
-    x: 28,   y: 12,
+    px: 832,  py: 576,   // middle section
+    x: 26,   y: 18,
     questions: [
       {
         text: 'Brian Chesky co-founded Airbnb with Joe Gebbia and whom?',
@@ -306,8 +306,8 @@ export const GUESTS: Guest[] = [
     name: 'Patrick Collison',
     title: 'CEO & Co-Founder, Stripe',
     color: 0x6772E5,
-    px: 1050, py: 820,   // safe open area bottom half
-    x: 8,   y: 17,
+    px: 1056, py: 640,   // middle section
+    x: 33,   y: 20,
     questions: [
       {
         text: 'Patrick Collison co-founded Stripe with his brother whose name is?',
@@ -341,8 +341,8 @@ export const GUESTS: Guest[] = [
     name: 'Dario Amodei',
     title: 'CEO & Co-Founder, Anthropic',
     color: 0xCC785C,
-    px: 280,  py: 940,   // safe open area bottom half
-    x: 18,   y: 19,
+    px: 256,  py: 672,   // middle section
+    x: 8,   y: 21,
     questions: [
       {
         text: 'Dario Amodei left which company as VP of Research to co-found Anthropic?',
@@ -376,8 +376,8 @@ export const GUESTS: Guest[] = [
     name: 'Chris Dixon',
     title: 'General Partner, a16z Crypto',
     color: 0xF7931A,
-    px: 580,  py: 900,   // safe open area bottom half
-    x: 28,   y: 18,
+    px: 576,  py: 704,   // middle section
+    x: 18,   y: 22,
     questions: [
       {
         text: 'Chris Dixon leads which fund at a16z?',
@@ -411,8 +411,8 @@ export const GUESTS: Guest[] = [
     name: 'Sarah Guo',
     title: 'Founder, Conviction',
     color: 0xFF69B4,
-    px: 880,  py: 940,   // safe open area bottom half
-    x: 6,   y: 21,
+    px: 896,  py: 736,   // middle section
+    x: 28,   y: 23,
     questions: [
       {
         text: 'Sarah Guo founded which AI-focused venture firm?',
@@ -446,8 +446,8 @@ export const GUESTS: Guest[] = [
     name: 'Elad Gil',
     title: 'Investor & Advisor',
     color: 0x9370DB,
-    px: 200,  py: 1020,  // safe open area bottom half
-    x: 15,   y: 23,
+    px: 192,  py: 864,   // bottom section
+    x: 6,   y: 27,
     questions: [
       {
         text: 'Elad Gil co-founded which mobile/geo startup that was acquired by Twitter?',
@@ -481,8 +481,8 @@ export const GUESTS: Guest[] = [
     name: 'Andrew Chen',
     title: 'General Partner, a16z',
     color: 0xFF8C00,
-    px: 500,  py: 1000,  // safe open area bottom half
-    x: 25,   y: 21,
+    px: 512,  py: 896,   // bottom section
+    x: 16,   y: 28,
     questions: [
       {
         text: 'Andrew Chen is a General Partner at a16z focused on which stage and area?',
@@ -516,8 +516,8 @@ export const GUESTS: Guest[] = [
     name: 'Sonal Chokshi',
     title: 'Former Editor-in-Chief, a16z',
     color: 0x20B2AA,
-    px: 800,  py: 1020,  // safe open area bottom half
-    x: 32,   y: 19,
+    px: 800,  py: 832,   // bottom section
+    x: 25,   y: 26,
     questions: [
       {
         text: 'Before a16z, Sonal Chokshi was a senior editor at which iconic tech publication?',
@@ -551,8 +551,8 @@ export const GUESTS: Guest[] = [
     name: 'David George',
     title: 'General Partner, a16z Growth',
     color: 0xDC143C,
-    px: 1050, py: 980,   // safe open area bottom half
-    x: 10,   y: 23,
+    px: 1056, py: 896,   // bottom section
+    x: 33,   y: 28,
     questions: [
       {
         text: 'David George leads which fund at a16z?',
@@ -586,8 +586,8 @@ export const GUESTS: Guest[] = [
     name: 'Wade Foster',
     title: 'CEO & Co-Founder, Zapier',
     color: 0xFF4A00,
-    px: 300,  py: 1120,  // safe open area bottom half
-    x: 21,   y: 25,
+    px: 320,  py: 1024,  // bottom section
+    x: 10,   y: 32,
     questions: [
       {
         text: 'Zapier automates workflows by connecting which type of tools?',
@@ -621,8 +621,8 @@ export const GUESTS: Guest[] = [
     name: 'Tomer London',
     title: 'Co-Founder & CPO, Gusto',
     color: 0xF45D48,
-    px: 620,  py: 1080,  // safe open area bottom half
-    x: 6,   y: 28,
+    px: 640,  py: 992,   // bottom section
+    x: 20,   y: 31,
     questions: [
       {
         text: 'Tomer London co-founded which payroll and HR platform?',
@@ -656,8 +656,8 @@ export const GUESTS: Guest[] = [
     name: 'Balaji Srinivasan',
     title: 'Investor & Author',
     color: 0xF7A800,
-    px: 920,  py: 1140,  // safe open area bottom half
-    x: 17,   y: 27,
+    px: 960,  py: 1056,  // bottom section
+    x: 30,   y: 33,
     questions: [
       {
         text: 'Balaji Srinivasan wrote which book proposing internet-native governance structures?',
@@ -691,8 +691,8 @@ export const GUESTS: Guest[] = [
     name: 'Naval Ravikant',
     title: 'Founder, AngelList',
     color: 0x2D2D2D,
-    px: 200,  py: 1200,  // safe open area bottom half
-    x: 28,   y: 30,
+    px: 192,  py: 1120,  // bottom section
+    x: 6,   y: 35,
     questions: [
       {
         text: 'Naval Ravikant co-founded which platform that transformed early-stage startup investing?',
@@ -726,8 +726,8 @@ export const GUESTS: Guest[] = [
     name: 'Reid Hoffman',
     title: 'Co-Founder, LinkedIn',
     color: 0x0077B5,
-    px: 520,  py: 1180,  // safe open area bottom half
-    x: 7,   y: 31,
+    px: 512,  py: 1088,  // bottom section
+    x: 16,   y: 34,
     questions: [
       {
         text: 'Reid Hoffman co-founded which professional social network?',
@@ -761,8 +761,8 @@ export const GUESTS: Guest[] = [
     name: 'Steve Wozniak',
     title: 'Co-Founder, Apple',
     color: 0xA2AAAD,
-    px: 820,  py: 1200,  // safe open area bottom half
-    x: 20,   y: 31,
+    px: 800,  py: 1152,  // bottom section
+    x: 25,   y: 36,
     questions: [
       {
         text: 'Steve Wozniak co-founded Apple alongside Steve Jobs and whom?',
@@ -796,8 +796,8 @@ export const GUESTS: Guest[] = [
     name: 'Nicole Brichtova',
     title: 'Group PM, Google DeepMind',
     color: 0x4285F4,
-    px: 1050, py: 1160,  // safe open area bottom half
-    x: 31,   y: 33,
+    px: 1056, py: 1120,  // bottom section
+    x: 33,   y: 35,
     questions: [
       {
         text: 'Nicole Brichtova holds what role at Google DeepMind?',
@@ -831,8 +831,8 @@ export const GUESTS: Guest[] = [
     name: 'Tomer Cohen',
     title: 'CPO, LinkedIn',
     color: 0x0A66C2,
-    px: 380,  py: 1260,  // safe open area bottom half
-    x: 12,   y: 35,
+    px: 384,  py: 1216,  // bottom section (same y as player but different x)
+    x: 12,   y: 38,
     questions: [
       {
         text: 'Tomer Cohen serves as Chief Product Officer of which company?',
@@ -866,8 +866,8 @@ export const GUESTS: Guest[] = [
     name: 'Alex Karp',
     title: 'CEO, Palantir',
     color: 0x1C1C1E,
-    px: 720,  py: 1260,  // safe open area bottom half
-    x: 23,   y: 36,
+    px: 768,  py: 1248,  // bottom section
+    x: 24,   y: 39,
     questions: [
       {
         text: 'Alex Karp is CEO of which data analytics company?',
