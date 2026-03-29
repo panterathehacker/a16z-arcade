@@ -55,11 +55,31 @@ export class BattleScene extends Phaser.Scene {
     this.battleOver = false;
   }
 
+  preload() {
+    if (!this.textures.exists('battle-bg')) {
+      this.load.image('battle-bg', '/assets/battle/bg.png');
+    }
+    if (!this.textures.exists('battle-player-back')) {
+      this.load.image('battle-player-back', '/assets/battle/player-back.png');
+      this.load.image('battle-player-front', '/assets/battle/player-front.png');
+      this.load.image('battle-player-left', '/assets/battle/player-left.png');
+      this.load.image('battle-player-right', '/assets/battle/player-right.png');
+    }
+  }
+
   create() {
     const W = this.cameras.main.width;
     const H = this.cameras.main.height;
 
-    this.drawBattleBG(W, H);
+    // Use LennyRPG battle background if loaded
+    if (this.textures.exists('battle-bg')) {
+      this.add.image(0, 0, 'battle-bg')
+        .setOrigin(0, 0)
+        .setDisplaySize(W, H * 0.7)
+        .setDepth(0);
+    } else {
+      this.drawBattleBG(W, H);
+    }
 
     // Sprite positions — computed from W and H (same formula as drawBattleBG)
     const battleH = H * 0.7;
@@ -87,11 +107,13 @@ export class BattleScene extends Phaser.Scene {
         .setDepth(5);
     }
     
-    // Player sprite - lower LEFT platform, facing RIGHT toward guest
-    if (this.textures.exists('player_ai')) {
-      this.playerSprite = this.add.image(playerX, playerY, 'player_ai')
-        .setDisplaySize(110, 150)
-        .setFlipX(true)   // flip so player faces RIGHT toward guest
+    // Player sprite - use LennyRPG back sprite if available
+    const playerSpriteKey = this.textures.exists('battle-player-back') ? 'battle-player-back' : 
+                            (this.textures.exists('player_ai') ? 'player_ai' : null);
+    if (playerSpriteKey) {
+      this.playerSprite = this.add.image(playerX, playerY, playerSpriteKey)
+        .setDisplaySize(playerSpriteKey === 'battle-player-back' ? 90 : 110, 
+                        playerSpriteKey === 'battle-player-back' ? 130 : 150)
         .setOrigin(0.5, 1.0)
         .setDepth(5);
     }
