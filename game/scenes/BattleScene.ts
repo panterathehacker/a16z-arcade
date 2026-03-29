@@ -706,6 +706,26 @@ export class BattleScene extends Phaser.Scene {
   }
 
   private returnToWorld() {
+    // Clean up all keyboard listeners before stopping to prevent interference
+    if (this.input.keyboard) {
+      this.input.keyboard.removeAllListeners();
+    }
+    // Remove all event listeners from this scene
+    this.events.removeAllListeners();
+    
+    // Reset WorldScene dialogue state before resuming
+    const worldScene = this.scene.get('WorldScene') as any;
+    if (worldScene) {
+      worldScene.dialogueVisible = false;
+      worldScene.nearbyGuest = null;
+      worldScene.activeNPC = null;
+      worldScene.waitingForNext = false;
+      if (worldScene.dialogueOverlay) {
+        worldScene.dialogueOverlay.remove();
+        worldScene.dialogueOverlay = null;
+      }
+    }
+    
     this.scene.stop('BattleScene');
     this.scene.resume('WorldScene');
   }

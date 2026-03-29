@@ -127,6 +127,20 @@ export class WorldScene extends Phaser.Scene {
     // Grace period: disable dialogue triggers for 2 seconds after scene load
     this.dialogueGracePeriod = true;
     this.time.delayedCall(2000, () => { this.dialogueGracePeriod = false; });
+
+    // When resuming from battle, reset dialogue state
+    this.events.on('resume', () => {
+      this.dialogueVisible = false;
+      this.nearbyGuest = null;
+      this.activeNPC = null;
+      if (this.dialogueOverlay) {
+        this.dialogueOverlay.remove();
+        this.dialogueOverlay = null;
+      }
+      // Short grace period after battle so player doesn't immediately re-trigger
+      this.dialogueGracePeriod = true;
+      this.time.delayedCall(800, () => { this.dialogueGracePeriod = false; });
+    });
   }
 
   private async initPlayer() {
