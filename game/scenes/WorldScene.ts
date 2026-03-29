@@ -27,6 +27,7 @@ export class WorldScene extends Phaser.Scene {
 
   private worldLayer!: Phaser.Tilemaps.TilemapLayer;
   private npcSprites: Map<string, Phaser.GameObjects.Container> = new Map();
+  private npcGroup!: Phaser.Physics.Arcade.StaticGroup;
 
   private dialogueOverlay: HTMLDivElement | null = null;
   private playerNameLabel!: Phaser.GameObjects.Text;
@@ -105,7 +106,9 @@ export class WorldScene extends Phaser.Scene {
     this.physics.add.collider(this.player, this.worldLayer);
 
     // ── Spawn NPCs ────────────────────────────────────────────────────────
+    this.npcGroup = this.physics.add.staticGroup();
     this.spawnNPCs();
+    this.physics.add.collider(this.player, this.npcGroup);
 
     // ── Camera ────────────────────────────────────────────────────────────
     this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
@@ -316,6 +319,12 @@ export class WorldScene extends Phaser.Scene {
       container.add([sprite, labelText]);
       container.setDepth(5);
       this.npcSprites.set(guest.id, container);
+      
+      // Add invisible physics body for collision
+      const npcBody = this.physics.add.staticImage(guest.px, guest.py - 24, '__DEFAULT')
+        .setDisplaySize(32, 48)
+        .setVisible(false);
+      this.npcGroup.add(npcBody);
 
       this.tweens.add({
         targets: sprite,
@@ -430,18 +439,18 @@ export class WorldScene extends Phaser.Scene {
     right.style.cssText = `display: flex; flex-direction: column; flex: 1; overflow: hidden;`;
 
     const nameEl = document.createElement('div');
-    nameEl.style.cssText = `font-size: 13px; font-weight: bold; color: #000000; white-space: nowrap; letter-spacing: 1px; margin-bottom: 4px;`;
+    nameEl.style.cssText = `font-size: 20px; font-weight: bold; color: #000000; white-space: nowrap; letter-spacing: 1px; margin-bottom: 6px; font-family: "Press Start 2P", monospace;`;
     nameEl.textContent = guest.name.toUpperCase();
 
     const titleEl = document.createElement('div');
-    titleEl.style.cssText = `font-size: 8px; color: #555555; white-space: nowrap; margin-bottom: 8px;`;
+    titleEl.style.cssText = `font-size: 12px; color: #555555; white-space: nowrap; margin-bottom: 10px;`;
     titleEl.textContent = guest.title;
 
     const sep = document.createElement('hr');
     sep.style.cssText = `border: none; border-top: 1px solid #000; margin: 0 0 8px 0;`;
 
     const bodyEl = document.createElement('div');
-    bodyEl.style.cssText = `font-size: 10px; font-weight: bold; color: #000000; line-height: 1.8;`;
+    bodyEl.style.cssText = `font-size: 15px; font-weight: bold; color: #000000; line-height: 1.8; font-family: "Press Start 2P", monospace;`;
     bodyEl.textContent = `${guest.name.split(' ')[0]} has a challenge for you!`;
 
     right.appendChild(nameEl);
@@ -467,13 +476,13 @@ export class WorldScene extends Phaser.Scene {
     spacePill.style.cssText = `
       background: #000; color: #fff;
       font-family: "Press Start 2P", monospace;
-      font-size: 7px; padding: 3px 6px;
+      font-size: 11px; padding: 5px 10px;
       border-radius: 2px;
     `;
     spacePill.textContent = 'SPACE';
 
     const hintEl = document.createElement('span');
-    hintEl.style.cssText = `font-size: 7px; color: #333333;`;
+    hintEl.style.cssText = `font-size: 11px; color: #333333;`;
     hintEl.textContent = 'to battle  •  Walk away to cancel';
 
     const arrowEl = document.createElement('span');
