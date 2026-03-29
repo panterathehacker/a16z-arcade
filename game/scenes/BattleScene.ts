@@ -63,10 +63,10 @@ export class BattleScene extends Phaser.Scene {
 
     // Sprite positions — computed from W and H (same formula as drawBattleBG)
     const battleH = H * 0.7;
-    const guestX = W * 0.68;
-    const guestY = battleH * 0.44;  // guest platform Y
-    const playerX = W * 0.30;
-    const playerY = battleH * 0.62; // player platform Y
+    const guestX = W * 0.70;
+    const guestY = battleH * 0.50;  // guest stands on platform (feet on platform top)
+    const playerX = W * 0.28;
+    const playerY = battleH * 0.65; // player closer to camera (lower = closer)
 
     // Guest sprite - upper RIGHT platform
     const guestFileNames = [
@@ -82,15 +82,15 @@ export class BattleScene extends Phaser.Scene {
     
     if (guestTexKey) {
       this.guestSprite = this.add.image(guestX, guestY, guestTexKey)
-        .setDisplaySize(100, 130)
-        .setOrigin(0.5, 1.0)  // anchor at feet — stands ON platform
+        .setDisplaySize(140, 190)
+        .setOrigin(0.5, 1.0)  // anchor at feet
         .setDepth(5);
     }
     
     // Player sprite - lower LEFT platform, facing RIGHT toward guest
     if (this.textures.exists('player_ai')) {
       this.playerSprite = this.add.image(playerX, playerY, 'player_ai')
-        .setDisplaySize(80, 110)
+        .setDisplaySize(110, 150)
         .setFlipX(true)   // flip so player faces RIGHT toward guest
         .setOrigin(0.5, 1.0)
         .setDepth(5);
@@ -133,8 +133,8 @@ export class BattleScene extends Phaser.Scene {
     // ── D/P-style raised platforms (NOT flat ellipses) ──
 
     // Guest platform (upper-right): raised dirt/tan platform
-    const gpX = W * 0.68;
-    const gpY = battleH * 0.44;
+    const gpX = W * 0.70;
+    const gpY = battleH * 0.50;
     // Platform body (slightly raised above ground)
     bg.fillStyle(0xE8D890);
     bg.fillEllipse(gpX, gpY, 160, 28);
@@ -149,8 +149,8 @@ export class BattleScene extends Phaser.Scene {
     bg.strokeEllipse(gpX, gpY, 160, 28);
 
     // Player platform (lower-left)
-    const ppX = W * 0.30;
-    const ppY = battleH * 0.62;
+    const ppX = W * 0.28;
+    const ppY = battleH * 0.65;
     bg.fillStyle(0xE8D890);
     bg.fillEllipse(ppX, ppY, 190, 32);
     bg.fillStyle(0xC8B870);
@@ -218,76 +218,80 @@ export class BattleScene extends Phaser.Scene {
   private createBattleUI(W: number, H: number) {
     const battleAreaH = H * 0.7;
 
-    // === Guest HP Panel (top-left) ===
+    // === Guest HP Panel (top-left) - LennyRPG style ===
     const guestPanel = this.add.graphics();
-    guestPanel.fillStyle(0xF0F0F0, 0.97);
-    guestPanel.fillRoundedRect(10, 10, 280, 72, 8);
-    guestPanel.lineStyle(2, 0x303030);
-    guestPanel.strokeRoundedRect(10, 10, 280, 72, 8);
+    guestPanel.fillStyle(0xFFFFFF, 0.95);
+    guestPanel.fillRoundedRect(10, 10, 260, 80, 10);
+    guestPanel.lineStyle(3, 0x202020);
+    guestPanel.strokeRoundedRect(10, 10, 260, 80, 10);
 
-    this.add.text(20, 18, this.guest.name, {
+    // Guest name - bold, all caps
+    this.add.text(20, 20, this.guest.name.toUpperCase(), {
       fontFamily: '"Press Start 2P"',
-      fontSize: '8px',
+      fontSize: '9px',
       color: '#1a1a2e',
       resolution: 2,
     });
 
-    this.add.text(20, 32, this.guest.title, {
+    // Title smaller
+    this.add.text(20, 36, this.guest.title.slice(0, 24), {
       fontFamily: '"Press Start 2P"',
-      fontSize: '7px',
-      color: '#4a4a6e',
+      fontSize: '6px',
+      color: '#555577',
       resolution: 2,
     });
 
-    // Guest HP label
-    this.add.text(20, 44, 'HP', {
+    // HP label
+    this.add.text(20, 50, 'HP', {
       fontFamily: '"Press Start 2P"',
-      fontSize: '11px',
-      color: '#606060',
+      fontSize: '8px',
+      color: '#cc2222',
       resolution: 2,
     });
 
     const guestHPBg = this.add.graphics();
     guestHPBg.fillStyle(0x404040);
-    guestHPBg.fillRect(40, 46, 140, 12);
+    guestHPBg.fillRect(48, 50, 180, 10);
 
     this.guestHPBar = this.add.graphics();
-    this.guestHPText = this.add.text(240, 48, '100/100', {
+    this.guestHPText = this.add.text(200, 62, '', {
       fontFamily: '"Press Start 2P"',
-      fontSize: '11px',
+      fontSize: '7px',
       color: '#303030',
       resolution: 2,
     });
 
     // === Player HP Panel (bottom-right above battle menu) ===
     const playerPanel = this.add.graphics();
-    playerPanel.fillStyle(0xF0F0F0, 0.97);
-    playerPanel.fillRoundedRect(W - 240, battleAreaH - 70, 230, 64, 8);
-    playerPanel.lineStyle(2, 0x303030);
-    playerPanel.strokeRoundedRect(W - 240, battleAreaH - 70, 230, 64, 8);
+    playerPanel.fillStyle(0xFFFFFF, 0.95);
+    playerPanel.fillRoundedRect(W - 270, battleAreaH - 80, 260, 74, 10);
+    playerPanel.lineStyle(3, 0x202020);
+    playerPanel.strokeRoundedRect(W - 270, battleAreaH - 80, 260, 74, 10);
 
-    this.add.text(W - 230, battleAreaH - 62, 'PLAYER', {
+    // Player name (trainer name from localStorage or PLAYER)
+    const trainerName = (typeof localStorage !== 'undefined' ? localStorage.getItem('a16z_username') : null) || 'PLAYER';
+    this.add.text(W - 258, battleAreaH - 72, trainerName.toUpperCase().slice(0, 10), {
       fontFamily: '"Press Start 2P"',
-      fontSize: '11px',
+      fontSize: '10px',
       color: '#1a1a2e',
       resolution: 2,
     });
 
-    this.add.text(W - 230, battleAreaH - 48, 'HP', {
+    this.add.text(W - 258, battleAreaH - 56, 'HP', {
       fontFamily: '"Press Start 2P"',
-      fontSize: '11px',
-      color: '#606060',
+      fontSize: '8px',
+      color: '#cc2222',
       resolution: 2,
     });
 
     const playerHPBg = this.add.graphics();
     playerHPBg.fillStyle(0x404040);
-    playerHPBg.fillRect(W - 210, battleAreaH - 46, 140, 12);
+    playerHPBg.fillRect(W - 230, battleAreaH - 56, 180, 10);
 
     this.playerHPBar = this.add.graphics();
-    this.playerHPText = this.add.text(W - 60, battleAreaH - 50, '100/100', {
+    this.playerHPText = this.add.text(W - 258, battleAreaH - 42, '100 / 100', {
       fontFamily: '"Press Start 2P"',
-      fontSize: '11px',
+      fontSize: '8px',
       color: '#303030',
       resolution: 2,
     });
@@ -373,7 +377,7 @@ export class BattleScene extends Phaser.Scene {
     const guestPct = Math.max(0, this.guestHP) / 100;
     const guestColor = guestPct > 0.5 ? 0x40C840 : guestPct > 0.25 ? 0xC8C040 : 0xC84040;
     this.guestHPBar.fillStyle(guestColor);
-    this.guestHPBar.fillRect(40, 46, Math.round(140 * guestPct), 12);
+    this.guestHPBar.fillRect(48, 50, Math.round(180 * guestPct), 10);
     this.guestHPText.setText(`${Math.max(0, this.guestHP)}/100`);
 
     // Player HP bar
@@ -381,7 +385,7 @@ export class BattleScene extends Phaser.Scene {
     const playerPct = Math.max(0, this.playerHP) / 100;
     const playerColor = playerPct > 0.5 ? 0x40C840 : playerPct > 0.25 ? 0xC8C040 : 0xC84040;
     this.playerHPBar.fillStyle(playerColor);
-    this.playerHPBar.fillRect(W - 210, battleAreaH - 46, Math.round(140 * playerPct), 12);
+    this.playerHPBar.fillRect(W - 230, battleAreaH - 56, Math.round(180 * playerPct), 10);
     this.playerHPText.setText(`${Math.max(0, this.playerHP)}/100`);
   }
 
