@@ -1079,6 +1079,8 @@ export class WorldScene extends Phaser.Scene {
           if (this.scene.get('BattleScene')) {
             this.scene.stop('BattleScene');
           }
+          // Expand canvas height on mobile during battle
+          window.dispatchEvent(new CustomEvent('battle-start'));
           this.scene.launch('BattleScene', { guest, playerId: this.playerId });
           this.scene.pause('WorldScene');
         }

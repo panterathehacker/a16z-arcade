@@ -758,6 +758,8 @@ export class BattleScene extends Phaser.Scene {
       }
     }
     
+    // Restore normal canvas size on mobile
+    window.dispatchEvent(new CustomEvent('battle-end'));
     this.scene.stop('BattleScene');
     this.scene.resume('WorldScene');
   }

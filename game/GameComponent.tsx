@@ -54,6 +54,27 @@ export default function GameComponent() {
     };
   }, []);
 
+  // Expand canvas height during battles on mobile
+  useEffect(() => {
+    const container = gameRef.current;
+    const onBattleStart = () => {
+      if (container && window.innerWidth < 768) {
+        container.style.aspectRatio = '1100 / 900'; // taller for battle
+      }
+    };
+    const onBattleEnd = () => {
+      if (container) {
+        container.style.aspectRatio = '1100 / 660'; // back to normal
+      }
+    };
+    window.addEventListener('battle-start', onBattleStart);
+    window.addEventListener('battle-end', onBattleEnd);
+    return () => {
+      window.removeEventListener('battle-start', onBattleStart);
+      window.removeEventListener('battle-end', onBattleEnd);
+    };
+  }, []);
+
   return (
     <div
       ref={gameRef}
