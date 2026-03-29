@@ -107,13 +107,43 @@ export class BattleScene extends Phaser.Scene {
   private drawBattleBG(W: number, H: number) {
     const battleH = H * 0.65;
 
-    // Background: LennyRPG meadow bg
-    // Clear camera background so depth 0 image shows properly
-    this.cameras.main.setBackgroundColor('rgba(0,0,0,0)');
+    // Draw outdoor battle background (meadow scene)
+    this.cameras.main.setBackgroundColor('#000000');
+    const bgG = this.add.graphics().setDepth(0);
     
-    this.add.image(W / 2, battleH / 2, 'battle-bg')
-      .setDisplaySize(W, battleH)
-      .setDepth(0);
+    // Sky gradient layers (light blue top -> slightly warmer at horizon)
+    bgG.fillStyle(0x87CEEB); bgG.fillRect(0, 0, W, battleH * 0.45);
+    bgG.fillStyle(0x98D8F0); bgG.fillRect(0, 0, W, battleH * 0.15);
+    bgG.fillStyle(0xB0E8F8); bgG.fillRect(0, 0, W, battleH * 0.05);
+    bgG.fillStyle(0xA8DFF0); bgG.fillRect(0, battleH * 0.4, W, battleH * 0.08);
+    
+    // Distant hills/treeline (dark green silhouette)
+    bgG.fillStyle(0x4A8A30);
+    for (let i = 0; i < 8; i++) {
+      const hx = (W / 7) * i;
+      const hw = 160 + (i * 37) % 80;
+      const hh = 60 + (i * 23) % 40;
+      bgG.fillEllipse(hx, battleH * 0.47, hw, hh);
+    }
+    
+    // Ground (bright green grass)
+    bgG.fillStyle(0x5CB85C); bgG.fillRect(0, battleH * 0.44, W, battleH * 0.56);
+    bgG.fillStyle(0x6CC86C); bgG.fillRect(0, battleH * 0.44, W, battleH * 0.08);
+    
+    // Ground texture — horizontal lighter bands
+    bgG.fillStyle(0x70D070, 0.4);
+    for (let y = battleH * 0.5; y < battleH; y += 18) {
+      bgG.fillRect(0, y, W, 6);
+    }
+    
+    // Scattered flowers (white/yellow dots)
+    const flowerColors = [0xFFFFFF, 0xFFFF44, 0xFF88AA, 0xFFDD00];
+    for (let i = 0; i < 30; i++) {
+      const fx = (i * 137 + 40) % W;
+      const fy = battleH * 0.52 + (i * 73) % (battleH * 0.45);
+      bgG.fillStyle(flowerColors[i % 4]);
+      bgG.fillCircle(fx, fy, 3);
+    }
 
     const bg = this.add.graphics();
     bg.setDepth(1);
