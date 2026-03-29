@@ -197,7 +197,7 @@ export default function Home() {
             fontFamily: '"Press Start 2P", monospace',
             fontSize: '32px',
             color: '#FFD700',
-            textShadow: '0 0 20px rgba(255,215,0,0.5), 2px 2px 0px #4A0315',
+            textShadow: '3px 3px 0px #000000, 4px 4px 0px rgba(74,3,21,0.8), 0 0 20px rgba(255,215,0,0.5)',
           }}
         >
           a16z Arcade
@@ -231,66 +231,62 @@ export default function Home() {
       >
         {/* Left stats panel — desktop only */}
         <div className="hidden lg:flex flex-col mr-4" style={{
-          width: '180px',
-          minWidth: '180px',
-          background: '#1a0008',
-          border: '2px solid #FFD700',
+          width: '160px',
+          minWidth: '160px',
+          background: '#1a1a00',
+          border: '4px solid #FFD700',
           borderRadius: '4px',
-          padding: '16px',
+          padding: '14px 12px',
           fontFamily: '"Press Start 2P", monospace',
           alignSelf: 'flex-start',
+          boxShadow: '4px 4px 0px #000000, 6px 6px 0px rgba(255,215,0,0.3)',
         }}>
-          <div style={{ color: '#FFD700', fontSize: '9px', marginBottom: '12px', letterSpacing: '1px' }}>
+          {/* LEVEL */}
+          <div style={{ color: '#FFD700', fontSize: '9px', marginBottom: '8px', letterSpacing: '1px' }}>
             LEVEL {stats.level}
           </div>
 
           {/* XP Bar */}
-          <div style={{ fontSize: '7px', color: 'rgba(255,215,0,0.6)', marginBottom: '4px' }}>
-            {stats.xp}/{stats.xpToNext} XP
-          </div>
-          <div style={{ background: '#2a0010', height: '6px', borderRadius: '2px', marginBottom: '12px', overflow: 'hidden' }}>
+          <div style={{ background: '#111100', height: '6px', borderRadius: '1px', marginBottom: '4px', overflow: 'hidden' }}>
             <div style={{
               background: '#FFD700',
               height: '100%',
               width: `${xpPercent}%`,
-              borderRadius: '2px',
+              borderRadius: '1px',
               transition: 'width 0.4s ease',
             }} />
           </div>
+          <div style={{ fontSize: '8px', color: 'rgba(255,255,255,0.85)', marginBottom: '12px' }}>
+            {stats.xp}/{stats.xpToNext} XP
+          </div>
 
-          {/* HP Bar */}
-          <div style={{ color: 'rgba(255,215,0,0.8)', fontSize: '9px', marginBottom: '4px' }}>HP</div>
-          <div style={{ background: '#2a0010', height: '6px', borderRadius: '2px', marginBottom: '4px', overflow: 'hidden' }}>
+          {/* HP */}
+          <div style={{ color: '#FFD700', fontSize: '9px', marginBottom: '4px' }}>HP</div>
+          <div style={{ background: '#111100', height: '6px', borderRadius: '1px', marginBottom: '4px', overflow: 'hidden' }}>
             <div style={{
               background: hpPercent > 50 ? '#22cc44' : hpPercent > 25 ? '#D8C040' : '#D84040',
               height: '100%',
               width: `${hpPercent}%`,
-              borderRadius: '2px',
+              borderRadius: '1px',
               transition: 'width 0.4s ease',
             }} />
           </div>
-          <div style={{ color: '#FFD700', fontSize: '11px', fontWeight: 'bold', marginBottom: '16px' }}>
+          <div style={{ color: '#ffffff', fontSize: '16px', fontWeight: 'bold', marginBottom: '14px' }}>
             {stats.hp}/{stats.maxHp}
           </div>
 
-          {/* Divider */}
-          <div style={{ borderTop: '1px solid rgba(255,215,0,0.2)', marginBottom: '12px' }} />
-
-          {/* Captured */}
-          <div style={{ color: '#FFD700', fontSize: '8px', marginBottom: '6px', letterSpacing: '1px' }}>CAPTURED</div>
-          <div style={{ color: 'rgba(255,215,0,0.9)', fontSize: '18px', fontWeight: 'bold', marginBottom: '4px' }}>
-            {captured}/25
+          {/* CAPTURED */}
+          <div
+            style={{ color: '#FFD700', fontSize: '9px', marginBottom: '4px', letterSpacing: '1px', cursor: 'pointer', display: 'inline-block', transition: 'transform 0.1s', userSelect: 'none' }}
+            onClick={() => window.dispatchEvent(new CustomEvent('open-pokedex'))}
+            onMouseEnter={e => (e.currentTarget.style.transform = 'translateY(-1px)')}
+            onMouseLeave={e => (e.currentTarget.style.transform = 'translateY(0)')}
+            title="View Pokédex"
+          >
+            CAPTURED
           </div>
-
-          {/* Divider */}
-          <div style={{ borderTop: '1px solid rgba(255,215,0,0.2)', marginTop: '12px', marginBottom: '12px' }} />
-
-          {/* Controls reminder */}
-          <div style={{ fontSize: '6px', color: 'rgba(255,215,0,0.5)', lineHeight: 2.2 }}>
-            <div>WASD / ↑↓←→</div>
-            <div>SPACE: battle</div>
-            <div>1-4: answer</div>
-            <div>C: collection</div>
+          <div style={{ color: '#ffffff', fontSize: '16px', fontWeight: 'bold' }}>
+            {captured}/25
           </div>
         </div>
 
@@ -302,7 +298,7 @@ export default function Home() {
             minWidth: 0,
             border: '2px solid rgba(255,215,0,0.4)',
             borderRadius: '4px',
-            boxShadow: '0 0 30px rgba(255,215,0,0.15), 0 0 60px rgba(74,3,21,0.5)',
+            boxShadow: '4px 4px 0px #000000, 0 0 30px rgba(255,215,0,0.15), 0 0 60px rgba(74,3,21,0.5)',
           }}
         >
           <GameComponent />
@@ -324,6 +320,7 @@ export default function Home() {
           gridTemplateColumns: '1fr 1px 1fr',
           gap: '0',
           fontFamily: '"Press Start 2P", monospace',
+          boxShadow: '4px 4px 0px #000000',
         }}
       >
         {/* Left: How to Play */}
@@ -333,14 +330,14 @@ export default function Home() {
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {[
-              ['🕹', 'Arrow Keys or WASD to move'],
-              ['👾', 'Walk near guests to battle'],
-              ['⌨', 'Press 1-4 or ↑↓ + Enter to answer'],
-              ['📖', 'Press C to view collection'],
-            ].map(([icon, text]) => (
-              <div key={text as string} style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'rgba(255,215,0,0.75)', fontSize: '9px', lineHeight: 1.7 }}>
-                <span style={{ fontSize: '14px', minWidth: '20px' }}>{icon}</span>
-                <span>{text as string}</span>
+              'Arrow Keys or WASD to move',
+              'Walk near guests to battle',
+              'Level up to move on to the next map',
+              'Press C to view your collection',
+            ].map((text) => (
+              <div key={text} style={{ display: 'flex', alignItems: 'center', color: 'rgba(255,255,255,0.85)', fontSize: '9px', lineHeight: 1.7 }}>
+                <span style={{ display: 'inline-block', width: '12px', height: '12px', border: '1px solid rgba(255,255,255,0.5)', marginRight: '6px', flexShrink: 0 }} />
+                <span>{text}</span>
               </div>
             ))}
           </div>
@@ -355,7 +352,7 @@ export default function Home() {
             About this game:
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '9px', color: 'rgba(255,215,0,0.75)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '9px', color: 'rgba(255,255,255,0.85)' }}>
               <span>Inspired by</span>
               <span style={{ position: 'relative', cursor: 'pointer' }}
                 onMouseEnter={() => setShowTooltip(true)}
@@ -383,7 +380,7 @@ export default function Home() {
                     width: '280px',
                     fontFamily: '"Press Start 2P", monospace',
                     fontSize: '8px',
-                    color: 'rgba(255,215,0,0.85)',
+                    color: 'rgba(255,255,255,0.85)',
                     lineHeight: 2,
                     zIndex: 100,
                     boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
@@ -394,7 +391,7 @@ export default function Home() {
                 )}
               </span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '9px', color: 'rgba(255,215,0,0.75)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '9px', color: 'rgba(255,255,255,0.85)' }}>
               <span>Made by</span>
               <img
                 src="/assets/sprites/player-male/front.png"
@@ -423,7 +420,7 @@ export default function Home() {
                 <svg height="14" width="14" viewBox="0 0 16 16" style={{fill:"#FFD700",verticalAlign:"middle",marginRight:"4px"}}><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg> GitHub
               </a>
             </div>
-            <div style={{ fontSize: '6px', color: 'rgba(255,215,0,0.4)', lineHeight: 2, marginTop: '2px' }}>
+            <div style={{ fontSize: '6px', color: 'rgba(255,255,255,0.5)', lineHeight: 2, marginTop: '2px' }}>
               Fan project. Not affiliated with a16z.<br />Some art is AI-generated.
             </div>
           </div>

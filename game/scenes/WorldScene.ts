@@ -57,6 +57,13 @@ export class WorldScene extends Phaser.Scene {
   // Battle transition flag to prevent double-trigger
   private inBattleTransition = false;
 
+  // Tile-based movement (LennyRPG style)
+  private playerTileX = 11;
+  private playerTileY = 38;
+  private moveDelay = 200;
+  private lastMoveTime = 0;
+  private isMoving = false;
+
   // Encounter messages pool (LennyRPG-style randomized)
   private readonly encounterMessages = [
     "wants to quiz you!",
@@ -99,8 +106,8 @@ export class WorldScene extends Phaser.Scene {
     this.worldLayer  = map.createLayer('World', tileset!, 0, 0)!;
     const aboveLayer = map.createLayer('Above Player', tileset!, 0, 0);
 
-    // Use setCollisionByExclusion so all non-empty tiles in the World layer are solid.
-    this.worldLayer.setCollisionByExclusion([-1]);
+    // Use tile property 'collides' to mark only blocking tiles solid.
+    this.worldLayer.setCollisionByProperty({ collides: true });
 
     // Above layer renders on top of player
     aboveLayer?.setDepth(10);
@@ -118,7 +125,9 @@ export class WorldScene extends Phaser.Scene {
     const pSet = playerGender === 'female' ? 'player-female' : 'player-male';
     this.playerSpriteSet = pSet;
     this.player = this.physics.add.image(352, 1216, pSet + '_front');
-    this.player.setDisplaySize(64, 80);
+    this.playerTileX = Math.round(352 / 32);
+    this.playerTileY = Math.round(1216 / 32);
+    this.player.setDisplaySize(80, 100);
     this.player.setOrigin(0.5);
     this.player.setDepth(5);
     this.player.setCollideWorldBounds(true);
@@ -160,6 +169,11 @@ export class WorldScene extends Phaser.Scene {
     this.initPlayer();
 
     this.inBattleTransition = false;
+
+    // Listen for open-pokedex event from React UI
+    window.addEventListener('open-pokedex', () => {
+      if (!this.pokedexVisible) this.showPokedex();
+    });
 
     // Grace period: disable dialogue triggers for 2 seconds after scene load
     this.dialogueGracePeriod = true;
@@ -1077,14 +1091,15 @@ export class WorldScene extends Phaser.Scene {
   }
 
   // ─── Update loop ──────────────────────────────────────────────────────────
-  update(_time: number, delta: number): void {
+  update(time: number, delta: number): void {
     if (this.scene.isActive('BattleScene')) return;
     if (!this.gameReady) return;
 
     if (this.playerNameLabel && this.player) {
-      this.playerNameLabel.setPosition(this.player.x, this.player.y - 52);
+      this.playerNameLabel.setPosition(this.player.x, this.player.y - 60);
     }
 
+    // Zero out velocity (tile-based movement uses tweens)
     this.player.setVelocity(0);
 
     if (Phaser.Input.Keyboard.JustDown(this.cKey)) {
@@ -1102,56 +1117,74 @@ export class WorldScene extends Phaser.Scene {
       return;
     }
 
-    this.moveTimer -= delta;
+    // ── Tile-based movement (LennyRPG style) ──────────────────────────────
+    if (!this.isMoving && time - this.lastMoveTime >= this.moveDelay) {
+      let dx = 0;
+      let dy = 0;
+      let newDir = this.playerDir;
 
-    const speed = 160;
-    let vx = 0;
-    let vy = 0;
+      // Mobile D-pad
+      if (this.mobileDir === 'up') { dy = -1; newDir = 'up'; }
+      else if (this.mobileDir === 'down') { dy = 1; newDir = 'down'; }
+      else if (this.mobileDir === 'left') { dx = -1; newDir = 'left'; }
+      else if (this.mobileDir === 'right') { dx = 1; newDir = 'right'; }
 
-    if (this.mobileDir === 'up') { vy = -speed; this.playerDir = 'up'; }
-    else if (this.mobileDir === 'down') { vy = speed; this.playerDir = 'down'; }
-    else if (this.mobileDir === 'left') { vx = -speed; this.playerDir = 'left'; }
-    else if (this.mobileDir === 'right') { vx = speed; this.playerDir = 'right'; }
+      // Keyboard
+      if (this.cursors.left.isDown || this.wasd.left.isDown) { dx = -1; dy = 0; newDir = 'left'; }
+      else if (this.cursors.right.isDown || this.wasd.right.isDown) { dx = 1; dy = 0; newDir = 'right'; }
+      else if (this.cursors.up.isDown || this.wasd.up.isDown) { dy = -1; dx = 0; newDir = 'up'; }
+      else if (this.cursors.down.isDown || this.wasd.down.isDown) { dy = 1; dx = 0; newDir = 'down'; }
 
-    if (this.cursors.left.isDown || this.wasd.left.isDown) {
-      vx = -speed; vy = 0; this.playerDir = 'left';
-    } else if (this.cursors.right.isDown || this.wasd.right.isDown) {
-      vx = speed; vy = 0; this.playerDir = 'right';
-    } else if (this.cursors.up.isDown || this.wasd.up.isDown) {
-      vy = -speed; vx = 0; this.playerDir = 'up';
-    } else if (this.cursors.down.isDown || this.wasd.down.isDown) {
-      vy = speed; vx = 0; this.playerDir = 'down';
-    }
+      // Update sprite direction even if blocked
+      if (dx !== 0 || dy !== 0) {
+        this.playerDir = newDir;
+        if (newDir === 'up') {
+          this.player.setTexture(this.playerSpriteSet + '_back');
+          this.player.setFlipX(false);
+        } else if (newDir === 'down') {
+          this.player.setTexture(this.playerSpriteSet + '_front');
+          this.player.setFlipX(false);
+        } else if (newDir === 'left') {
+          this.player.setTexture(this.playerSpriteSet + '_right');
+          this.player.setFlipX(true);
+        } else if (newDir === 'right') {
+          this.player.setTexture(this.playerSpriteSet + '_right');
+          this.player.setFlipX(false);
+        }
 
-    // Block NPC tiles (LennyRPG collision approach)
-    if (vx !== 0 || vy !== 0) {
-      const checkX = this.player.x + (vx > 0 ? 20 : vx < 0 ? -20 : 0);
-      const checkY = this.player.y + (vy > 0 ? 20 : vy < 0 ? -20 : 0);
-      const nextTX = Math.floor(checkX / 32);
-      const nextTY = Math.floor(checkY / 32);
-      if (this.isOccupiedByNPC(nextTX, nextTY)) {
-        vx = 0; vy = 0;
-      }
-    }
+        const newTX = this.playerTileX + dx;
+        const newTY = this.playerTileY + dy;
 
-    this.player.setVelocity(vx, vy);
+        // Check world bounds
+        const mapW = this.worldLayer ? this.worldLayer.layer.width : 40;
+        const mapH = this.worldLayer ? this.worldLayer.layer.height : 40;
+        const inBounds = newTX >= 0 && newTY >= 0 && newTX < mapW && newTY < mapH;
 
-    if (vx !== 0 || vy !== 0) {
-      if (this.playerDir === 'up') {
-        this.player.setTexture(this.playerSpriteSet + '_back');
-        this.player.setFlipX(false);
-      } else if (this.playerDir === 'down') {
-        this.player.setTexture(this.playerSpriteSet + '_front');
-        this.player.setFlipX(false);
-      } else if (this.playerDir === 'left') {
-        this.player.setTexture(this.playerSpriteSet + '_right');
-        this.player.setFlipX(true);
-      } else if (this.playerDir === 'right') {
-        this.player.setTexture(this.playerSpriteSet + '_right');
-        this.player.setFlipX(false);
-      } else {
-        this.player.setTexture(this.playerSpriteSet + '_back');
-        this.player.setFlipX(false);
+        // Check tile collision
+        const tile = this.worldLayer?.getTileAt(newTX, newTY);
+        const tileBlocked = tile ? tile.collides : false;
+
+        // Check NPC collision
+        const npcBlocked = this.isOccupiedByNPC(newTX, newTY);
+
+        if (inBounds && !tileBlocked && !npcBlocked) {
+          this.playerTileX = newTX;
+          this.playerTileY = newTY;
+          this.isMoving = true;
+          this.lastMoveTime = time;
+
+          this.tweens.add({
+            targets: this.player,
+            x: newTX * 32 + 16,
+            y: newTY * 32 + 16,
+            duration: 150,
+            ease: 'Linear',
+            onComplete: () => { this.isMoving = false; },
+          });
+        } else {
+          // Bump but don't move
+          this.lastMoveTime = time;
+        }
       }
     }
 
