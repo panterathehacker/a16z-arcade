@@ -405,12 +405,21 @@ export default function Home() {
               <div style={{
                 width: '44px', height: '44px', flexShrink: 0,
                 borderRadius: '4px', border: '2px solid #FFD700',
-                backgroundImage: 'url(/assets/sprites/player-male/front.png)',
-                backgroundSize: '200% auto',
-                backgroundPosition: 'center 0%',
-                backgroundRepeat: 'no-repeat',
-                imageRendering: 'pixelated',
-              }} />
+                overflow: 'hidden',
+              }}>
+                <img
+                  src="/assets/sprites/player-male/front.png"
+                  alt="David"
+                  style={{
+                    width: '88px',
+                    height: 'auto',
+                    marginLeft: '-22px',
+                    marginTop: '-15px',
+                    imageRendering: 'pixelated',
+                    display: 'block',
+                  }}
+                />
+              </div>
               <a
                 href="https://x.com/davidpantera_"
                 target="_blank"

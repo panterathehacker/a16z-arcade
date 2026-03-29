@@ -864,39 +864,40 @@ export class BattleScene extends Phaser.Scene {
   }
 
   shutdown() {
-    // Called automatically by Phaser when scene is stopped
-    // Clean up all objects to prevent double-render on re-launch
-    this.children.removeAll(true); // destroy all children
-    if (this.input.keyboard) {
-      this.input.keyboard.removeAllListeners();
-    }
-    this.events.removeAllListeners();
+    // Called automatically by Phaser when scene.stop() runs
+    // Safe cleanup - don't removeAllListeners from input (causes crashes on re-launch)
+    this.time.removeAllEvents();
     this.tweens.killAll();
+    // Don't call this.children.removeAll() here - causes crashes on second battle
+    // Don't call this.input.keyboard.removeAllListeners() - causes crashes
+    // Don't call this.events.removeAllListeners() - interferes with Phaser internals
   }
 
   private returnToWorld() {
-    // Clean up all keyboard listeners before stopping to prevent interference
-    if (this.input.keyboard) {
-      this.input.keyboard.removeAllListeners();
-    }
-    // Remove all event listeners from this scene
-    this.events.removeAllListeners();
-    
-    // Reset WorldScene dialogue state before resuming
+    // WorldScene was never paused - just clean up and stop BattleScene
     const worldScene = this.scene.get('WorldScene') as any;
     if (worldScene) {
+      worldScene.inBattleTransition = false;
       worldScene.dialogueVisible = false;
       worldScene.nearbyGuest = null;
       worldScene.activeNPC = null;
-      worldScene.waitingForNext = false;
+      // Remove any stale dialogue overlay
+      const overlay = document.getElementById('a16z-dialogue-overlay');
+      if (overlay) overlay.remove();
       if (worldScene.dialogueOverlay) {
         worldScene.dialogueOverlay.remove();
         worldScene.dialogueOverlay = null;
       }
+      // Grace period so player doesn't immediately re-trigger dialogue
+      worldScene.dialogueGracePeriod = true;
+      if (worldScene.time) {
+        worldScene.time.delayedCall(800, () => { worldScene.dialogueGracePeriod = false; });
+      }
+      // Re-show mobile controls
+      if (worldScene.mobileDpad) worldScene.mobileDpad.style.display = 'block';
+      const interactBtn = document.getElementById('mobile-interact');
+      if (interactBtn) (interactBtn as HTMLDivElement).style.display = 'flex';
     }
-    
-    // Resume WorldScene first, then stop BattleScene
-    this.scene.resume('WorldScene');
     this.scene.stop('BattleScene');
   }
 

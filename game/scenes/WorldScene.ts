@@ -181,33 +181,7 @@ export class WorldScene extends Phaser.Scene {
     this.dialogueGracePeriod = true;
     this.time.delayedCall(2000, () => { this.dialogueGracePeriod = false; });
 
-    // When resuming from battle, reset dialogue state
-    this.events.on('resume', () => {
-      this.inBattleTransition = false; // Reset transition flag
-      this.dialogueVisible = false;
-      // Re-attach camera after battle using scene events (safe)
-      this.events.once('update', () => {
-        try {
-          if (this.player && this.cameras?.main) {
-            this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
-          }
-        } catch(e) { /* ignore */ }
-      });
-      this.nearbyGuest = null;
-      this.activeNPC = null;
-      this.inBattleTransition = false;
-      if (this.dialogueOverlay) {
-        this.dialogueOverlay.remove();
-        this.dialogueOverlay = null;
-      }
-      // Short grace period after battle so player doesn't immediately re-trigger
-      this.dialogueGracePeriod = true;
-      this.time.delayedCall(800, () => { this.dialogueGracePeriod = false; });
-      // Re-show mobile controls
-      if (this.mobileDpad) this.mobileDpad.style.display = 'block';
-      const interactBtn = document.getElementById('mobile-interact');
-      if (interactBtn) (interactBtn as HTMLDivElement).style.display = 'flex';
-    });
+    // No 'resume' handler needed - WorldScene never pauses now (BattleScene runs as overlay)
   }
 
   // ─── NPC tile collision (LennyRPG approach) ──────────────────────────────
@@ -243,10 +217,9 @@ export class WorldScene extends Phaser.Scene {
     // Pixel swirl transition (LennyRPG style) using DOM canvas overlay
     const gameCanvas = document.querySelector('canvas');
     if (!gameCanvas) {
-      // Fallback: just launch battle
+      // Fallback: just launch battle on top (no pause)
       if (this.scene.get('BattleScene')) this.scene.stop('BattleScene');
       this.scene.launch('BattleScene', { guest, playerId: this.playerId });
-      this.scene.pause('WorldScene');
       return;
     }
     
@@ -313,8 +286,8 @@ export class WorldScene extends Phaser.Scene {
           swirlCanvas.remove();
           // scene.start() cleanly restarts BattleScene each time
           // It handles stopping any existing instance automatically
-          this.scene.pause('WorldScene');
-          this.scene.start('BattleScene', { guest, playerId: this.playerId });
+          // Don't pause WorldScene! Launch BattleScene as overlay on top
+          this.scene.launch('BattleScene', { guest, playerId: this.playerId });
         }, 150);
       }
     };
@@ -1191,7 +1164,10 @@ export class WorldScene extends Phaser.Scene {
         const tile = this.worldLayer?.getTileAt(newTX, newTY);
         const tileBlocked = tile ? tile.collides : false;
 
-        if (inBounds && !tileBlocked) {
+        // Check NPC tile collision (player can stand adjacent but not ON the NPC tile)
+        const npcBlocked = this.isOccupiedByNPC(newTX, newTY);
+
+        if (inBounds && !tileBlocked && !npcBlocked) {
           this.playerTileX = newTX;
           this.playerTileY = newTY;
           this.isMoving = true;
