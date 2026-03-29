@@ -35,7 +35,7 @@ function xpPerCorrect(level: number): number {
 }
 
 function xpToNextLevel(level: number): number {
-  return 24 * xpPerCorrect(level);
+  return level === 1 ? 200 : 24 * xpPerCorrect(level);
 }
 
 export class BattleScene extends Phaser.Scene {
@@ -212,7 +212,7 @@ export class BattleScene extends Phaser.Scene {
     guestBox.id = 'a16z-guest-hp';
     guestBox.style.cssText = `
       position: fixed;
-      left: ${canvasRect.left + canvasRect.width * 0.42}px;
+      left: ${canvasRect.left + canvasRect.width * 0.30}px;
       top: ${canvasRect.top + 20}px;
       width: 260px;
       background: white;
@@ -681,6 +681,11 @@ export class BattleScene extends Phaser.Scene {
   }
 
   private showVictory() {
+    // Animate guest HP to 0
+    if (this.domGuestHPBar) {
+      this.domGuestHPBar.style.transition = 'width 0.8s ease';
+      this.domGuestHPBar.style.width = '0%';
+    }
     const W = this.cameras.main.width;
     const H = this.cameras.main.height;
     const menuY = H * 0.65;
@@ -740,6 +745,11 @@ export class BattleScene extends Phaser.Scene {
   }
 
   private showDefeat() {
+    // Animate player HP to 0
+    if (this.domPlayerHPBar) {
+      this.domPlayerHPBar.style.transition = 'width 0.8s ease';
+      this.domPlayerHPBar.style.width = '0%';
+    }
     const W = this.cameras.main.width;
     const H = this.cameras.main.height;
     const menuY = H * 0.65;
@@ -809,7 +819,7 @@ export class BattleScene extends Phaser.Scene {
       return total;
     };
     this.playerStats.xp = xpForCurrentLevel(this.playerStats.level);
-    this.playerStats.xpToNext = 24 * Math.min(10+5*(this.playerStats.level-1), 50);
+    this.playerStats.xpToNext = this.playerStats.level === 1 ? 200 : 24 * Math.min(10+5*(this.playerStats.level-1), 50);
     savePlayerStats(this.playerStats);
 
     this.time.delayedCall(500, () => {
