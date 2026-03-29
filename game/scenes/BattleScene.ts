@@ -309,12 +309,12 @@ export class BattleScene extends Phaser.Scene {
 
     // "↕ ENTER" 9px bottom-left
     // Arrow icon (big) + ENTER text (normal)
-    this.add.text(qPanelX + 4, menuY + menuH - 30, '↕', {
+    this.add.text(qPanelX + 4, menuY + menuH - 32, '↕', {
       fontFamily: 'monospace',
       fontSize: '28px',
       color: '#111111',
     }).setDepth(11);
-    this.add.text(qPanelX + 36, menuY + menuH - 30, 'ENTER', {
+    this.add.text(qPanelX + 36, menuY + menuH - 24, 'ENTER', {
       fontFamily: '"Press Start 2P"',
       fontSize: '13px',
       color: '#111111',
