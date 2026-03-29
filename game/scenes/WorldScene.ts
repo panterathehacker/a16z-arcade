@@ -197,38 +197,93 @@ export class WorldScene extends Phaser.Scene {
   private startBattleTransition(guest: Guest) {
     if (this.inBattleTransition) return;
     this.inBattleTransition = true;
+    
+    // CRITICAL: Remove dialogue overlay before battle starts
+    this.dialogueVisible = false;
+    if (this.dialogueOverlay) {
+      this.dialogueOverlay.remove();
+      this.dialogueOverlay = null;
+    }
 
-    const flash = this.add.graphics().setDepth(1000).setScrollFactor(0);
-    const W = this.cameras.main.width;
-    const H = this.cameras.main.height;
-
-    // Step 1: Flash white overlay (starts transparent)
-    flash.fillStyle(0xFFFFFF, 1);
-    flash.fillRect(0, 0, W, H);
-    flash.setAlpha(0);
-
-    this.tweens.add({
-      targets: flash,
-      alpha: { from: 0, to: 1 },
-      duration: 200,
-      yoyo: false,
-      onComplete: () => {
-        // Step 2: Swap to black
-        flash.clear();
-        flash.fillStyle(0x000000, 1);
-        flash.fillRect(0, 0, W, H);
-        flash.setAlpha(1);
-
-        // Step 3: Launch battle after brief pause
-        this.time.delayedCall(300, () => {
-          if (this.scene.get('BattleScene')) {
-            this.scene.stop('BattleScene');
+    // Pixel swirl transition (LennyRPG style) using DOM canvas overlay
+    const gameCanvas = document.querySelector('canvas');
+    if (!gameCanvas) {
+      // Fallback: just launch battle
+      if (this.scene.get('BattleScene')) this.scene.stop('BattleScene');
+      this.scene.launch('BattleScene', { guest, playerId: this.playerId });
+      this.scene.pause('WorldScene');
+      return;
+    }
+    
+    const swirlCanvas = document.createElement('canvas');
+    const rect = gameCanvas.getBoundingClientRect();
+    swirlCanvas.width = rect.width;
+    swirlCanvas.height = rect.height;
+    swirlCanvas.style.cssText = `
+      position: fixed;
+      left: ${rect.left}px;
+      top: ${rect.top}px;
+      width: ${rect.width}px;
+      height: ${rect.height}px;
+      z-index: 9998;
+      pointer-events: none;
+    `;
+    document.body.appendChild(swirlCanvas);
+    
+    const ctx = swirlCanvas.getContext('2d')!;
+    const W = swirlCanvas.width;
+    const H = swirlCanvas.height;
+    const gridSize = 16;
+    const blockW = W / gridSize;
+    const blockH = H / gridSize;
+    const centerX = gridSize / 2;
+    const centerY = gridSize / 2;
+    const duration = 1000;
+    const spiralTurns = 3;
+    const startTime = Date.now();
+    
+    const animate = () => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      
+      ctx.clearRect(0, 0, W, H);
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, W, H);
+      
+      for (let gy = 0; gy < gridSize; gy++) {
+        for (let gx = 0; gx < gridSize; gx++) {
+          const dx = gx - centerX + 0.5;
+          const dy = gy - centerY + 0.5;
+          const distance = Math.sqrt(dx*dx + dy*dy);
+          let angle = Math.atan2(dy, dx);
+          angle = -angle + Math.PI/2;
+          const normalizedAngle = ((angle + Math.PI*2) % (Math.PI*2)) / (Math.PI*2);
+          const maxDistance = Math.sqrt(centerX*centerX + centerY*centerY);
+          const normalizedDistance = distance / maxDistance;
+          const spiralValue = normalizedAngle + normalizedDistance * spiralTurns;
+          const normalizedSpiral = spiralValue / spiralTurns;
+          if (normalizedSpiral < progress) {
+            ctx.clearRect(gx*blockW, gy*blockH, blockW, blockH);
           }
+        }
+      }
+      
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      } else {
+        // Black out then launch
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0, 0, W, H);
+        setTimeout(() => {
+          swirlCanvas.remove();
+          if (this.scene.get('BattleScene')) this.scene.stop('BattleScene');
           this.scene.launch('BattleScene', { guest, playerId: this.playerId });
           this.scene.pause('WorldScene');
-        });
+        }, 150);
       }
-    });
+    };
+    
+    requestAnimationFrame(animate);
   }
 
   private async initPlayer() {
