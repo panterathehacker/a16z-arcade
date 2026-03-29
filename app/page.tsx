@@ -20,8 +20,8 @@ export default function Home() {
   return (
     <main
       className="min-h-screen flex flex-col items-center justify-center"
-      style={{ padding: 'env(safe-area-inset-top, 8px) 8px env(safe-area-inset-bottom, 8px) 8px' }}
       style={{
+        padding: 'env(safe-area-inset-top, 8px) 8px env(safe-area-inset-bottom, 8px) 8px',
         background: '#1a0008',
         backgroundImage: `
           linear-gradient(45deg, #2a0010 25%, transparent 25%),
