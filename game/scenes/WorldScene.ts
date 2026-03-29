@@ -186,13 +186,17 @@ export class WorldScene extends Phaser.Scene {
     genderRow.style.cssText = 'display:flex;gap:16px;justify-content:center;margin-bottom:24px;';
     let selectedGender = 'male';
     const genderBtns: HTMLButtonElement[] = [];
-    [{id:'male',icon:'👦',label:'HE/HIM'},{id:'female',icon:'👧',label:'SHE/HER'}].forEach(({id,icon,label},idx) => {
+    [{id:'male',icon:'male',label:'HE/HIM'},{id:'female',icon:'female',label:'SHE/HER'}].forEach(({id,icon,label},idx) => {
       const gb = document.createElement('button');
       const isSel = idx === 0;
       gb.style.cssText = 'font-family:"Press Start 2P",monospace;font-size:9px;background:' + (isSel?'#3050C0':'#0a0a2a') + ';color:#fff;border:2px solid ' + (isSel?'#80A0FF':'#303060') + ';border-radius:8px;padding:12px 18px;cursor:pointer;flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;';
       const iconEl = document.createElement('span');
-      iconEl.style.fontSize = '28px';
-      iconEl.textContent = icon;
+      iconEl.style.cssText = 'width:36px;height:36px;display:flex;align-items:center;justify-content:center;';
+      if (icon === 'male') {
+        iconEl.innerHTML = "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white' width='36' height='36'><circle cx='12' cy='4.5' r='2.5'/><rect x='10' y='8' width='4' height='9' rx='1'/><rect x='10' y='16' width='1.5' height='6' rx='0.5'/><rect x='12.5' y='16' width='1.5' height='6' rx='0.5'/></svg>";
+      } else {
+        iconEl.innerHTML = "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white' width='36' height='36'><circle cx='12' cy='4.5' r='2.5'/><path d='M9 8 Q12 8 15 8 L14 17 Q13 22 12 22 Q11 22 10 17 Z' /><line x1='12' y1='22' x2='12' y2='24' stroke='white' stroke-width='1.5'/></svg>";
+      }
       const labelEl = document.createElement('span');
       labelEl.textContent = label;
       gb.appendChild(iconEl); gb.appendChild(labelEl);

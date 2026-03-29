@@ -309,7 +309,7 @@ export class BattleScene extends Phaser.Scene {
 
     // "↕ ENTER" 9px bottom-left
     // Arrow icon (big) + ENTER text (normal)
-    this.add.text(qPanelX + 4, menuY + menuH - 50, '↕', {
+    this.add.text(qPanelX + 4, menuY + menuH - 53, '↕', {
       fontFamily: 'monospace',
       fontSize: '28px',
       color: '#111111',
