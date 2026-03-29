@@ -68,6 +68,11 @@ export class BattleScene extends Phaser.Scene {
   }
 
   create() {
+    // Destroy any leftover children from a previous run (prevents double-render on re-launch)
+    this.children.removeAll(true);
+    this.optionTexts = [];
+    this.optionBgs = [];
+
     const W = this.cameras.main.width;
     const H = this.cameras.main.height;
 
@@ -140,19 +145,23 @@ export class BattleScene extends Phaser.Scene {
     gPanel.lineStyle(3, 0x000000, 1.0);
     gPanel.strokeRoundedRect(gBoxX, gBoxY, gBoxW, gBoxH, 12);
 
-    // Name: 14px Press Start 2P bold ALL CAPS black
-    this.add.text(gBoxX + 12, gBoxY + 8, this.guest.name.toUpperCase(), {
+    // Name: shrink font if name is long to stay within 280px box
+    const guestNameUpper = this.guest.name.toUpperCase();
+    const nameFontSize = guestNameUpper.length > 14 ? '11px' : '14px';
+    this.add.text(gBoxX + 12, gBoxY + 8, guestNameUpper, {
       fontFamily: '"Press Start 2P"',
-      fontSize: '14px',
+      fontSize: nameFontSize,
       fontStyle: 'bold',
       color: '#000000',
       resolution: 2,
     }).setDepth(11);
 
-    // Title: 9px gray (#666)
-    this.add.text(gBoxX + 12, gBoxY + 30, this.guest.title.slice(0, 30), {
+    // Title: truncate and shrink font if too long to fit HP box
+    const titleText = this.guest.title.length > 20 ? this.guest.title.slice(0, 20) + '...' : this.guest.title;
+    const titleFontSize = this.guest.title.length > 16 ? '9px' : '11px';
+    this.add.text(gBoxX + 12, gBoxY + 30, titleText, {
       fontFamily: '"Press Start 2P"',
-      fontSize: '13px',
+      fontSize: titleFontSize,
       color: '#666666',
       resolution: 2,
     }).setDepth(11);
