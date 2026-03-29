@@ -475,6 +475,7 @@ export class WorldScene extends Phaser.Scene {
     const px = this.player.x;
     const py = this.player.y;
     for (const guest of GUESTS) {
+      if (guest.id === 'player') continue; // skip player entry
       const dx = Math.abs(guest.px - px);
       const dy = Math.abs(guest.py - py);
       // Within ~2 tiles (64px) in each direction
