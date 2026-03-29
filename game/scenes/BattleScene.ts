@@ -61,8 +61,14 @@ export class BattleScene extends Phaser.Scene {
 
     this.drawBattleBG(W, H);
 
-    // Guest sprite - find the npc_ai_{index} key that matches this guest
-    // npc_ai keys are loaded in order matching the GUESTS array (0-24, excluding player)
+    // Sprite positions — computed from W and H (same formula as drawBattleBG)
+    const battleH = H * 0.7;
+    const guestX = W * 0.68;
+    const guestY = battleH * 0.44;  // guest platform Y
+    const playerX = W * 0.30;
+    const playerY = battleH * 0.62; // player platform Y
+
+    // Guest sprite - upper RIGHT platform
     const guestFileNames = [
       'marc-andreessen','ben-horowitz','jensen-huang','lisa-su','alexandr-wang',
       'sam-altman','satya-nadella','brian-chesky','patrick-collison','dario-amodei',
@@ -72,21 +78,21 @@ export class BattleScene extends Phaser.Scene {
     ];
     const gIdx = guestFileNames.indexOf(this.guest.id);
     const guestTexKey = gIdx >= 0 && this.textures.exists(`npc_ai_${gIdx}`) ? `npc_ai_${gIdx}` : null;
+    console.log('[Battle] guest id:', this.guest.id, 'idx:', gIdx, 'key:', guestTexKey, 'pos:', guestX, guestY);
     
     if (guestTexKey) {
-      // Guest is on RIGHT platform (upper), anchor feet to platform
-      this.guestSprite = this.add.image(this._gpX, this._gpY, guestTexKey)
-        .setDisplaySize(96, 128)
-        .setOrigin(0.5, 1.0)  // anchor at feet
+      this.guestSprite = this.add.image(guestX, guestY, guestTexKey)
+        .setDisplaySize(100, 130)
+        .setOrigin(0.5, 1.0)  // anchor at feet — stands ON platform
         .setDepth(5);
     }
     
-    // Player sprite - back-facing (flip horizontally to face away)
+    // Player sprite - lower LEFT platform, facing RIGHT toward guest
     if (this.textures.exists('player_ai')) {
-      this.playerSprite = this.add.image(this._ppX, this._ppY, 'player_ai')
-        .setDisplaySize(72, 100)
-        .setFlipX(false)  // face LEFT (same direction as looking at guest on right)
-        .setOrigin(0.5, 1.0)  // anchor at feet so it stands ON the platform
+      this.playerSprite = this.add.image(playerX, playerY, 'player_ai')
+        .setDisplaySize(80, 110)
+        .setFlipX(true)   // flip so player faces RIGHT toward guest
+        .setOrigin(0.5, 1.0)
         .setDepth(5);
     }
 
@@ -215,20 +221,20 @@ export class BattleScene extends Phaser.Scene {
     // === Guest HP Panel (top-left) ===
     const guestPanel = this.add.graphics();
     guestPanel.fillStyle(0xF0F0F0, 0.97);
-    guestPanel.fillRoundedRect(10, 10, 220, 64, 8);
+    guestPanel.fillRoundedRect(10, 10, 280, 72, 8);
     guestPanel.lineStyle(2, 0x303030);
-    guestPanel.strokeRoundedRect(10, 10, 220, 64, 8);
+    guestPanel.strokeRoundedRect(10, 10, 280, 72, 8);
 
     this.add.text(20, 18, this.guest.name, {
       fontFamily: '"Press Start 2P"',
-      fontSize: '11px',
+      fontSize: '8px',
       color: '#1a1a2e',
       resolution: 2,
     });
 
-    this.add.text(20, 32, this.guest.title.slice(0, 22), {
+    this.add.text(20, 32, this.guest.title, {
       fontFamily: '"Press Start 2P"',
-      fontSize: '11px',
+      fontSize: '7px',
       color: '#4a4a6e',
       resolution: 2,
     });
@@ -246,7 +252,7 @@ export class BattleScene extends Phaser.Scene {
     guestHPBg.fillRect(40, 46, 140, 12);
 
     this.guestHPBar = this.add.graphics();
-    this.guestHPText = this.add.text(175, 42, '100/100', {
+    this.guestHPText = this.add.text(240, 48, '100/100', {
       fontFamily: '"Press Start 2P"',
       fontSize: '11px',
       color: '#303030',
