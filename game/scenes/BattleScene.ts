@@ -152,7 +152,7 @@ export class BattleScene extends Phaser.Scene {
     // Title: 9px gray (#666)
     this.add.text(gBoxX + 12, gBoxY + 30, this.guest.title.slice(0, 30), {
       fontFamily: '"Press Start 2P"',
-      fontSize: '9px',
+      fontSize: '13px',
       color: '#666666',
       resolution: 2,
     }).setDepth(11);
@@ -316,7 +316,7 @@ export class BattleScene extends Phaser.Scene {
     }).setDepth(11);
     this.add.text(qPanelX + 36, menuY + menuH - 40, 'ENTER', {
       fontFamily: '"Press Start 2P"',
-      fontSize: '13px',
+      fontSize: '17px',
       color: '#111111',
       resolution: 2,
     }).setDepth(11);
