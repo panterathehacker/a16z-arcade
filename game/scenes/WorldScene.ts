@@ -205,9 +205,9 @@ export class WorldScene extends Phaser.Scene {
   // ─── NPC tile collision (LennyRPG approach) ──────────────────────────────
   private isOccupiedByNPC(tx: number, ty: number): boolean {
     // Use live NPC tile positions (LennyRPG approach: check npcs array tile coords)
-    for(const [id, pos] of this.npcTilePositions) {
+    for(const [npcId, pos] of this.npcTilePositions) {
       if(pos.tx === tx && pos.ty === ty) {
-        console.log('[Collision] NPC blocked:', id, 'at tile', tx, ty, '(player at', this.playerTileX, this.playerTileY, ')');
+        console.log('[Collision] NPC blocked:', npcId, 'at tile', tx, ty, '(player at', this.playerTileX, this.playerTileY, ')');
         return true;
       }
     }
@@ -514,7 +514,7 @@ export class WorldScene extends Phaser.Scene {
       container.setDepth(5);
       this.npcSprites.set(guest.id, container);
       // Track tile position for collision (LennyRPG approach)
-      this.npcTilePositions.set(guest.id, { tx: Math.round(guest.px/32), ty: Math.round(guest.py/32) });
+      this.npcTilePositions.set(guest.id, { tx: Math.floor(guest.px/32), ty: Math.floor(guest.py/32) });
       
       this.tweens.add({
         targets: sprite,
