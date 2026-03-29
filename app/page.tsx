@@ -1,7 +1,6 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import Link from 'next/link';
 
 const GameComponent = dynamic(() => import('../game/GameComponent'), {
   ssr: false,
@@ -50,24 +49,7 @@ export default function Home() {
         <span className="text-gray-400">C</span> for Pokédex
       </div>
 
-      <div className="mt-4">
-        <Link
-          href="/leaderboard"
-          style={{
-            fontFamily: '"Press Start 2P", monospace',
-            fontSize: '7px',
-            color: '#60A0FF',
-            textDecoration: 'none',
-            border: '2px solid #4060C0',
-            padding: '8px 16px',
-            borderRadius: '6px',
-            background: '#1a1a3e',
-            display: 'inline-block',
-          }}
-        >
-          ★ Leaderboard
-        </Link>
-      </div>
+
     </main>
   );
 }
