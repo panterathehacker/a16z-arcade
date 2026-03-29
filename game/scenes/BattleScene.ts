@@ -81,7 +81,7 @@ export class BattleScene extends Phaser.Scene {
 
     if (texKey && this.textures.exists(texKey)) {
       this.guestSprite = this.add.image(this._gpX, this._gpY, texKey)
-        .setDisplaySize(130, 180)
+        .setDisplaySize(180, 250)
         .setOrigin(0.5, 1.0)
         .setDepth(5);
     }
@@ -91,7 +91,7 @@ export class BattleScene extends Phaser.Scene {
                           : (this.textures.exists('player_ai') ? 'player_ai' : null);
     if (playerSpriteKey) {
       this.playerSprite = this.add.image(this._ppX, this._ppY, playerSpriteKey)
-        .setDisplaySize(100, 140)
+        .setDisplaySize(140, 195)
         .setOrigin(0.5, 1.0)
         .setDepth(5);
     }
