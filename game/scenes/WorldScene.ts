@@ -60,7 +60,7 @@ export class WorldScene extends Phaser.Scene {
   // Tile-based movement (LennyRPG style)
   private playerTileX = 11;
   private playerTileY = 38;
-  private moveDelay = 200;
+  private moveDelay = 120;
   private lastMoveTime = 0;
   private isMoving = false;
 
@@ -212,12 +212,16 @@ export class WorldScene extends Phaser.Scene {
     if (this.inBattleTransition) return;
     this.inBattleTransition = true;
     
-    // CRITICAL: Remove dialogue overlay before battle starts
+    // CRITICAL: Remove ALL dialogue overlays before battle starts
     this.dialogueVisible = false;
+    this.nearbyGuest = null;
+    this.activeNPC = null;
     if (this.dialogueOverlay) {
       this.dialogueOverlay.remove();
       this.dialogueOverlay = null;
     }
+    // Also remove any stale overlays by z-index (belt and suspenders)
+    document.querySelectorAll('[style*="z-index: 500"]').forEach(el => el.remove());
 
     // Pixel swirl transition (LennyRPG style) using DOM canvas overlay
     const gameCanvas = document.querySelector('canvas');
@@ -1177,7 +1181,7 @@ export class WorldScene extends Phaser.Scene {
             targets: this.player,
             x: newTX * 32 + 16,
             y: newTY * 32 + 16,
-            duration: 150,
+            duration: 100,
             ease: 'Linear',
             onComplete: () => { this.isMoving = false; },
           });

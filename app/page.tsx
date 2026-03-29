@@ -335,8 +335,8 @@ export default function Home() {
               'Level up to move on to the next map',
               'Press C to view your collection',
             ].map((text) => (
-              <div key={text} style={{ display: 'flex', alignItems: 'center', color: 'rgba(255,255,255,0.85)', fontSize: '9px', lineHeight: 1.7 }}>
-                <span style={{ display: 'inline-block', width: '12px', height: '12px', border: '1px solid rgba(255,255,255,0.5)', marginRight: '6px', flexShrink: 0 }} />
+              <div key={text} style={{ display: 'flex', alignItems: 'flex-start', color: 'rgba(255,255,255,0.85)', fontSize: '9px', lineHeight: 1.7 }}>
+                <span style={{ display: 'inline-block', width: '10px', height: '10px', border: '2px solid rgba(255,255,255,0.7)', marginRight: '8px', flexShrink: 0, marginTop: '2px', borderRadius: '1px' }} />
                 <span>{text}</span>
               </div>
             ))}
