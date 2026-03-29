@@ -222,13 +222,16 @@ export class WorldScene extends Phaser.Scene {
       const labelEl = document.createElement('span');
       labelEl.textContent = label;
       gb.appendChild(iconEl); gb.appendChild(labelEl);
+      const capturedId = id; // capture in local scope
+      gb.setAttribute('data-gender', capturedId);
       gb.addEventListener('click', () => {
-        selectedGender = id;
-        localStorage.setItem('a16z_gender', id);
-        genderBtns.forEach((b, i) => {
-          const s = i===(id==='male'?0:1);
-          b.style.background = s?'#3050C0':'#0a0a2a';
-          b.style.borderColor = s?'#80A0FF':'#303060';
+        selectedGender = capturedId;
+        localStorage.setItem('a16z_gender', capturedId);
+        console.log('[Gender] Clicked:', capturedId, 'saved to localStorage:', localStorage.getItem('a16z_gender'));
+        genderBtns.forEach((b) => {
+          const isThis = b.getAttribute('data-gender') === capturedId;
+          b.style.background = isThis?'#3050C0':'#0a0a2a';
+          b.style.borderColor = isThis?'#80A0FF':'#303060';
         });
       });
       genderBtns.push(gb);
@@ -691,7 +694,7 @@ export class WorldScene extends Phaser.Scene {
         if (spriteDataUrl) {
           const img = document.createElement('img');
           img.src = spriteDataUrl;
-          img.style.cssText = `width: 90px; height: 90px; object-fit: contain; image-rendering: pixelated;`;
+          img.style.cssText = `width: 130px; height: 130px; object-fit: contain; image-rendering: pixelated;`;
           imgWrapper.appendChild(img);
         } else {
           imgWrapper.style.cssText += `background: #202040; border-radius: 50%;`;
