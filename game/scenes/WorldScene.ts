@@ -181,6 +181,7 @@ export class WorldScene extends Phaser.Scene {
 
     // When resuming from battle, reset dialogue state
     this.events.on('resume', () => {
+      this.inBattleTransition = false; // Reset transition flag
       this.dialogueVisible = false;
       this.nearbyGuest = null;
       this.activeNPC = null;

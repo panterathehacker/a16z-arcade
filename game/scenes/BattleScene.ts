@@ -94,7 +94,7 @@ export class BattleScene extends Phaser.Scene {
     this.questions = [...this.guest.questions];
     this.currentQ = 0;
     this.playerStats = loadPlayerStats();
-    this.playerHP = this.playerStats.hp;
+    this.playerHP = this.playerStats.maxHp; // Always start battle at full HP
     this.guestHP = 100;
     this.waitingForNext = false;
     this.battleOver = false;
@@ -654,7 +654,8 @@ export class BattleScene extends Phaser.Scene {
       this.currentQ++;
 
       if (this.playerHP <= 0) {
-        this.showBlackout();
+        // HP completely drained - game over but keep progress
+        this.showGameOver();
         return;
       }
 
@@ -792,6 +793,34 @@ export class BattleScene extends Phaser.Scene {
     this.time.delayedCall(500, () => {
       this.keys.space.on('down', () => this.returnToWorld());
       // Mobile: tap anywhere to exit
+      this.input.on('pointerdown', () => this.returnToWorld());
+    });
+  }
+
+  private showGameOver() {
+    this.battleOver = true;
+    const W = this.cameras.main.width;
+    const H = this.cameras.main.height;
+    const menuY = H * 0.65;
+    const menuH = H - menuY;
+    
+    const bg = this.add.graphics().setDepth(20);
+    bg.fillStyle(0x1a0008, 0.97);
+    bg.fillRect(0, menuY, W, menuH);
+    bg.lineStyle(4, 0xFFD700, 1.0);
+    bg.strokeRect(0, menuY, W, menuH);
+    
+    this.add.text(W/2, menuY+20, 'GAME OVER', { fontFamily: '"Press Start 2P"', fontSize: '20px', color: '#FFD700', resolution: 2 }).setOrigin(0.5,0).setDepth(21);
+    this.add.text(W/2, menuY+55, 'You ran out of HP!', { fontFamily: '"Press Start 2P"', fontSize: '11px', color: '#FFFFFF', resolution: 2 }).setOrigin(0.5,0).setDepth(21);
+    this.add.text(W/2, menuY+80, 'Your Pokédex & Level are saved.', { fontFamily: '"Press Start 2P"', fontSize: '9px', color: '#AAAAAA', resolution: 2 }).setOrigin(0.5,0).setDepth(21);
+    this.add.text(W/2, menuY+110, typeof window !== 'undefined' && 'ontouchstart' in window ? 'TAP to continue' : 'Press SPACE to continue', { fontFamily: '"Press Start 2P"', fontSize: '10px', color: '#888888', resolution: 2 }).setOrigin(0.5,0).setDepth(21);
+    
+    // Reset HP to max (but keep level/xp/captures)
+    this.playerStats.hp = this.playerStats.maxHp;
+    savePlayerStats(this.playerStats);
+    
+    this.time.delayedCall(500, () => {
+      this.keys.space.on('down', () => this.returnToWorld());
       this.input.on('pointerdown', () => this.returnToWorld());
     });
   }

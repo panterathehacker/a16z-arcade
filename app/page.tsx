@@ -336,7 +336,7 @@ export default function Home() {
               'Press C to view your collection',
             ].map((text) => (
               <div key={text} style={{ display: 'flex', alignItems: 'flex-start', color: 'rgba(255,255,255,0.85)', fontSize: '9px', lineHeight: 1.7 }}>
-                <span style={{ display: 'inline-block', width: '10px', height: '10px', border: '2px solid rgba(255,255,255,0.7)', marginRight: '8px', flexShrink: 0, marginTop: '3px', borderRadius: '1px', background: 'rgba(255,255,255,0.1)' }}>&nbsp;</span>
+                <span style={{ color: 'rgba(255,255,255,0.6)', marginRight: '8px', fontSize: '12px', flexShrink: 0, lineHeight: 1 }}>▪</span>
                 <span>{text}</span>
               </div>
             ))}
@@ -393,11 +393,13 @@ export default function Home() {
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '9px', color: 'rgba(255,255,255,0.85)' }}>
               <span>Made by</span>
-              <img
-                src="/assets/sprites/player-male/front.png"
-                alt="David"
-                style={{ width: '20px', height: '20px', imageRendering: 'pixelated', borderRadius: '2px' }}
-              />
+              <div style={{ width: '44px', height: '44px', overflow: 'hidden', imageRendering: 'pixelated', borderRadius: '4px', border: '2px solid #FFD700', flexShrink: 0 }}>
+                <img
+                  src="/assets/sprites/player-male/front.png"
+                  alt="David"
+                  style={{ width: '44px', height: '88px', imageRendering: 'pixelated', objectFit: 'none', objectPosition: '0 0' }}
+                />
+              </div>
               <a
                 href="https://x.com/davidpantera_"
                 target="_blank"
