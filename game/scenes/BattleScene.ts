@@ -124,18 +124,23 @@ export class BattleScene extends Phaser.Scene {
     console.log('[Battle] guest id:', this.guest.id, 'idx:', idx, 'key:', texKey);
 
     if (texKey && this.textures.exists(texKey)) {
-      // Start off-screen right, slide in with Back.easeOut
-      this.guestSprite = this.add.image(W + 200, this._gpY, texKey)
+      // floatIn: drops from above + scales up (exact LennyRPG BattleScreen.vue floatIn keyframe)
+      // from: translateY(-100px) scale(0.5) opacity 0 → to: translateY(0) scale(1) opacity 1
+      // duration: 0.6s, ease: cubic-bezier(0.34, 1.56, 0.64, 1), delay: 0.3s
+      this.guestSprite = this.add.image(this._gpX, this._gpY - 100, texKey)
         .setDisplaySize(200, 270)
         .setOrigin(0.5, 1.0)
         .setDepth(5)
-        .setAlpha(0);
+        .setAlpha(0)
+        .setScale(0.5);
       this.tweens.add({
         targets: this.guestSprite,
-        x: this._gpX,
+        y: this._gpY,
+        scaleX: 1,
+        scaleY: 1,
         alpha: 1,
-        duration: 500,
-        delay: 200,
+        duration: 600,
+        delay: 300,
         ease: 'Back.easeOut',
       });
     }
@@ -146,18 +151,23 @@ export class BattleScene extends Phaser.Scene {
     const playerSpriteKey = this.textures.exists(pSet + '_back') ? (pSet + '_back')
                           : (this.textures.exists('player_ai') ? 'player_ai' : null);
     if (playerSpriteKey) {
-      // Start off-screen left, slide in with Back.easeOut
-      this.playerSprite = this.add.image(-200, this._ppY, playerSpriteKey)
+      // slideIn: slides from right + scales up (exact LennyRPG BattleScreen.vue slideIn keyframe)
+      // from: translateX(150px) scale(0.5) opacity 0 → to: translateX(0) scale(1) opacity 1
+      // duration: 0.6s, ease: cubic-bezier(0.34, 1.56, 0.64, 1), delay: 0.5s
+      this.playerSprite = this.add.image(this._ppX + 150, this._ppY, playerSpriteKey)
         .setDisplaySize(160, 220)
         .setOrigin(0.5, 1.0)
         .setDepth(5)
-        .setAlpha(0);
+        .setAlpha(0)
+        .setScale(0.5);
       this.tweens.add({
         targets: this.playerSprite,
         x: this._ppX,
+        scaleX: 1,
+        scaleY: 1,
         alpha: 1,
-        duration: 500,
-        delay: 100,
+        duration: 600,
+        delay: 500,
         ease: 'Back.easeOut',
       });
     }

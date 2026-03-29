@@ -670,14 +670,21 @@ export class WorldScene extends Phaser.Scene {
       } catch (_) { /* fallback to URL */ }
     }
 
-    // Inject arrowBounce animation once (dialogSlideUp removed — using JS transition instead)
+    // Inject exact LennyRPG EncounterDialog.vue keyframe animations once
     if (!document.getElementById('a16z-dialogue-styles')) {
       const style = document.createElement('style');
       style.id = 'a16z-dialogue-styles';
       style.textContent = `
+        @keyframes dialogSlideUp {
+          from { transform: translateX(-50%) translateY(100px); opacity: 0; }
+          to   { transform: translateX(-50%) translateY(0);     opacity: 1; }
+        }
         @keyframes arrowBounce {
-          0%, 100% { transform: translateY(0); opacity: 1; }
-          50% { transform: translateY(4px); opacity: 0.6; }
+          0%, 100% { transform: translateY(0);  opacity: 1;   }
+          50%       { transform: translateY(4px); opacity: 0.6; }
+        }
+        #a16z-dialogue-overlay {
+          animation: dialogSlideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
       `;
       document.head.appendChild(style);
@@ -685,11 +692,11 @@ export class WorldScene extends Phaser.Scene {
 
     const canvas = document.querySelector('canvas');
     const canvasRect = canvas ? canvas.getBoundingClientRect() : { left: 0, bottom: window.innerHeight, top: 0, width: window.innerWidth, height: window.innerHeight, right: window.innerWidth };
-    // Position like LennyRPG: inside canvas, with gap at bottom (8% from bottom of canvas)
-    const dialogBottom = canvasRect.bottom - canvasRect.height * 0.12; // more gap from bottom
-    const dlgBottomFromViewport = window.innerHeight - dialogBottom;
-    const dlgWidth = Math.min(canvasRect.width - 80, 800); // smaller, more margin
+    // Bottom offset: LennyRPG uses bottom: calc(55% - 320px + 20px) relative to the game canvas.
+    // We compute the equivalent fixed-position bottom from the viewport.
     const canvasCenter = canvasRect.left + canvasRect.width / 2;
+    const dlgBottomFromViewport = window.innerHeight - (canvasRect.top + canvasRect.height * 0.55 - 320 + 20 + canvasRect.height);
+    const dlgWidth = Math.min(canvasRect.width - 80, 880); // LennyRPG uses 880px max
 
     const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
     const randomMsg = this.encounterMessages[Math.floor(Math.random() * this.encounterMessages.length)];
@@ -697,16 +704,17 @@ export class WorldScene extends Phaser.Scene {
 
     const overlay = document.createElement('div');
     overlay.id = 'a16z-dialogue-overlay';
+    // Exact LennyRPG .pokemon-dialog-container positioning:
+    // position: fixed; left: 50%; transform: translateX(-50%); z-index: 800
+    // The animation itself includes translateX(-50%) in both from/to so no jump occurs.
     overlay.style.cssText = `
       position: fixed;
       left: ${canvasCenter}px;
-      bottom: ${dlgBottomFromViewport}px;
+      bottom: ${Math.max(dlgBottomFromViewport, 20)}px;
       width: ${dlgWidth}px;
-      transform: translateX(-50%) translateY(60px);
-      opacity: 0;
+      transform: translateX(-50%);
       z-index: 500;
       box-sizing: border-box;
-      transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.35s ease;
     `;
 
     // Inner card — LennyRPG pokemon-textbox style
@@ -774,14 +782,6 @@ export class WorldScene extends Phaser.Scene {
     overlay.appendChild(card);
     document.body.appendChild(overlay);
     this.dialogueOverlay = overlay;
-
-    // Trigger slide-up transition after DOM insertion (LennyRPG style: center-anchored, no jump)
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        overlay.style.transform = 'translateX(-50%) translateY(0)';
-        overlay.style.opacity = '1';
-      });
-    });
   }
 
   private hideDialogue(): void {
