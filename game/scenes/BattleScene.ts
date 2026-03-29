@@ -86,7 +86,7 @@ export class BattleScene extends Phaser.Scene {
     }
 
     // Player sprite — left mound, back-facing
-    const playerSpriteKey = this.textures.exists('battle-player-back') ? 'battle-player-back'
+    const playerSpriteKey = this.textures.exists('player_ai') ? 'player_ai'
                           : (this.textures.exists('player_ai') ? 'player_ai' : null);
     if (playerSpriteKey) {
       this.playerSprite = this.add.image(this._ppX, this._ppY, playerSpriteKey)
@@ -113,10 +113,10 @@ export class BattleScene extends Phaser.Scene {
       .setDepth(0);
 
     // Sprite foot positions that land on the two dirt mounds in the image
-    this._gpX = W * 0.70;   // right mound — guest feet X
-    this._gpY = H * 0.32;   // guest feet Y (origin 0.5, 1.0 so body extends upward)
-    this._ppX = W * 0.28;   // left mound — player feet X
-    this._ppY = H * 0.52;   // player feet Y
+    this._gpX = W * 0.62;   // right mound — guest feet X
+    this._gpY = H * 0.40;   // guest feet Y (origin 0.5, 1.0 so body extends upward)
+    this._ppX = W * 0.33;   // left mound — player feet X
+    this._ppY = H * 0.47;   // player feet Y
   }
 
   // ─────────────────────────────────────────────
