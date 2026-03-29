@@ -826,7 +826,7 @@ export const GUESTS: Guest[] = [
       },
       {
         text: "What was a notable 'wow moment' mentioned in the podcast about the Nano Banana model's performance?",
-        options: ["The model could generate a perfect 3D representation from a single image", "The model's release on Ellarina led to unexpectedly high user engagement and demand", "The model could autonomously create entire novels", "The model's ability to understand multiple languages without additional training"],
+        options: ["The model could generate a perfect 3D representation from a single image", "The model's release on LMArena led to unexpectedly high user engagement and demand", "The model could autonomously create entire novels", "The model's ability to understand multiple languages without additional training"],
         correct: 1,
       },
       {
