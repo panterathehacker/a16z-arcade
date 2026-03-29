@@ -32,6 +32,7 @@ export class WorldScene extends Phaser.Scene {
 
   private worldLayer!: Phaser.Tilemaps.TilemapLayer;
   private npcSprites: Map<string, Phaser.GameObjects.Container> = new Map();
+  private npcTilePositions: Map<string, {tx: number, ty: number}> = new Map();
   private npcGroup!: Phaser.Physics.Arcade.StaticGroup;
 
   private dialogueOverlay: HTMLDivElement | null = null;
@@ -202,10 +203,11 @@ export class WorldScene extends Phaser.Scene {
 
   // ─── NPC tile collision (LennyRPG approach) ──────────────────────────────
   private isOccupiedByNPC(tx: number, ty: number): boolean {
-    return GUESTS.some(g => {
-      if (g.id === 'player') return false;
-      return Math.round(g.px / 32) === tx && Math.round(g.py / 32) === ty;
-    });
+    // Use live NPC tile positions (LennyRPG approach: check npcs array tile coords)
+    for(const [id, pos] of this.npcTilePositions) {
+      if(pos.tx === tx && pos.ty === ty) return true;
+    }
+    return false;
   }
 
   // ─── Battle Transition (Feature 1: LennyRPG-inspired pixel swirl/flash) ──
@@ -221,9 +223,11 @@ export class WorldScene extends Phaser.Scene {
       this.dialogueOverlay.remove();
       this.dialogueOverlay = null;
     }
-    // Also remove any stale overlays by z-index (belt and suspenders)
     const staleOverlay = document.getElementById('a16z-dialogue-overlay');
     if (staleOverlay) staleOverlay.remove();
+    
+    // Pause WorldScene immediately to prevent any further updates/triggers
+    this.scene.pause('WorldScene');
 
     // Pixel swirl transition (LennyRPG style) using DOM canvas overlay
     const gameCanvas = document.querySelector('canvas');
@@ -298,7 +302,6 @@ export class WorldScene extends Phaser.Scene {
           swirlCanvas.remove();
           if (this.scene.get('BattleScene')) this.scene.stop('BattleScene');
           this.scene.launch('BattleScene', { guest, playerId: this.playerId });
-          this.scene.pause('WorldScene');
         }, 150);
       }
     };
@@ -505,6 +508,8 @@ export class WorldScene extends Phaser.Scene {
       container.add([sprite, labelText]);
       container.setDepth(5);
       this.npcSprites.set(guest.id, container);
+      // Track tile position for collision (LennyRPG approach)
+      this.npcTilePositions.set(guest.id, { tx: Math.round(guest.px/32), ty: Math.round(guest.py/32) });
       
       this.tweens.add({
         targets: sprite,

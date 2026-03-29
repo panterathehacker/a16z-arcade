@@ -249,7 +249,7 @@ export default function Home() {
           {/* XP Bar */}
           <div style={{ background: '#111100', height: '6px', borderRadius: '1px', marginBottom: '4px', overflow: 'hidden' }}>
             <div style={{
-              background: '#FFD700',
+              background: '#22cc44',
               height: '100%',
               width: `${xpPercent}%`,
               borderRadius: '1px',
@@ -393,11 +393,11 @@ export default function Home() {
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '9px', color: 'rgba(255,255,255,0.85)' }}>
               <span>Made by</span>
-              <div style={{ width: '44px', height: '44px', overflow: 'hidden', imageRendering: 'pixelated', borderRadius: '4px', border: '2px solid #FFD700', flexShrink: 0, background: 'transparent' }}>
+              <div style={{ width: '44px', height: '44px', overflow: 'hidden', imageRendering: 'pixelated', borderRadius: '4px', border: '2px solid #FFD700', flexShrink: 0 }}>
                 <img
                   src="/assets/sprites/player-male/front.png"
                   alt="David"
-                  style={{ width: '88px', height: 'auto', marginLeft: '-22px', marginTop: '-8px', imageRendering: 'pixelated' }}
+                  style={{ width: '88px', height: 'auto', marginLeft: '-22px', marginTop: '-4px', imageRendering: 'pixelated', display: 'block' }}
                 />
               </div>
               <a
