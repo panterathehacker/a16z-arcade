@@ -115,8 +115,8 @@ export class BattleScene extends Phaser.Scene {
     // Sprite foot positions that land on the two dirt mounds in the image
     this._gpX = W * 0.655;   // right mound — guest feet X
     this._gpY = H * 0.37;   // guest feet Y (origin 0.5, 1.0 so body extends upward)
-    this._ppX = W * 0.305;   // left mound — player feet X
-    this._ppY = H * 0.44;   // player feet Y
+    this._ppX = W * 0.35;   // left mound — player feet X
+    this._ppY = H * 0.50;   // player feet Y
   }
 
   // ─────────────────────────────────────────────
