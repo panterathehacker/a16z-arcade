@@ -283,6 +283,13 @@ export class WorldScene extends Phaser.Scene {
       overlay.remove();
       this.usernameOverlay = null;
       this.input.keyboard?.enableGlobalCapture();
+      // Update sprite set based on chosen gender
+      const chosenGender = localStorage.getItem('a16z_gender') || 'male';
+      this.playerSpriteSet = chosenGender === 'female' ? 'player-female' : 'player-male';
+      if (this.player && this.textures.exists(this.playerSpriteSet + '_front')) {
+        this.player.setTexture(this.playerSpriteSet + '_front');
+        this.player.setFlipX(false);
+      }
       this.gameReady = true;
       // Update player name label
       if (this.playerNameLabel) {
@@ -791,17 +798,21 @@ export class WorldScene extends Phaser.Scene {
     if (vx !== 0 || vy !== 0) {
       if (this.playerDir === 'up') {
         this.player.setTexture(this.playerSpriteSet + '_back');
+        this.player.setFlipX(false);
       } else if (this.playerDir === 'down') {
         this.player.setTexture(this.playerSpriteSet + '_front');
         this.player.setFlipX(false);
+        this.player.setFlipX(false);
       } else if (this.playerDir === 'left') {
-        this.player.setTexture(this.playerSpriteSet + '_left');
+        this.player.setTexture(this.playerSpriteSet + '_right');
+        this.player.setFlipX(true);
         this.player.setFlipX(false);
       } else if (this.playerDir === 'right') {
         this.player.setTexture(this.playerSpriteSet + '_right');
         this.player.setFlipX(false);
       } else {
         this.player.setTexture(this.playerSpriteSet + '_back');
+        this.player.setFlipX(false);
         this.player.setFlipX(false);
       }
     }
