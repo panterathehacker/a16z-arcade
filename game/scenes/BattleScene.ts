@@ -129,7 +129,7 @@ export class BattleScene extends Phaser.Scene {
     // ────────────────────────────────────────────
     // Guest HP box: position (W*0.30, H*0.03), 280×90px
     // ────────────────────────────────────────────
-    const gBoxX = 220;
+    const gBoxX = 170;
     const gBoxY = H * 0.03;
     const gBoxW = 280;
     const gBoxH = 90;
