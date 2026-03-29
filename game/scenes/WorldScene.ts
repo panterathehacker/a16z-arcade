@@ -221,7 +221,8 @@ export class WorldScene extends Phaser.Scene {
       this.dialogueOverlay = null;
     }
     // Also remove any stale overlays by z-index (belt and suspenders)
-    document.querySelectorAll('[style*="z-index: 500"]').forEach(el => el.remove());
+    const staleOverlay = document.getElementById('a16z-dialogue-overlay');
+    if (staleOverlay) staleOverlay.remove();
 
     // Pixel swirl transition (LennyRPG style) using DOM canvas overlay
     const gameCanvas = document.querySelector('canvas');
@@ -655,6 +656,7 @@ export class WorldScene extends Phaser.Scene {
   // ─── Dialogue Box (DOM overlay) ───────────────────────────────────────────
   private showDialogue(guest: Guest): void {
     if (this.dialogueVisible) return;
+    if (this.inBattleTransition) return; // Don't show during transition
     this.dialogueVisible = true;
     this.nearbyGuest = guest;
     this.activeNPC = guest;
@@ -801,6 +803,7 @@ export class WorldScene extends Phaser.Scene {
 
     overlay.appendChild(inner);
     overlay.appendChild(bottomBar);
+    overlay.id = 'a16z-dialogue-overlay';
     document.body.appendChild(overlay);
     this.dialogueOverlay = overlay;
   }

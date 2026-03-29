@@ -336,7 +336,7 @@ export default function Home() {
               'Press C to view your collection',
             ].map((text) => (
               <div key={text} style={{ display: 'flex', alignItems: 'flex-start', color: 'rgba(255,255,255,0.85)', fontSize: '9px', lineHeight: 1.7 }}>
-                <span style={{ display: 'inline-block', width: '10px', height: '10px', border: '2px solid rgba(255,255,255,0.7)', marginRight: '8px', flexShrink: 0, marginTop: '2px', borderRadius: '1px' }} />
+                <span style={{ display: 'inline-block', width: '10px', height: '10px', border: '2px solid rgba(255,255,255,0.7)', marginRight: '8px', flexShrink: 0, marginTop: '3px', borderRadius: '1px', background: 'rgba(255,255,255,0.1)' }}>&nbsp;</span>
                 <span>{text}</span>
               </div>
             ))}
