@@ -673,10 +673,10 @@ export class BattleScene extends Phaser.Scene {
   private navigateOption(dir: number) {
     if (this.waitingForNext || this.battleOver) return;
     this.selectedOption = (this.selectedOption + dir + 4) % 4;
-    this.highlightOption(this.selectedOption);
+    this.highlightSelected(this.selectedOption);
   }
 
-  private highlightOption(idx: number) {
+  private highlightSelected(idx: number) {
     this.optionBgs.forEach((bg, i) => {
       bg.clear();
       const bx = this._btnAreaX;
