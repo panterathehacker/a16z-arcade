@@ -715,7 +715,7 @@ export class WorldScene extends Phaser.Scene {
 
     const overlay = document.createElement('div');
     overlay.id = 'a16z-dialogue-overlay';
-    overlay.style.cssText = `position:fixed;bottom:${dlgBottomFromViewport}px;left:${canvasRect.left + 40}px;width:${dlgWidth}px;z-index:500;box-sizing:border-box;`;
+    overlay.style.cssText = `position:fixed;bottom:${dlgBottomFromViewport}px;left:${canvasRect.left + 40}px;width:${dlgWidth}px;z-index:500;box-sizing:border-box;transform:translateY(0);`;
 
     // Inner card — LennyRPG pokemon-textbox style
     const card = document.createElement('div');

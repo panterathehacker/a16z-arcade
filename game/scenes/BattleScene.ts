@@ -212,7 +212,7 @@ export class BattleScene extends Phaser.Scene {
     guestBox.id = 'a16z-guest-hp';
     guestBox.style.cssText = `
       position: fixed;
-      left: ${canvasRect.left + 20}px;
+      left: ${canvasRect.left + canvasRect.width * 0.42}px;
       top: ${canvasRect.top + 20}px;
       width: 260px;
       background: white;
@@ -282,6 +282,9 @@ export class BattleScene extends Phaser.Scene {
     this.domPlayerHP = playerBox;
     this.domPlayerHPBar = document.getElementById('a16z-player-hp-bar') as HTMLDivElement;
     this.domPlayerHPText = document.getElementById('a16z-player-hp-text');
+    
+    // Now that DOM is ready, update HP bars with actual current HP values
+    this.updateHPBars();
 
     // Stub out legacy Phaser HP objects to avoid null errors
     this.guestHPBar = this.add.graphics().setDepth(12).setVisible(false);
@@ -354,7 +357,7 @@ export class BattleScene extends Phaser.Scene {
 
       const qText = document.createElement('div');
       qText.id = 'battle-q-text';
-      qText.style.cssText = 'flex:1;font-size:13px;line-height:1.8;color:#000;word-wrap:break-word;overflow-wrap:break-word;white-space:normal;';
+      qText.style.cssText = 'flex:1;font-size:12px;line-height:1.7;color:#000;word-wrap:break-word;overflow-wrap:break-word;white-space:normal;overflow:hidden;max-height:120px;';
       qText.textContent = '';
       leftPanel.appendChild(qText);
 
@@ -399,7 +402,7 @@ export class BattleScene extends Phaser.Scene {
         num.textContent = `${i + 1}`;
         const text = document.createElement('span');
         text.id = `battle-answer-text-${i}`;
-        text.style.cssText = 'font-size:10px;line-height:1.5;color:#000;flex:1;word-wrap:break-word;overflow-wrap:break-word;white-space:normal;';
+        text.style.cssText = 'font-size:9px;line-height:1.4;color:#000;flex:1;word-wrap:break-word;overflow-wrap:break-word;white-space:normal;overflow:hidden;';
         btn.appendChild(num);
         btn.appendChild(text);
 
