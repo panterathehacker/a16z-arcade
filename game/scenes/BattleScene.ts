@@ -107,18 +107,16 @@ export class BattleScene extends Phaser.Scene {
   private drawBattleBG(W: number, H: number) {
     const battleH = H * 0.65;
 
-    // Background: always use LennyRPG meadow bg (loaded in BootScene)
-    // Use try/catch in case texture not yet available
-    try {
-      this.add.image(W / 2, battleH / 2, 'battle-bg')
-        .setDisplaySize(W, battleH)
-        .setDepth(-1);
-    } catch(e) {
-      // fallback solid green
-      const fb = this.add.graphics().setDepth(-1);
-      fb.fillStyle(0x5aa828);
-      fb.fillRect(0, 0, W, battleH);
-    }
+    // Background: LennyRPG meadow bg
+    // Log all available texture keys for debugging
+    const allKeys = this.textures.getTextureKeys();
+    console.log('[Battle] Available textures:', allKeys.slice(0, 10));
+    console.log('[Battle] Has battle-bg:', allKeys.includes('battle-bg'));
+    
+    // Add bg image - will show missing texture placeholder if not loaded
+    this.add.image(W / 2, battleH / 2, 'battle-bg')
+      .setDisplaySize(W, battleH)
+      .setDepth(-1);
 
     const bg = this.add.graphics();
     bg.setDepth(1);
