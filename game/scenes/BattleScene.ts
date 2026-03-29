@@ -20,7 +20,7 @@ function loadPlayerStats(): PlayerStats {
     const raw = localStorage.getItem('a16z_player_stats');
     if (raw) return JSON.parse(raw);
   } catch (_) { /* */ }
-  return { level: 1, xp: 0, xpToNext: 200, hp: 100, maxHp: 100 };
+  return { level: 1, xp: 0, xpToNext: 150, hp: 100, maxHp: 100 };
 }
 
 function savePlayerStats(stats: PlayerStats): void {
@@ -35,7 +35,9 @@ function xpPerCorrect(level: number): number {
 }
 
 function xpToNextLevel(level: number): number {
-  return level === 1 ? 200 : 24 * xpPerCorrect(level);
+  if (level === 1) return 150;
+  if (level === 2) return 250;
+  return Infinity; // Level 3 is max
 }
 
 export class BattleScene extends Phaser.Scene {
@@ -282,7 +284,7 @@ export class BattleScene extends Phaser.Scene {
     playerBox.id = 'a16z-player-hp';
     playerBox.style.cssText = `
       position: fixed;
-      left: ${canvasRect.left + canvasRect.width * 0.35}px;
+      left: ${canvasRect.left + canvasRect.width * 0.38}px;
       bottom: ${window.innerHeight - canvasRect.bottom + 100}px;
       width: 240px;
       background: white;

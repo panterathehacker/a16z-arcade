@@ -68,7 +68,8 @@ export default function Home() {
     };
   }, []);
 
-  const xpPercent = Math.min(100, Math.round((stats.xp / stats.xpToNext) * 100));
+  const isMaxLevel = stats.level >= 3;
+  const xpPercent = isMaxLevel ? 100 : Math.min(100, Math.round((stats.xp / stats.xpToNext) * 100));
   const hpPercent = Math.min(100, Math.round((stats.hp / stats.maxHp) * 100));
 
   const linkStyle = (id: string) => ({
@@ -266,7 +267,7 @@ export default function Home() {
             }} />
           </div>
           <div style={{ fontSize: '8px', color: 'rgba(255,255,255,0.85)', marginBottom: '12px' }}>
-            {stats.xp}/{stats.xpToNext} XP
+            {isMaxLevel ? "MAX LEVEL" : }
           </div>
 
           {/* HP */}
@@ -415,7 +416,7 @@ export default function Home() {
               >
                 David Pantera
               </a>
-              <span style={{ color: 'rgba(255,215,0,0.4)' }}>◆</span>
+              <span style={{ color: '#FFD700' }}>◆</span>
               <a
                 href="https://github.com/panterathehacker/a16z-arcade"
                 target="_blank"
