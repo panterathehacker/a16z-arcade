@@ -45,7 +45,7 @@ export default function Home() {
             position: 'fixed',
             inset: 0,
             background: 'rgba(26, 0, 8, 0.96)',
-            zIndex: 9999,
+            zIndex: 99999,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
