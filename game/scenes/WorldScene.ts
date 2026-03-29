@@ -1121,8 +1121,7 @@ export class WorldScene extends Phaser.Scene {
     }
 
     // Zero out velocity (tile-based movement uses tweens)
-    if (!this.player) return;
-    this.player.setVelocity(0);
+    this.player?.setVelocity(0);
 
     if (Phaser.Input.Keyboard.JustDown(this.cKey)) {
       if (this.pokedexVisible) {
