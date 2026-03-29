@@ -21,7 +21,7 @@ export default function GameComponent() {
         width: 1100,
         height: 660,
         parent: gameRef.current!,
-        backgroundColor: '#78C850',
+        backgroundColor: '#000000',
         scene: [BootScene, WorldScene, BattleScene],
         pixelArt: true,
         antialias: false,

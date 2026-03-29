@@ -185,11 +185,13 @@ export class WorldScene extends Phaser.Scene {
     this.events.on('resume', () => {
       this.inBattleTransition = false; // Reset transition flag
       this.dialogueVisible = false;
-      // Re-attach camera after battle (deferred to avoid undefined camera on resume)
-      this.time.delayedCall(50, () => {
-        if (this.player && this.cameras && this.cameras.main) {
-          this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
-        }
+      // Re-attach camera after battle using scene events (safe)
+      this.events.once('update', () => {
+        try {
+          if (this.player && this.cameras?.main) {
+            this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
+          }
+        } catch(e) { /* ignore */ }
       });
       this.nearbyGuest = null;
       this.activeNPC = null;
@@ -1189,11 +1191,7 @@ export class WorldScene extends Phaser.Scene {
         const tile = this.worldLayer?.getTileAt(newTX, newTY);
         const tileBlocked = tile ? tile.collides : false;
 
-        // Check NPC collision (LennyRPG: block if NPC tile matches)
-        const npcBlocked = this.isOccupiedByNPC(newTX, newTY);
-        if(npcBlocked) console.log('[Collision] NPC blocked at', newTX, newTY);
-
-        if (inBounds && !tileBlocked && !npcBlocked) {
+        if (inBounds && !tileBlocked) {
           this.playerTileX = newTX;
           this.playerTileY = newTY;
           this.isMoving = true;
