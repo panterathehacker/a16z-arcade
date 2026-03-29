@@ -185,7 +185,7 @@ export class WorldScene extends Phaser.Scene {
     const genderRow = document.createElement('div');
     genderRow.style.cssText = 'display:flex;gap:16px;justify-content:center;margin-bottom:24px;';
     let selectedGender = 'male';
-    const genderBtns = [];
+    const genderBtns: HTMLButtonElement[] = [];
     [{id:'male',icon:'👦',label:'HE/HIM'},{id:'female',icon:'👧',label:'SHE/HER'}].forEach(({id,icon,label},idx) => {
       const gb = document.createElement('button');
       const isSel = idx === 0;
