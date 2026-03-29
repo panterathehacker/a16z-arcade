@@ -117,8 +117,9 @@ export class BattleScene extends Phaser.Scene {
     this.cameras.main.setBackgroundColor('transparent');
 
     // Meadow background fills top 65% of screen
-    this.add.image(W * 0.5, H * 0.325, 'battle-bg')
-      .setDisplaySize(W, H * 0.65)
+    const bgH = isMobileBattle ? H * 0.48 : H * 0.65;
+    this.add.image(W * 0.5, bgH / 2, 'battle-bg')
+      .setDisplaySize(W, bgH)
       .setDepth(0);
 
     // Sprite foot positions that land on the two dirt mounds in the image
@@ -132,7 +133,9 @@ export class BattleScene extends Phaser.Scene {
   // createBattleUI — HP panels + question/answers (LennyRPG layout)
   // ─────────────────────────────────────────────
   private createBattleUI(W: number, H: number) {
-    const battleAreaH = H * 0.65;
+    // On mobile (portrait), shrink battle area so questions get more space
+    const isMobileBattle = H > W; // portrait = mobile
+    const battleAreaH = isMobileBattle ? H * 0.48 : H * 0.65;
 
     // ────────────────────────────────────────────
     // Guest HP box: position (W*0.30, H*0.03), 280×90px
@@ -301,7 +304,7 @@ export class BattleScene extends Phaser.Scene {
     // Difficulty badge removed
 
     // Question text: 20px Press Start 2P black, word-wrapped, 20px padding
-    this.questionText = this.add.text(qPanelX, menuY + 40, '', {
+    this.questionText = this.add.text(qPanelX, menuY + (isMobileBattle ? 30 : 40), '', {
       fontFamily: '"Press Start 2P"',
       fontSize: '20px',
       color: '#000000',
@@ -326,9 +329,9 @@ export class BattleScene extends Phaser.Scene {
     // ── Right 55%: vertical answer list ──
     this._btnAreaX = W * 0.45 + 8;
     this._btnW = W * 0.55 - 16;
-    this._btnH = 46;
+    this._btnH = isMobileBattle ? 52 : 46;
     this._btnGap = 4;
-    this._btnStartY = menuY + 16;
+    this._btnStartY = menuY + (isMobileBattle ? 12 : 16);
 
     for (let i = 0; i < 4; i++) {
       const bx = this._btnAreaX;
@@ -758,8 +761,6 @@ export class BattleScene extends Phaser.Scene {
       }
     }
     
-    // Restore normal canvas size on mobile
-    window.dispatchEvent(new CustomEvent('battle-end'));
     this.scene.stop('BattleScene');
     this.scene.resume('WorldScene');
   }
