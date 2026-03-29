@@ -308,10 +308,10 @@ export class BattleScene extends Phaser.Scene {
     }).setDepth(11);
 
     // "↕ ENTER" 9px bottom-left
-    this.add.text(qPanelX, menuY + menuH - 20, '↕ ENTER', {
+    this.add.text(qPanelX + 4, menuY + menuH - 30, '↕  ENTER', {
       fontFamily: '"Press Start 2P"',
-      fontSize: '9px',
-      color: '#888888',
+      fontSize: '13px',
+      color: '#333333',
       resolution: 2,
     }).setDepth(11);
 
