@@ -134,6 +134,7 @@ export class BattleScene extends Phaser.Scene {
   // createBattleUI — HP panels + question/answers (LennyRPG layout)
   // ─────────────────────────────────────────────
   private createBattleUI(W: number, H: number) {
+    const isMobileBattle = H > W; // portrait orientation = mobile
     // On mobile (portrait), shrink battle area so questions get more space
 
     const battleAreaH = isMobileBattle ? H * 0.48 : H * 0.65;
