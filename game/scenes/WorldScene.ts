@@ -186,7 +186,7 @@ export class WorldScene extends Phaser.Scene {
     overlay.style.cssText = `
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.85);
+      background: rgba(26, 0, 8, 0.95);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -196,9 +196,10 @@ export class WorldScene extends Phaser.Scene {
 
     const box = document.createElement('div');
     box.style.cssText = `
-      background: #1a1a3e;
-      border: 3px solid #4060C0;
-      border-radius: 16px;
+      background: #1a0008;
+      border: 3px solid #FFD700;
+      border-radius: 4px;
+      image-rendering: pixelated;
       padding: 40px 36px;
       text-align: center;
       max-width: 460px;
@@ -206,11 +207,11 @@ export class WorldScene extends Phaser.Scene {
     `;
 
     const title = document.createElement('div');
-    title.style.cssText = `color: #60A0FF; font-size: 20px; margin-bottom: 12px; letter-spacing: 2px;`;
+    title.style.cssText = `color: #FFD700; font-size: 20px; margin-bottom: 12px; letter-spacing: 2px; text-shadow: 1px 1px 0 #4A0315;`;
     title.textContent = 'a16z ARCADE';
 
     const subtitle = document.createElement('div');
-    subtitle.style.cssText = `color: #8080C0; font-size: 11px; margin-bottom: 32px; line-height: 2;`;
+    subtitle.style.cssText = `color: rgba(255,215,0,0.65); font-size: 11px; margin-bottom: 32px; line-height: 2;`;
     subtitle.textContent = 'Enter your trainer name:';
 
     // Gender selector
@@ -221,7 +222,7 @@ export class WorldScene extends Phaser.Scene {
     [{id:'male',icon:'male',label:'HE/HIM'},{id:'female',icon:'female',label:'SHE/HER'}].forEach(({id,icon,label},idx) => {
       const gb = document.createElement('button');
       const isSel = idx === 0;
-      gb.style.cssText = 'font-family:"Press Start 2P",monospace;font-size:9px;background:' + (isSel?'#3050C0':'#0a0a2a') + ';color:#fff;border:2px solid ' + (isSel?'#80A0FF':'#303060') + ';border-radius:8px;padding:12px 18px;cursor:pointer;flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;';
+      gb.style.cssText = 'font-family:"Press Start 2P",monospace;font-size:9px;background:' + (isSel?'#4A0315':'#0d0004') + ';color:#fff;border:2px solid ' + (isSel?'#FFD700':'rgba(255,215,0,0.3)') + ';border-radius:8px;padding:12px 18px;cursor:pointer;flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;';
       const iconEl = document.createElement('span');
       iconEl.style.cssText = 'width:36px;height:36px;display:flex;align-items:center;justify-content:center;';
       if (icon === 'male') {
@@ -257,8 +258,8 @@ export class WorldScene extends Phaser.Scene {
       padding: 14px 16px;
       font-family: "Press Start 2P", monospace;
       font-size: 12px;
-      background: #0a0a1a;
-      border: 2px solid #4060C0;
+      background: #0d0004;
+      border: 2px solid #FFD700;
       border-radius: 8px;
       color: #FFFFFF;
       text-align: center;
@@ -272,9 +273,9 @@ export class WorldScene extends Phaser.Scene {
     btn.style.cssText = `
       font-family: "Press Start 2P", monospace;
       font-size: 11px;
-      background: #3050C0;
-      color: #FFFFFF;
-      border: 2px solid #6080FF;
+      background: #4A0315;
+      color: #FFD700;
+      border: 2px solid #FFD700;
       border-radius: 8px;
       padding: 16px 24px;
       cursor: pointer;
