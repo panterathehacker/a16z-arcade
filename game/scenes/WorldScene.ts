@@ -528,7 +528,7 @@ export class WorldScene extends Phaser.Scene {
 
     // LennyRPG-style dialogue box - smaller on mobile
     const isMobileView = window.innerWidth < 768;
-    const dlgHeight = isMobileView ? Math.min(140, Math.floor(window.innerHeight * 0.28)) : 200;
+    const dlgHeight = isMobileView ? 80 : 200; // very compact on mobile
     const overlay = document.createElement('div');
     overlay.style.cssText = `
       position: fixed;
@@ -545,11 +545,11 @@ export class WorldScene extends Phaser.Scene {
 
     // Inner layout: portrait left, text right
     const inner = document.createElement('div');
-    inner.style.cssText = `display: flex; align-items: flex-start; padding: ${isMobileView ? '8px 10px 6px 10px' : '12px 14px 8px 12px'}; height: ${dlgHeight - 44}px; overflow: hidden;`;
+    inner.style.cssText = `display: flex; align-items: ${isMobileView ? 'center' : 'flex-start'}; padding: ${isMobileView ? '6px 12px' : '12px 14px 8px 12px'}; height: ${isMobileView ? dlgHeight - 36 : dlgHeight - 44}px; overflow: hidden;`;
 
-    // Portrait thumbnail
+    // Portrait thumbnail - hidden on mobile
     const portrait = document.createElement('div');
-    portrait.style.cssText = `
+    portrait.style.cssText = isMobileView ? 'display:none;' : `
       width: 80px; height: 100px; min-width: 80px;
       background: #e8e8e8;
       border: 2px solid #000;
@@ -569,15 +569,15 @@ export class WorldScene extends Phaser.Scene {
     right.style.cssText = `display: flex; flex-direction: column; flex: 1; overflow: hidden;`;
 
     const nameEl = document.createElement('div');
-    nameEl.style.cssText = `font-size: 20px; font-weight: bold; color: #000000; white-space: nowrap; letter-spacing: 1px; margin-bottom: 6px; font-family: "Press Start 2P", monospace;`;
+    nameEl.style.cssText = `font-size: ${isMobileView ? '13px' : '20px'}; font-weight: bold; color: #000000; white-space: nowrap; letter-spacing: 1px; margin-bottom: ${isMobileView ? '3px' : '6px'}; font-family: "Press Start 2P", monospace;`;
     nameEl.textContent = guest.name.toUpperCase();
 
     const titleEl = document.createElement('div');
-    titleEl.style.cssText = `font-size: 12px; color: #555555; white-space: nowrap; margin-bottom: 10px;`;
+    titleEl.style.cssText = `font-size: 12px; color: #555555; white-space: nowrap; margin-bottom: 10px; display: ${isMobileView ? 'none' : 'block'};`;
     titleEl.textContent = guest.title;
 
     const sep = document.createElement('hr');
-    sep.style.cssText = `border: none; border-top: 1px solid #000; margin: 0 0 8px 0;`;
+    sep.style.cssText = `border: none; border-top: 1px solid #000; margin: 0 0 8px 0; display: ${isMobileView ? 'none' : 'block'};`;
 
     const bodyEl = document.createElement('div');
     bodyEl.style.cssText = `font-size: 15px; font-weight: bold; color: #000000; line-height: 1.8; font-family: "Press Start 2P", monospace;`;
@@ -707,7 +707,7 @@ export class WorldScene extends Phaser.Scene {
       flex-direction: column;
       font-family: "Press Start 2P", monospace;
       box-sizing: border-box;
-      overflow: hidden;
+      overflow-y: auto;
     `;
 
     // Header
