@@ -191,8 +191,8 @@ export class BattleScene extends Phaser.Scene {
     // ────────────────────────────────────────────
     // Player HP box: position (W*0.38, H*0.43), 240×90px
     // ────────────────────────────────────────────
-    const pBoxX = W * 0.38;
-    const pBoxY = H * 0.43;
+    const pBoxX = W * 0.55;
+    const pBoxY = H * 0.35;
     const pBoxW = 240;
     const pBoxH = 90;
 
@@ -308,9 +308,15 @@ export class BattleScene extends Phaser.Scene {
     }).setDepth(11);
 
     // "↕ ENTER" 9px bottom-left
-    this.add.text(qPanelX + 4, menuY + menuH - 30, '↕  ENTER', {
+    // Arrow icon (big) + ENTER text (normal)
+    this.add.text(qPanelX + 4, menuY + menuH - 34, '↕', {
+      fontFamily: 'monospace',
+      fontSize: '28px',
+      color: '#111111',
+    }).setDepth(11);
+    this.add.text(qPanelX + 36, menuY + menuH - 28, 'ENTER', {
       fontFamily: '"Press Start 2P"',
-      fontSize: '20px',
+      fontSize: '13px',
       color: '#111111',
       resolution: 2,
     }).setDepth(11);
