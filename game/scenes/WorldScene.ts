@@ -54,6 +54,35 @@ export class WorldScene extends Phaser.Scene {
   private usernameOverlay: HTMLDivElement | null = null;
   private gameReady = false;
 
+  // Battle transition flag to prevent double-trigger
+  private inBattleTransition = false;
+
+  // Encounter messages pool (LennyRPG-style randomized)
+  private readonly encounterMessages = [
+    "wants to quiz you!",
+    "has a question for you!",
+    "is ready for a trivia round!",
+    "would like to test your knowledge!",
+    "is looking for a sparring partner!",
+    "waves you over!",
+    "has a 5-question challenge!",
+    "wants to talk tech!",
+    "is up for a quick challenge!",
+    "invites you to a knowledge duel!",
+    "wants to compare notes!",
+    "is eager to share ideas!",
+    "is ready to learn together!",
+    "wants to see what you know!",
+    "has a quick prompt for you!",
+    "brought a fresh perspective!",
+    "has a few insights to test!",
+    "has a challenge worth sharing!",
+    "has a question from the podcast!",
+    "wants your best answer!",
+    "is ready to hear your reasoning!",
+    "is ready for round one!",
+  ];
+
   constructor() {
     super({ key: 'WorldScene' });
   }
@@ -71,13 +100,11 @@ export class WorldScene extends Phaser.Scene {
     const aboveLayer = map.createLayer('Above Player', tileset!, 0, 0);
 
     // Use setCollisionByExclusion so all non-empty tiles in the World layer are solid.
-    // setCollisionByProperty can fail with embedded tilesets in Phaser 3; this is more reliable.
     this.worldLayer.setCollisionByExclusion([-1]);
 
     // Above layer renders on top of player
     aboveLayer?.setDepth(10);
 
-    // Suppress unused-variable warning — below layer is fine as-is at depth 0
     void belowLayer;
 
     // ── Physics world & camera bounds ─────────────────────────────────────
@@ -87,7 +114,6 @@ export class WorldScene extends Phaser.Scene {
     this.physics.world.setBounds(0, 0, mapPixelW, mapPixelH);
 
     // ── Create player with physics ────────────────────────────────────────
-    // Spawn in safe open area at bottom-center of map, away from all NPCs
     const playerGender = localStorage.getItem('a16z_gender') || 'male';
     const pSet = playerGender === 'female' ? 'player-female' : 'player-male';
     this.playerSpriteSet = pSet;
@@ -116,9 +142,8 @@ export class WorldScene extends Phaser.Scene {
     this.physics.add.collider(this.player, this.worldLayer);
 
     // ── Spawn NPCs ────────────────────────────────────────────────────────
-    this.npcGroup = this.physics.add.staticGroup(); // kept for type compatibility but not used for collision
+    this.npcGroup = this.physics.add.staticGroup();
     this.spawnNPCs();
-    // NPC collision removed — players walk up to NPCs freely; dialogue triggers at close range
 
     // ── Camera ────────────────────────────────────────────────────────────
     this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
@@ -129,11 +154,12 @@ export class WorldScene extends Phaser.Scene {
     this.setupMobileControls();
 
     // ── UI overlays ───────────────────────────────────────────────────────
-    // Dialogue box is now a DOM overlay — no Phaser container needed
     this.createPokedex();
     this.createMiniMap();
 
     this.initPlayer();
+
+    this.inBattleTransition = false;
 
     // Grace period: disable dialogue triggers for 2 seconds after scene load
     this.dialogueGracePeriod = true;
@@ -144,6 +170,7 @@ export class WorldScene extends Phaser.Scene {
       this.dialogueVisible = false;
       this.nearbyGuest = null;
       this.activeNPC = null;
+      this.inBattleTransition = false;
       if (this.dialogueOverlay) {
         this.dialogueOverlay.remove();
         this.dialogueOverlay = null;
@@ -155,6 +182,52 @@ export class WorldScene extends Phaser.Scene {
       if (this.mobileDpad) this.mobileDpad.style.display = 'block';
       const interactBtn = document.getElementById('mobile-interact');
       if (interactBtn) (interactBtn as HTMLDivElement).style.display = 'flex';
+    });
+  }
+
+  // ─── NPC tile collision (LennyRPG approach) ──────────────────────────────
+  private isOccupiedByNPC(tx: number, ty: number): boolean {
+    return GUESTS.some(g => {
+      if (g.id === 'player') return false;
+      return Math.round(g.px / 32) === tx && Math.round(g.py / 32) === ty;
+    });
+  }
+
+  // ─── Battle Transition (Feature 1: LennyRPG-inspired pixel swirl/flash) ──
+  private startBattleTransition(guest: Guest) {
+    if (this.inBattleTransition) return;
+    this.inBattleTransition = true;
+
+    const flash = this.add.graphics().setDepth(1000).setScrollFactor(0);
+    const W = this.cameras.main.width;
+    const H = this.cameras.main.height;
+
+    // Step 1: Flash white overlay (starts transparent)
+    flash.fillStyle(0xFFFFFF, 1);
+    flash.fillRect(0, 0, W, H);
+    flash.setAlpha(0);
+
+    this.tweens.add({
+      targets: flash,
+      alpha: { from: 0, to: 1 },
+      duration: 200,
+      yoyo: false,
+      onComplete: () => {
+        // Step 2: Swap to black
+        flash.clear();
+        flash.fillStyle(0x000000, 1);
+        flash.fillRect(0, 0, W, H);
+        flash.setAlpha(1);
+
+        // Step 3: Launch battle after brief pause
+        this.time.delayedCall(300, () => {
+          if (this.scene.get('BattleScene')) {
+            this.scene.stop('BattleScene');
+          }
+          this.scene.launch('BattleScene', { guest, playerId: this.playerId });
+          this.scene.pause('WorldScene');
+        });
+      }
     });
   }
 
@@ -233,7 +306,7 @@ export class WorldScene extends Phaser.Scene {
       const labelEl = document.createElement('span');
       labelEl.textContent = label;
       gb.appendChild(iconEl); gb.appendChild(labelEl);
-      const capturedId = id; // capture in local scope
+      const capturedId = id;
       gb.setAttribute('data-gender', capturedId);
       gb.addEventListener('click', () => {
         selectedGender = capturedId;
@@ -298,7 +371,6 @@ export class WorldScene extends Phaser.Scene {
       overlay.remove();
       this.usernameOverlay = null;
       this.input.keyboard?.enableGlobalCapture();
-      // Update sprite set based on chosen gender
       const chosenGender = localStorage.getItem('a16z_gender') || 'male';
       this.playerSpriteSet = chosenGender === 'female' ? 'player-female' : 'player-male';
       const frontKey = this.playerSpriteSet + '_front';
@@ -309,7 +381,6 @@ export class WorldScene extends Phaser.Scene {
         console.log('[WorldScene] Player texture set to', frontKey);
       }
       this.gameReady = true;
-      // Update player name label
       if (this.playerNameLabel) {
         this.playerNameLabel.setText(name);
       }
@@ -334,19 +405,16 @@ export class WorldScene extends Phaser.Scene {
 
   private spawnNPCs(): void {
     GUESTS.forEach((guest, i) => {
-      // Skip the player entry — it has no NPC sprite and causes a black box
       if (guest.id === 'player') return;
 
       const container = this.add.container(guest.px, guest.py);
 
-      // Use AI-generated sprite if available, fall back to procedural
       const aiKey = `npc_ai_${i}`;
       const spriteKey = this.textures.exists(aiKey) ? aiKey : `npc_${i}`;
       const sprite = this.add.image(0, 0, spriteKey);
-      sprite.setOrigin(0.5, 1.0); // anchor at feet so character stands on ground
-      // Scale AI sprites (1024x1024) down to Pokémon trainer sprite size
+      sprite.setOrigin(0.5, 1.0);
       if (spriteKey === aiKey) {
-        sprite.setDisplaySize(64, 80); // Pokémon trainer sprite size - matches map tile size
+        sprite.setDisplaySize(64, 80);
       }
 
       const labelText = this.add.text(0, -84, guest.name, {
@@ -444,7 +512,6 @@ export class WorldScene extends Phaser.Scene {
     document.body.appendChild(dpad);
     this.mobileDpad = dpad;
 
-    // Interact / battle button on the right side
     const interactBtn = document.createElement('div');
     interactBtn.id = 'mobile-interact';
     interactBtn.style.cssText = `
@@ -479,7 +546,6 @@ export class WorldScene extends Phaser.Scene {
 
     document.body.appendChild(interactBtn);
 
-    // Pokédex button - above interact button
     const pokedexBtn = document.createElement('div');
     pokedexBtn.id = 'mobile-pokedex';
     pokedexBtn.style.cssText = `
@@ -513,14 +579,13 @@ export class WorldScene extends Phaser.Scene {
     document.body.appendChild(pokedexBtn);
   }
 
-  // ─── Dialogue Box (DOM overlay — avoids Phaser scroll-factor clipping) ───────
+  // ─── Dialogue Box (DOM overlay) ───────────────────────────────────────────
   private showDialogue(guest: Guest): void {
     if (this.dialogueVisible) return;
     this.dialogueVisible = true;
     this.nearbyGuest = guest;
     this.activeNPC = guest;
 
-    // Remove any stale overlay
     if (this.dialogueOverlay) {
       this.dialogueOverlay.remove();
       this.dialogueOverlay = null;
@@ -528,9 +593,7 @@ export class WorldScene extends Phaser.Scene {
 
     const guestIndex = GUESTS.findIndex(g => g.id === guest.id);
 
-    // Resolve portrait: prefer canvas-rendered sprite texture, fall back to PNG path
     let portraitSrc = `/assets/sprites/guests/${guest.id}.png`;
-    // Try to get data URL directly from Phaser texture for reliable rendering
     const aiKey = `npc_ai_${guestIndex}`;
     const texKey = this.textures.exists(aiKey) ? aiKey : '';
     if (texKey) {
@@ -538,7 +601,6 @@ export class WorldScene extends Phaser.Scene {
         const frame = this.textures.getFrame(texKey);
         const src = frame?.source?.image as HTMLImageElement | HTMLCanvasElement | null;
         if (src) {
-          // Create a canvas to extract the image as data URL
           const tmpCanvas = document.createElement('canvas');
           tmpCanvas.width = frame.realWidth;
           tmpCanvas.height = frame.realHeight;
@@ -553,16 +615,14 @@ export class WorldScene extends Phaser.Scene {
       } catch (_) { /* fallback to URL */ }
     }
 
-    // Position dialogue inside the game canvas
     const canvas = document.querySelector('canvas');
     const canvasRect = canvas ? canvas.getBoundingClientRect() : { left: 0, bottom: window.innerHeight, width: window.innerWidth };
     const dlgLeft = canvasRect.left;
     const dlgWidth = canvasRect.width;
     const dlgBottom = window.innerHeight - (canvas ? canvas.getBoundingClientRect().bottom : 0);
 
-    // LennyRPG-style dialogue box - smaller on mobile
     const isMobileView = window.innerWidth < 768;
-    const dlgHeight = isMobileView ? 80 : 200; // very compact on mobile
+    const dlgHeight = isMobileView ? 80 : 200;
     const overlay = document.createElement('div');
     overlay.style.cssText = `
       position: fixed;
@@ -577,11 +637,9 @@ export class WorldScene extends Phaser.Scene {
       box-sizing: border-box;
     `;
 
-    // Inner layout: portrait left, text right
     const inner = document.createElement('div');
     inner.style.cssText = `display: flex; align-items: ${isMobileView ? 'center' : 'flex-start'}; padding: ${isMobileView ? '6px 12px' : '12px 14px 8px 12px'}; height: ${isMobileView ? dlgHeight - 36 : dlgHeight - 44}px; overflow: hidden;`;
 
-    // Portrait thumbnail - hidden on mobile
     const portrait = document.createElement('div');
     portrait.style.cssText = isMobileView ? `width:40px;height:50px;min-width:40px;background:#e8e8e8;border:1px solid #000;overflow:hidden;image-rendering:pixelated;margin-right:8px;` : `
       width: 80px; height: 100px; min-width: 80px;
@@ -598,7 +656,6 @@ export class WorldScene extends Phaser.Scene {
       portrait.appendChild(img);
     }
 
-    // Right side: name + title + separator + body
     const right = document.createElement('div');
     right.style.cssText = `display: flex; flex-direction: column; flex: 1; overflow: hidden;`;
 
@@ -615,7 +672,8 @@ export class WorldScene extends Phaser.Scene {
 
     const bodyEl = document.createElement('div');
     bodyEl.style.cssText = `font-size: ${isMobileView ? "7px" : "15px"}; font-weight: bold; color: #000000; line-height: 1.5; font-family: "Press Start 2P", monospace;`;
-    bodyEl.textContent = `${guest.name.split(' ')[0]} has a challenge for you!`;
+    const randomMsg = this.encounterMessages[Math.floor(Math.random() * this.encounterMessages.length)];
+    bodyEl.textContent = `${guest.name.split(' ')[0]} ${randomMsg}`;
 
     right.appendChild(nameEl);
     right.appendChild(titleEl);
@@ -625,7 +683,6 @@ export class WorldScene extends Phaser.Scene {
     inner.appendChild(portrait);
     inner.appendChild(right);
 
-    // Bottom bar with SPACE pill
     const bottomBar = document.createElement('div');
     bottomBar.style.cssText = `
       border-top: 2px solid #000;
@@ -651,7 +708,6 @@ export class WorldScene extends Phaser.Scene {
     hintEl.style.cssText = `font-size: ${isMobileView ? '8px' : '11px'}; color: #333333;`;
     hintEl.textContent = isTouchDevice ? 'tap ⚔ to battle' : 'to battle  •  Walk away to cancel';
 
-    // On mobile, make the pill a tappable button that triggers battle
     if (isTouchDevice) {
       spacePill.style.cursor = 'pointer';
       spacePill.style.touchAction = 'manipulation';
@@ -694,10 +750,9 @@ export class WorldScene extends Phaser.Scene {
     const px = this.player.x;
     const py = this.player.y;
     for (const guest of GUESTS) {
-      if (guest.id === 'player') continue; // skip player entry
+      if (guest.id === 'player') continue;
       const dx = Math.abs(guest.px - px);
       const dy = Math.abs(guest.py - py);
-      // Within ~2 tiles (64px) in each direction
       if (dx <= 32 && dy <= 32) {
         return guest;
       }
@@ -707,7 +762,6 @@ export class WorldScene extends Phaser.Scene {
 
   // ─── Pokédex ──────────────────────────────────────────────────────────────
   private createPokedex(): void {
-    // Create a minimal Phaser container (kept for compatibility) but actual UI is DOM-based
     this.pokedexContainer = this.add.container(0, 0);
     this.pokedexContainer.setScrollFactor(0);
     this.pokedexContainer.setDepth(200);
@@ -733,7 +787,6 @@ export class WorldScene extends Phaser.Scene {
 
     const captured: string[] = JSON.parse(localStorage.getItem('a16z_captured') || '[]');
 
-    // Get canvas position/size to anchor overlay
     const canvas = document.querySelector('canvas');
     const rect = canvas ? canvas.getBoundingClientRect() : { left: 0, top: 0, width: window.innerWidth, height: window.innerHeight };
 
@@ -753,7 +806,6 @@ export class WorldScene extends Phaser.Scene {
       overflow-y: auto;
     `;
 
-    // Header
     const header = document.createElement('div');
     header.style.cssText = `
       display: flex;
@@ -795,7 +847,6 @@ export class WorldScene extends Phaser.Scene {
     header.appendChild(countEl);
     header.appendChild(closeBtn);
 
-    // Scrollable grid area
     const grid = document.createElement('div');
     grid.style.cssText = `
       display: grid;
@@ -825,14 +876,12 @@ export class WorldScene extends Phaser.Scene {
 
       const numEl = document.createElement('div');
       numEl.style.cssText = `font-size: 9px; color: ${isCaptured ? '#60A0FF' : '#505060'}; align-self: flex-start;`;
-      numEl.textContent = `#${String(i + 1).padStart(2, '0')}`;
+      numEl.textContent = `#${String(i + 1).padStart(2, '00')}`;
 
-      // Sprite image
       const imgWrapper = document.createElement('div');
       imgWrapper.style.cssText = `width: 56px; height: 56px; display: flex; align-items: center; justify-content: center;`;
 
       if (isCaptured) {
-        // Try to extract sprite from Phaser texture as data URL
         let spriteDataUrl = '';
         const aiKey = `npc_ai_${i}`;
         const texKey = this.textures.exists(aiKey) ? aiKey : `npc_${i}`;
@@ -940,11 +989,9 @@ export class WorldScene extends Phaser.Scene {
     labelT.setOrigin(0.5, 0);
     this.miniMapContainer.add(labelT);
 
-    // Draw a simple green base for the whole minimap
     bg.fillStyle(0x7EC850);
     bg.fillRect(mmX, mmY, mmW, mmH);
 
-    // NPC dots
     const captured: string[] = JSON.parse(localStorage.getItem('a16z_captured') || '[]');
     GUESTS.forEach((guest) => {
       const tileX = guest.px / TILE;
@@ -953,7 +1000,6 @@ export class WorldScene extends Phaser.Scene {
       bg.fillRect(mmX + tileX * scaleX - 1, mmY + tileY * scaleY - 1, 3, 3);
     });
 
-    // Player dot
     const playerTileX = this.player.x / TILE;
     const playerTileY = this.player.y / TILE;
     bg.fillStyle(0xFFFFFF);
@@ -980,12 +1026,10 @@ export class WorldScene extends Phaser.Scene {
     if (this.scene.isActive('BattleScene')) return;
     if (!this.gameReady) return;
 
-    // Update player name label every frame so it follows the player
     if (this.playerNameLabel && this.player) {
       this.playerNameLabel.setPosition(this.player.x, this.player.y - 52);
     }
 
-    // Default velocity to zero; movement code below sets it appropriately
     this.player.setVelocity(0);
 
     if (Phaser.Input.Keyboard.JustDown(this.cKey)) {
@@ -997,27 +1041,23 @@ export class WorldScene extends Phaser.Scene {
     }
 
     if (this.pokedexVisible) {
-      // ESC closes Pokédex
       if (this.escKey && Phaser.Input.Keyboard.JustDown(this.escKey)) {
         this.hidePokedex();
       }
       return;
     }
 
-    // Movement via velocity (physics-based) — always allow movement
     this.moveTimer -= delta;
 
     const speed = 160;
     let vx = 0;
     let vy = 0;
 
-    // Mobile D-pad input (keyboard can still override below)
     if (this.mobileDir === 'up') { vy = -speed; this.playerDir = 'up'; }
     else if (this.mobileDir === 'down') { vy = speed; this.playerDir = 'down'; }
     else if (this.mobileDir === 'left') { vx = -speed; this.playerDir = 'left'; }
     else if (this.mobileDir === 'right') { vx = speed; this.playerDir = 'right'; }
 
-    // Keyboard input (overrides mobile if both active)
     if (this.cursors.left.isDown || this.wasd.left.isDown) {
       vx = -speed; vy = 0; this.playerDir = 'left';
     } else if (this.cursors.right.isDown || this.wasd.right.isDown) {
@@ -1028,10 +1068,19 @@ export class WorldScene extends Phaser.Scene {
       vy = speed; vx = 0; this.playerDir = 'down';
     }
 
-    // Allow movement even during dialogue — walking away dismisses it
+    // Block NPC tiles (LennyRPG collision approach)
+    if (vx !== 0 || vy !== 0) {
+      const checkX = this.player.x + (vx > 0 ? 20 : vx < 0 ? -20 : 0);
+      const checkY = this.player.y + (vy > 0 ? 20 : vy < 0 ? -20 : 0);
+      const nextTX = Math.floor(checkX / 32);
+      const nextTY = Math.floor(checkY / 32);
+      if (this.isOccupiedByNPC(nextTX, nextTY)) {
+        vx = 0; vy = 0;
+      }
+    }
+
     this.player.setVelocity(vx, vy);
 
-    // Update player sprite direction
     if (vx !== 0 || vy !== 0) {
       if (this.playerDir === 'up') {
         this.player.setTexture(this.playerSpriteSet + '_back');
@@ -1051,9 +1100,7 @@ export class WorldScene extends Phaser.Scene {
       }
     }
 
-    // Dialogue: handle interaction and dismissal
     if (this.dialogueVisible && this.activeNPC) {
-      // Dismiss if player moved > 80px away from NPC
       const npcSprite = this.npcSprites.get(this.activeNPC.id);
       const npcX = npcSprite ? npcSprite.x : this.activeNPC.px;
       const npcY = npcSprite ? npcSprite.y : this.activeNPC.py;
@@ -1061,13 +1108,11 @@ export class WorldScene extends Phaser.Scene {
       if (dist > 80) {
         this.dismissDialogue();
       }
-      // Dismiss on ESC
       if (this.escKey && Phaser.Input.Keyboard.JustDown(this.escKey)) {
         this.dismissDialogue();
       }
-      // SPACE or mobile interact button to start battle
       const interactPressed = Phaser.Input.Keyboard.JustDown(this.spaceKey) || this.mobileInteract;
-      if (interactPressed) {
+      if (interactPressed && !this.inBattleTransition) {
         if (this.nearbyGuest) {
           const guest = this.nearbyGuest;
           this.mobileInteract = false;
@@ -1076,22 +1121,16 @@ export class WorldScene extends Phaser.Scene {
           if (this.mobileDpad) this.mobileDpad.style.display = 'none';
           const interactBtn = document.getElementById('mobile-interact');
           if (interactBtn) (interactBtn as HTMLDivElement).style.display = 'none';
-          // Stop any existing BattleScene first to prevent double-render
-          if (this.scene.get('BattleScene')) {
-            this.scene.stop('BattleScene');
-          }
-          this.scene.launch('BattleScene', { guest, playerId: this.playerId });
-          this.scene.pause('WorldScene');
+          // Use battle transition instead of direct launch
+          this.startBattleTransition(guest);
         }
       }
     } else if (!this.dialogueVisible) {
-      // Check proximity for dialogue trigger (with grace period)
       if (!this.dialogueGracePeriod) {
         const nearby = this.getGuestNearPlayer();
         if (nearby && Phaser.Input.Keyboard.JustDown(this.spaceKey)) {
           this.showDialogue(nearby);
         }
-        // Proximity dialogue popup (auto-show when walking near)
         const nearbyNow = this.getGuestNearPlayer();
         if (nearbyNow) {
           this.showDialogue(nearbyNow);
@@ -1099,7 +1138,6 @@ export class WorldScene extends Phaser.Scene {
       }
     }
 
-    // Update minimap every 500ms
     this.miniMapTimer -= delta;
     if (this.miniMapTimer <= 0) {
       this.updateMiniMap();

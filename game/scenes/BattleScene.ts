@@ -7,6 +7,37 @@ interface BattleSceneData {
   playerId: string | null;
 }
 
+interface PlayerStats {
+  level: number;
+  xp: number;
+  xpToNext: number;
+  hp: number;
+  maxHp: number;
+}
+
+function loadPlayerStats(): PlayerStats {
+  try {
+    const raw = localStorage.getItem('a16z_player_stats');
+    if (raw) return JSON.parse(raw);
+  } catch (_) { /* */ }
+  return { level: 1, xp: 0, xpToNext: 200, hp: 100, maxHp: 100 };
+}
+
+function savePlayerStats(stats: PlayerStats): void {
+  try {
+    localStorage.setItem('a16z_player_stats', JSON.stringify(stats));
+    window.dispatchEvent(new CustomEvent('player-stats-updated', { detail: stats }));
+  } catch (_) { /* */ }
+}
+
+function xpPerCorrect(level: number): number {
+  return Math.min(10 + 5 * (level - 1), 50);
+}
+
+function xpToNextLevel(level: number): number {
+  return 24 * xpPerCorrect(level);
+}
+
 export class BattleScene extends Phaser.Scene {
   private guest!: Guest;
   private questions!: Question[];
@@ -14,6 +45,7 @@ export class BattleScene extends Phaser.Scene {
   private playerHP = 100;
   private guestHP = 100;
   private playerId: string | null = null;
+  private playerStats!: PlayerStats;
 
   private playerHPBar!: Phaser.GameObjects.Graphics;
   private guestHPBar!: Phaser.GameObjects.Graphics;
@@ -61,7 +93,8 @@ export class BattleScene extends Phaser.Scene {
     this.playerId = data.playerId ?? null;
     this.questions = [...this.guest.questions];
     this.currentQ = 0;
-    this.playerHP = 100;
+    this.playerStats = loadPlayerStats();
+    this.playerHP = this.playerStats.hp;
     this.guestHP = 100;
     this.waitingForNext = false;
     this.battleOver = false;
@@ -107,6 +140,17 @@ export class BattleScene extends Phaser.Scene {
     this.createBattleUI(W, H);
     this.setupKeys();
     this.showQuestion();
+
+    // Fade in from black (transition in from WorldScene flash)
+    const fadeIn = this.add.graphics().setDepth(2000).setScrollFactor(0);
+    fadeIn.fillStyle(0x000000, 1);
+    fadeIn.fillRect(0, 0, W, H);
+    this.tweens.add({
+      targets: fadeIn,
+      alpha: { from: 1, to: 0 },
+      duration: 300,
+      onComplete: () => fadeIn.destroy(),
+    });
   }
 
   // ─────────────────────────────────────────────
@@ -267,8 +311,8 @@ export class BattleScene extends Phaser.Scene {
 
     this.playerHPBar = this.add.graphics().setDepth(12);
 
-    // "100 / 100" 10px right-aligned below bar
-    this.playerHPText = this.add.text(this._pHPNumX, this._pHPNumY, '100 / 100', {
+    // "HP / maxHP" 10px right-aligned below bar
+    this.playerHPText = this.add.text(this._pHPNumX, this._pHPNumY, `${this.playerHP} / ${this.playerStats.maxHp}`, {
       fontFamily: '"Press Start 2P"',
       fontSize: '10px',
       color: '#000000',
@@ -441,7 +485,7 @@ export class BattleScene extends Phaser.Scene {
 
     // Player HP bar — green (#22cc44), fades as HP drops
     this.playerHPBar.clear();
-    const playerPct = Math.max(0, this.playerHP) / 100;
+    const playerPct = Math.max(0, this.playerHP) / this.playerStats.maxHp;
     const playerColor = playerPct > 0.5 ? 0x22cc44 : playerPct > 0.25 ? 0xD8C040 : 0xD84040;
     this.playerHPBar.fillStyle(playerColor, 1.0);
     this.playerHPBar.fillRoundedRect(
@@ -449,8 +493,8 @@ export class BattleScene extends Phaser.Scene {
       Math.max(0, Math.round(this._pHPBarW * playerPct)), 12, 3
     );
 
-    // "100 / 100" right-aligned below player bar
-    this.playerHPText.setText(`${Math.max(0, this.playerHP)} / 100`);
+    // "HP / maxHP" right-aligned below player bar
+    this.playerHPText.setText(`${Math.max(0, this.playerHP)} / ${this.playerStats.maxHp}`);
   }
 
   private setupKeys() {
@@ -539,6 +583,26 @@ export class BattleScene extends Phaser.Scene {
     });
   }
 
+  private showDamageFloat(x: number, y: number, text: string, color: number) {
+    const t = this.add.text(x, y, text, {
+      fontFamily: '"Press Start 2P"',
+      fontSize: '14px',
+      color: '#' + color.toString(16).padStart(6, '0'),
+      stroke: '#000000',
+      strokeThickness: 3,
+      resolution: 2,
+    }).setDepth(50).setScrollFactor(0);
+
+    this.tweens.add({
+      targets: t,
+      y: y - 40,
+      alpha: { from: 1, to: 0 },
+      duration: 1200,
+      ease: 'Power2',
+      onComplete: () => t.destroy(),
+    });
+  }
+
   private answerQuestion(index: number) {
     if (this.waitingForNext || this.battleOver) return;
 
@@ -554,13 +618,34 @@ export class BattleScene extends Phaser.Scene {
       this.statusText.setStyle({ ...this.statusText.style, color: '#00aa00' });
       this.statusText.setVisible(true);
       this.questionText.setVisible(false);
+
+      // XP gain
+      const xpGain = xpPerCorrect(this.playerStats.level);
+      this.playerStats.xp += xpGain;
+      // Check level up
+      while (this.playerStats.xp >= this.playerStats.xpToNext) {
+        this.playerStats.xp -= this.playerStats.xpToNext;
+        this.playerStats.level++;
+        this.playerStats.maxHp += 10;
+        this.playerStats.xpToNext = xpToNextLevel(this.playerStats.level);
+      }
+      savePlayerStats(this.playerStats);
+
+      // Damage floats
+      this.showDamageFloat(this._gHPBarX + this._gHPBarW / 2, this._gHPBarY - 10, '-20 HP', 0xFF4444);
+      this.showDamageFloat(this._pHPBarX + this._pHPBarW / 2, this._pHPBarY - 10, `+${xpGain} XP`, 0xFFD700);
     } else {
       this.playerHP -= 20;
+      this.playerStats.hp = Math.max(0, this.playerHP);
+      savePlayerStats(this.playerStats);
       this.updateHPBars();
       this.statusText.setText('✗ Wrong!\nPlayer HP -20');
       this.statusText.setStyle({ ...this.statusText.style, color: '#FF4040' });
       this.statusText.setVisible(true);
       this.questionText.setVisible(false);
+
+      // Damage float on player
+      this.showDamageFloat(this._pHPBarX + this._pHPBarW / 2, this._pHPBarY - 10, '-20 HP', 0xFF4444);
     }
 
     this.waitingForNext = true;
@@ -603,6 +688,9 @@ export class BattleScene extends Phaser.Scene {
       captured.push(this.guest.id);
       localStorage.setItem('a16z_captured', JSON.stringify(captured));
     }
+    // Restore HP on victory and persist
+    this.playerStats.hp = this.playerStats.maxHp;
+    savePlayerStats(this.playerStats);
     saveCapture(this.playerId, this.guest.id).catch((err) => {
       console.warn('Failed to save capture to Supabase:', err);
     });
