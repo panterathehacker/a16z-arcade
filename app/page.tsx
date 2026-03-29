@@ -267,7 +267,7 @@ export default function Home() {
             }} />
           </div>
           <div style={{ fontSize: '8px', color: 'rgba(255,255,255,0.85)', marginBottom: '12px' }}>
-            {isMaxLevel ? "MAX LEVEL" : }
+            {isMaxLevel ? "MAX LEVEL" : `${stats.xp}/${stats.xpToNext} XP`}
           </div>
 
           {/* HP */}
