@@ -103,6 +103,7 @@ export class BattleScene extends Phaser.Scene {
   private isPerfectCapture = false;
   private battleResultOverlay: HTMLDivElement | null = null;
   private battleResultKeyHandler: ((e: KeyboardEvent) => void) | null = null;
+  private resizeHandler: (() => void) | null = null;
 
   constructor() {
     super({ key: 'BattleScene' });
@@ -340,6 +341,38 @@ export class BattleScene extends Phaser.Scene {
     
     // Now that DOM is ready, update HP bars with actual current HP values
     this.updateHPBars();
+    
+    // Reposition DOM elements on window resize
+    this.resizeHandler = () => {
+      const cv = document.querySelector('canvas');
+      if (!cv) return;
+      const r = cv.getBoundingClientRect();
+      // Update battle menu position
+      const menu = document.getElementById('a16z-battle-menu');
+      if (menu) {
+        const bH = r.height * 0.65;
+        const menuTop = r.top + bH;
+        menu.style.left = r.left + 'px';
+        menu.style.top = menuTop + 'px';
+        menu.style.width = r.width + 'px';
+        menu.style.height = (r.height - bH) + 'px';
+      }
+      // Update guest HP box
+      const gHP = document.getElementById('a16z-guest-hp');
+      if (gHP) {
+        gHP.style.left = (r.left + r.width * 0.30) + 'px';
+        gHP.style.top = (r.top + r.height * 0.03) + 'px';
+      }
+      // Update player HP box
+      const pHP = document.getElementById('a16z-player-hp');
+      if (pHP) {
+        pHP.style.left = (r.left + r.width * 0.55) + 'px';
+        const bottom = window.innerHeight - r.bottom + r.height * 0.50;
+        pHP.style.bottom = bottom + 'px';
+        pHP.style.top = 'auto';
+      }
+    };
+    window.addEventListener('resize', this.resizeHandler);
 
     // Stub out legacy Phaser HP objects to avoid null errors
     this.guestHPBar = this.add.graphics().setDepth(12).setVisible(false);
@@ -1051,6 +1084,11 @@ export class BattleScene extends Phaser.Scene {
   shutdown() {
     this.time.removeAllEvents();
     this.tweens.killAll();
+    // Remove resize handler
+    if (this.resizeHandler) {
+      window.removeEventListener('resize', this.resizeHandler);
+      this.resizeHandler = null;
+    }
     // Remove DOM battle menu
     if (this.battleMenuEl) {
       this.battleMenuEl.remove();
