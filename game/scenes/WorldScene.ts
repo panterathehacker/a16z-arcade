@@ -179,18 +179,21 @@ export class WorldScene extends Phaser.Scene {
     this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
     
     // Listen for mute toggle from React UI
-    window.addEventListener('a16z-set-mute', (e: CustomEvent) => {
-      if (this.sound) this.sound.mute = e.detail.muted;
-    } as unknown as EventListener);
+    const onMute = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (this.sound) this.sound.mute = detail.muted;
+    };
+    window.addEventListener('a16z-set-mute', onMute);
     
     // Pause music when tab hidden
-    window.addEventListener('a16z-tab-visibility', (e: CustomEvent) => {
-      if (e.detail.hidden) {
-        if (this.sound) this.sound.pauseAll?.();
-      } else {
-        if (this.sound) this.sound.resumeAll?.();
+    const onVisibility = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (this.sound) {
+        if (detail.hidden) this.sound.pauseAll?.();
+        else this.sound.resumeAll?.();
       }
-    } as unknown as EventListener);
+    };
+    window.addEventListener('a16z-tab-visibility', onVisibility);
     
     // Apply mute if already set
     if (localStorage.getItem('a16z-arcade-muted') === 'true') {
