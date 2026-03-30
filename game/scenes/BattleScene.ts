@@ -207,10 +207,10 @@ export class BattleScene extends Phaser.Scene {
       .setDisplaySize(W, bgH)
       .setDepth(0);
 
-    this._gpX = W * 0.68;
-    this._gpY = H * 0.38;
-    this._ppX = W * 0.30;
-    this._ppY = H * 0.55;
+    this._gpX = W * 0.64;
+    this._gpY = H * 0.44;
+    this._ppX = W * 0.32;
+    this._ppY = H * 0.50;
   }
 
   // ─────────────────────────────────────────────
