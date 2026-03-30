@@ -90,12 +90,12 @@ export default function Home() {
         paddingTop: 'max(env(safe-area-inset-top), 12px)',
         justifyContent: 'flex-start',
         paddingBottom: '8px',
-        background: '#2d0010',
+        background: '#4A0315',
         backgroundImage: `
-          linear-gradient(45deg, #2a0010 25%, transparent 25%),
-          linear-gradient(-45deg, #2a0010 25%, transparent 25%),
-          linear-gradient(45deg, transparent 75%, #110005 75%),
-          linear-gradient(-45deg, transparent 75%, #110005 75%)
+          linear-gradient(45deg, #3d0010 25%, transparent 25%),
+          linear-gradient(-45deg, #3d0010 25%, transparent 25%),
+          linear-gradient(45deg, transparent 75%, #2d0008 75%),
+          linear-gradient(-45deg, transparent 75%, #2d0008 75%)
         `,
         backgroundSize: '8px 8px',
         backgroundPosition: '0 0, 0 4px, 4px -4px, -4px 0px',
@@ -110,7 +110,7 @@ export default function Home() {
           style={{
             position: 'fixed',
             inset: 0,
-            background: '#2d0010',
+            background: '#4A0315',
             zIndex: 99999,
             display: 'flex',
             alignItems: 'center',
@@ -218,6 +218,31 @@ export default function Home() {
         >
           Learn from the best, one battle at a time.
         </p>
+      </div>
+
+      {/* Mute button */}
+      <div style={{ display: 'flex', justifyContent: 'flex-end', width: '100%', maxWidth: '1300px', marginBottom: '6px', zIndex: 3, position: 'relative' }}>
+        <button
+          onClick={() => {
+            const newMuted = !isMuted;
+            setIsMuted(newMuted);
+            localStorage.setItem('a16z-arcade-muted', String(newMuted));
+            window.dispatchEvent(new CustomEvent('a16z-set-mute', { detail: { muted: newMuted } }));
+          }}
+          style={{
+            fontFamily: '"Press Start 2P", monospace',
+            fontSize: '8px',
+            background: isMuted ? '#4A0315' : 'rgba(26,0,8,0.8)',
+            color: '#FFD700',
+            border: '2px solid #FFD700',
+            borderRadius: '4px',
+            padding: '6px 12px',
+            cursor: 'pointer',
+            boxShadow: '2px 2px 0 #000',
+          }}
+        >
+          {isMuted ? '🔇 UNMUTE' : '🔊 MUTE'}
+        </button>
       </div>
 
       {/* Game row: stats panel (desktop) + canvas */}
@@ -376,7 +401,7 @@ export default function Home() {
                     position: 'absolute',
                     bottom: '130%',
                     left: '0',
-                    background: '#2d0010',
+                    background: '#4A0315',
                     border: '3px solid #FFD700',
                     borderRadius: '4px',
                     padding: '14px 16px',

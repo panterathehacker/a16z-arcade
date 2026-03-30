@@ -286,8 +286,8 @@ export const GUESTS: Guest[] = [
     name: 'Michael Truell',
     title: 'CEO, Cursor',
     color: 0x00A8E0,
-    px: 272,  py: 1168,
-    x: 8,   y: 36,
+    px: 560,  py: 336,
+    x: 17,   y: 10,
     questions: [
       {
         text: "What was one of the key reasons Michael Truell and his co-founders decided to start Cursor?",
@@ -1123,8 +1123,8 @@ export const GUESTS: Guest[] = [
     name: 'Justine Moore',
     title: 'Partner, a16z',
     color: 0xE91E63,
-    px: 912,  py: 976,
-    x: 28,   y: 30,
+    px: 912,  py: 752,
+    x: 28,   y: 23,
     youtubeUrl: 'https://www.youtube.com/watch?v=74Yk7mbbQ0g',
     questions: [
       {
