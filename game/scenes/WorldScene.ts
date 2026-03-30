@@ -876,7 +876,10 @@ export class WorldScene extends Phaser.Scene {
 
     const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
     const randomMsg = this.encounterMessages[Math.floor(Math.random() * this.encounterMessages.length)];
-    const randomMessage = `${guest.name.split(' ')[0]} ${randomMsg}`;
+    const nameWords = guest.name.split(' ');
+    const honorifics = ['Dr.', 'Mr.', 'Ms.', 'Mrs.', 'Prof.'];
+    const firstName = honorifics.includes(nameWords[0]) ? nameWords.slice(0,2).join(' ') : nameWords[0];
+    const randomMessage = `${firstName} ${randomMsg}`;
 
     const overlay = document.createElement('div');
     overlay.id = 'a16z-dialogue-overlay';
