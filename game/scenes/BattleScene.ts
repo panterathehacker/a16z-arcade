@@ -289,7 +289,7 @@ export class BattleScene extends Phaser.Scene {
     playerBox.id = 'a16z-player-hp';
     playerBox.style.cssText = `
       position: fixed;
-      left: ${canvasRect.left + canvasRect.width * 0.38}px;
+      left: ${canvasRect.left + canvasRect.width * 0.55}px;
       bottom: ${window.innerHeight - canvasRect.bottom + 100}px;
       width: 240px;
       background: white;
