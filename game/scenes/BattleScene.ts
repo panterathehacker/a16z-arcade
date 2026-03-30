@@ -668,7 +668,6 @@ export class BattleScene extends Phaser.Scene {
       while (this.playerStats.xp >= this.playerStats.xpToNext) {
         this.playerStats.xp -= this.playerStats.xpToNext;
         this.playerStats.level++;
-        this.playerStats.maxHp += 10;
         this.playerStats.xpToNext = xpToNextLevel(this.playerStats.level);
       }
       savePlayerStats(this.playerStats);
@@ -1080,12 +1079,17 @@ export class BattleScene extends Phaser.Scene {
       const overlay = document.getElementById('a16z-dialogue-overlay');
       if (overlay) overlay.remove();
       // Remove battle menu DOM overlay
-      const battleMenu = document.getElementById('a16z-battle-menu');
-      if (battleMenu) battleMenu.remove();
-      const guestHPBox = document.getElementById('a16z-guest-hp');
-      if (guestHPBox) guestHPBox.remove();
-      const playerHPBox = document.getElementById('a16z-player-hp');
-      if (playerHPBox) playerHPBox.remove();
+      // Nuclear cleanup: remove all battle DOM elements
+      ['a16z-battle-menu', 'a16z-guest-hp', 'a16z-player-hp', 
+       'a16z-battle-result-overlay', 'a16z-battle-result-styles',
+       'a16z-dialogue-overlay'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.remove();
+      });
+      // Also remove via instance references
+      if (this.domGuestHP) { this.domGuestHP.remove(); this.domGuestHP = null; }
+      if (this.domPlayerHP) { this.domPlayerHP.remove(); this.domPlayerHP = null; }
+      if (this.battleMenuEl) { this.battleMenuEl.remove(); this.battleMenuEl = null; }
       if (worldScene.dialogueOverlay) {
         worldScene.dialogueOverlay.remove();
         worldScene.dialogueOverlay = null;
