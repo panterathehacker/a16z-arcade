@@ -373,6 +373,7 @@ export class BattleScene extends Phaser.Scene {
       }
     };
     window.addEventListener('resize', this.resizeHandler);
+    window.addEventListener('scroll', this.resizeHandler);
 
     // Stub out legacy Phaser HP objects to avoid null errors
     this.guestHPBar = this.add.graphics().setDepth(12).setVisible(false);
@@ -1087,6 +1088,7 @@ export class BattleScene extends Phaser.Scene {
     // Remove resize handler
     if (this.resizeHandler) {
       window.removeEventListener('resize', this.resizeHandler);
+      window.removeEventListener('scroll', this.resizeHandler);
       this.resizeHandler = null;
     }
     // Remove DOM battle menu
@@ -1122,6 +1124,9 @@ export class BattleScene extends Phaser.Scene {
     const rEl = document.getElementById('a16z-battle-result-overlay');
     if (rEl) rEl.remove();
 
+    // Restore page scroll
+    document.body.style.overflow = '';
+    
     // Stop all battle audio and restart overworld music
     if (this.sound) {
       // Stop ALL sounds except overworld
