@@ -78,7 +78,7 @@ export default function Home() {
     transition: 'transform 0.1s, color 0.1s, opacity 0.1s',
     display: 'inline-block',
     transform: hoveredLink === id ? 'scale(1.08) translateY(-1px)' : 'scale(1)',
-    opacity: hoveredLink === id ? 1 : 0.85,
+    opacity: 1,
   });
 
   return (
@@ -109,7 +109,7 @@ export default function Home() {
           style={{
             position: 'fixed',
             inset: 0,
-            background: '#000000',
+            background: '#1a0008',
             zIndex: 99999,
             display: 'flex',
             alignItems: 'center',

@@ -208,9 +208,9 @@ export class BattleScene extends Phaser.Scene {
       .setDepth(0);
 
     this._gpX = W * 0.67;
-    this._gpY = H * 0.40;
+    this._gpY = H * 0.35;
     this._ppX = W * 0.36;
-    this._ppY = H * 0.50;
+    this._ppY = H * 0.52;
   }
 
   // ─────────────────────────────────────────────
@@ -289,7 +289,7 @@ export class BattleScene extends Phaser.Scene {
     playerBox.id = 'a16z-player-hp';
     playerBox.style.cssText = `
       position: fixed;
-      left: ${canvasRect.left + canvasRect.width * 0.36}px;
+      left: ${canvasRect.left + canvasRect.width * 0.38}px;
       bottom: ${window.innerHeight - canvasRect.bottom + 100}px;
       width: 240px;
       background: white;
