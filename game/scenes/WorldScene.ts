@@ -629,6 +629,11 @@ export class WorldScene extends Phaser.Scene {
     overlay.appendChild(box);
     document.body.appendChild(overlay);
     this.usernameOverlay = overlay;
+    
+    // Start overworld music on title screen (LennyRPG approach)
+    if (this.sound && !this.sound.get('overworld-music')) {
+      this.sound.play('overworld-music', { loop: true, volume: 0.4 });
+    }
 
     setTimeout(() => input.focus(), 100);
   }
