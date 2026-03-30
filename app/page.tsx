@@ -193,7 +193,7 @@ export default function Home() {
       <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, height: '3px', background: 'linear-gradient(90deg, transparent, #FFD700, transparent)', zIndex: 1 }} />
 
       {/* Header */}
-      <div className="mb-5 text-center" style={{ marginTop: "32px" }} style={{ position: 'relative', zIndex: 2 }}>
+      <div className="mb-5 text-center" style={{ marginTop: "32px", position: "relative", zIndex: 2 }}>
         <h1
           className="mb-2 tracking-tight"
           style={{
