@@ -1081,11 +1081,18 @@ export class BattleScene extends Phaser.Scene {
     const rEl = document.getElementById('a16z-battle-result-overlay');
     if (rEl) rEl.remove();
 
-    // Stop all battle audio
+    // Stop all battle audio and restart overworld music
     if (this.sound) {
       ['battle-music', 'victory-music'].forEach(key => {
         const t = this.sound.get(key); if (t) t.stop();
       });
+      // Restart overworld music (WorldScene is still running, just silent)
+      const overworldTrack = this.sound.get('overworld-music');
+      if (overworldTrack && !overworldTrack.isPlaying) {
+        overworldTrack.play({ loop: true, volume: 0.4 });
+      } else if (!overworldTrack) {
+        this.sound.play('overworld-music', { loop: true, volume: 0.4 });
+      }
     }
     const worldScene = this.scene.get('WorldScene') as any;
     if (worldScene) {
