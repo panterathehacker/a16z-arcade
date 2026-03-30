@@ -246,6 +246,7 @@ export const GUESTS: Guest[] = [
   },
   {
     id: 'fei-fei-li',
+    youtubeUrl: 'https://www.youtube.com/watch?v=fQGu016AlVo',
     name: 'Dr. Fei-Fei Li',
     title: 'AI Researcher & Stanford Professor',
     color: 0x8B2FC9,
@@ -281,6 +282,7 @@ export const GUESTS: Guest[] = [
   },
   {
     id: 'michael-truell',
+    youtubeUrl: 'https://www.youtube.com/watch?v=deMrq2uzRKA',
     name: 'Michael Truell',
     title: 'CEO, Cursor',
     color: 0x00A8E0,
@@ -316,6 +318,7 @@ export const GUESTS: Guest[] = [
   },
   {
     id: 'mati-sheetrit',
+    youtubeUrl: 'https://www.youtube.com/watch?v=afkFLnyrLww',
     name: 'Mati Sheetrit',
     title: 'CEO & Co-Founder, ElevenLabs',
     color: 0xFF5733,
@@ -388,6 +391,7 @@ export const GUESTS: Guest[] = [
   },
   {
     id: 'chris-dixon',
+    youtubeUrl: 'https://www.youtube.com/watch?v=tJdtt8n0Kgw',
     name: 'Chris Dixon',
     title: 'General Partner, a16z Crypto',
     color: 0xF7931A,
@@ -424,6 +428,7 @@ export const GUESTS: Guest[] = [
   },
   {
     id: 'vlad-tenev',
+    youtubeUrl: 'https://www.youtube.com/watch?v=ywhugJuzcyE',
     name: 'Vlad Tenev',
     title: 'CEO, Robinhood',
     color: 0x00C805,
@@ -459,6 +464,7 @@ export const GUESTS: Guest[] = [
   },
   {
     id: 'mark-zuckerberg',
+    youtubeUrl: 'https://www.youtube.com/watch?v=YnV8pgHtO5Y',
     name: 'Mark Zuckerberg',
     title: 'CEO, Meta',
     color: 0x1877F2,
@@ -494,6 +500,7 @@ export const GUESTS: Guest[] = [
   },
   {
     id: 'andrew',
+    youtubeUrl: 'https://www.youtube.com/watch?v=EpvhuaD5Kk0',
     name: 'Andrew Chen',
     title: 'General Partner, a16z',
     color: 0xFF8C00,
@@ -530,6 +537,7 @@ export const GUESTS: Guest[] = [
   },
   {
     id: 'andrew-huberman',
+    youtubeUrl: 'https://www.youtube.com/watch?v=qTpCGe4A8PM',
     name: 'Andrew Huberman',
     title: 'Neuroscientist & Podcaster',
     color: 0xA0522D,
@@ -565,6 +573,7 @@ export const GUESTS: Guest[] = [
   },
   {
     id: 'david',
+    youtubeUrl: 'https://www.youtube.com/watch?v=rSohMpT24SI',
     name: 'David George',
     title: 'General Partner, a16z Growth',
     color: 0xDC143C,
@@ -675,6 +684,7 @@ export const GUESTS: Guest[] = [
   },
   {
     id: 'balaji',
+    youtubeUrl: 'https://www.youtube.com/watch?v=aHEkd3NNP_A',
     name: 'Balaji Srinivasan',
     title: 'Investor & Author',
     color: 0xF7A800,
@@ -711,6 +721,7 @@ export const GUESTS: Guest[] = [
   },
   {
     id: 'emmett-shear',
+    youtubeUrl: 'https://www.youtube.com/watch?v=Ua8nPJ1_yk8',
     name: 'Emmett Shear',
     title: 'Former CEO, Twitch & OpenAI',
     color: 0x6441A4,
@@ -746,6 +757,7 @@ export const GUESTS: Guest[] = [
   },
   {
     id: 'reid-hoffman',
+    youtubeUrl: 'https://www.youtube.com/watch?v=brjL6iyoEhI',
     name: 'Reid Hoffman',
     title: 'Co-Founder, LinkedIn',
     color: 0x0077B5,
@@ -782,6 +794,7 @@ export const GUESTS: Guest[] = [
   },
   {
     id: 'wozniak',
+    youtubeUrl: 'https://www.youtube.com/watch?v=fphiq-WxTWU',
     name: 'Steve Wozniak',
     title: 'Co-Founder, Apple',
     color: 0xA2AAAD,
@@ -818,6 +831,7 @@ export const GUESTS: Guest[] = [
   },
   {
     id: 'nicole-brichtova',
+    youtubeUrl: 'https://www.youtube.com/watch?v=I8VUN141MjU',
     name: 'Nicole Brichtova',
     title: 'Group PM, Google DeepMind',
     color: 0x4285F4,
@@ -854,6 +868,7 @@ export const GUESTS: Guest[] = [
   },
   {
     id: 'keith-rabois',
+    youtubeUrl: 'https://www.youtube.com/watch?v=Kw2bK_jLz8M',
     name: 'Keith Rabois',
     title: 'Investor, Founders Fund',
     color: 0x2C3E50,
@@ -889,6 +904,7 @@ export const GUESTS: Guest[] = [
   },
   {
     id: 'benedict-evans',
+    youtubeUrl: 'https://www.youtube.com/watch?v=RH9vJNxFKDA',
     name: 'Benedict Evans',
     title: 'Tech Analyst',
     color: 0x34495E,
