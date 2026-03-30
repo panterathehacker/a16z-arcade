@@ -415,37 +415,93 @@ export class WorldScene extends Phaser.Scene {
   private showUsernameOverlay() {
     this.input.keyboard?.disableGlobalCapture();
 
+    // Full-canvas title screen overlay (LennyRPG style)
     const overlay = document.createElement('div');
     overlay.style.cssText = `
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(26, 0, 8, 0.95);
+      background: linear-gradient(180deg, #1a0008 0%, #2d0010 60%, #1a0008 100%);
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
       z-index: 9999;
       font-family: "Press Start 2P", monospace;
+      overflow: hidden;
     `;
 
+    // Scanline overlay for CRT effect
+    const scanlines = document.createElement('div');
+    scanlines.style.cssText = `
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-image: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,0.18) 2px,
+        rgba(0,0,0,0.18) 4px
+      );
+      pointer-events: none;
+      z-index: 0;
+    `;
+    overlay.appendChild(scanlines);
+
+    // Gold top/bottom border lines
+    const topLine = document.createElement('div');
+    topLine.style.cssText = `position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, transparent, #FFD700, transparent); z-index: 1;`;
+    const botLine = document.createElement('div');
+    botLine.style.cssText = `position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, transparent, #FFD700, transparent); z-index: 1;`;
+    overlay.appendChild(topLine);
+    overlay.appendChild(botLine);
+
+    // Content container
     const box = document.createElement('div');
     box.style.cssText = `
-      background: #1a0008;
+      position: relative;
+      z-index: 2;
+      background: rgba(0, 0, 0, 0.85);
       border: 3px solid #FFD700;
-      border-radius: 4px;
-      image-rendering: pixelated;
-      padding: 40px 36px;
+      border-radius: 8px;
+      padding: 40px 48px;
       text-align: center;
-      max-width: 460px;
+      max-width: 480px;
       width: 92%;
+      box-shadow: 4px 4px 0px #000000, 6px 6px 0px rgba(255,215,0,0.2);
     `;
 
+    // Big title
     const title = document.createElement('div');
-    title.style.cssText = `color: #FFD700; font-size: 20px; margin-bottom: 12px; letter-spacing: 2px; text-shadow: 1px 1px 0 #4A0315;`;
+    title.style.cssText = `
+      color: #FFD700;
+      font-size: 28px;
+      margin-bottom: 10px;
+      letter-spacing: 2px;
+      text-shadow: 3px 3px 0px #000000, 4px 4px 0px rgba(74,3,21,0.8), 0 0 20px rgba(255,215,0,0.5);
+    `;
     title.textContent = 'a16z ARCADE';
 
+    // Tagline
+    const tagline = document.createElement('div');
+    tagline.style.cssText = `
+      color: rgba(255,215,0,0.75);
+      font-size: 9px;
+      margin-bottom: 32px;
+      line-height: 2;
+      text-shadow: 1px 1px 0 #4A0315;
+    `;
+    tagline.textContent = 'Learn from the best, one battle at a time.';
+
+    // Name label
     const subtitle = document.createElement('div');
-    subtitle.style.cssText = `color: rgba(255,215,0,0.65); font-size: 11px; margin-bottom: 32px; line-height: 2;`;
-    subtitle.textContent = 'Enter your trainer name:';
+    subtitle.style.cssText = `
+      color: #FFD700;
+      font-size: 10px;
+      margin-bottom: 14px;
+      line-height: 2;
+      text-shadow: 2px 2px 0 rgba(0,0,0,0.5);
+    `;
+    subtitle.textContent = 'ENTER YOUR NAME:';
 
     // Gender selector
     const genderRow = document.createElement('div');
@@ -508,12 +564,25 @@ export class WorldScene extends Phaser.Scene {
       font-size: 11px;
       background: #4A0315;
       color: #FFD700;
-      border: 2px solid #FFD700;
+      border: 3px solid #FFD700;
       border-radius: 8px;
       padding: 16px 24px;
       cursor: pointer;
       width: 100%;
+      box-shadow: 4px 4px 0px #000000;
+      transition: transform 0.1s, box-shadow 0.1s;
+      letter-spacing: 2px;
     `;
+    btn.addEventListener('mouseover', () => {
+      btn.style.transform = 'translateY(-2px)';
+      btn.style.boxShadow = '4px 6px 0px #000000';
+      btn.style.background = '#6a0420';
+    });
+    btn.addEventListener('mouseout', () => {
+      btn.style.transform = 'translateY(0)';
+      btn.style.boxShadow = '4px 4px 0px #000000';
+      btn.style.background = '#4A0315';
+    });
 
     const confirm = async () => {
       const name = input.value.trim() || 'Trainer';
@@ -552,6 +621,7 @@ export class WorldScene extends Phaser.Scene {
     });
 
     box.appendChild(title);
+    box.appendChild(tagline);
     box.appendChild(subtitle);
     box.appendChild(genderRow);
     box.appendChild(input);

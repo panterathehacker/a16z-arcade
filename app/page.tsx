@@ -339,21 +339,21 @@ export default function Home() {
         style={{
           position: 'relative',
           zIndex: 2,
-          maxWidth: '1300px',
-          background: '#110005',
-          border: '2px solid rgba(255,215,0,0.4)',
-          borderRadius: '4px',
-          padding: '14px 20px',
+          maxWidth: '1100px',
+          background: 'rgba(0,0,0,0.85)',
+          border: '3px solid #FFD700',
+          borderRadius: '8px',
+          padding: '16px 24px',
           display: 'grid',
-          gridTemplateColumns: '1fr 1px 1fr',
-          gap: '0',
+          gridTemplateColumns: '1fr 1fr',
+          gap: '32px',
           fontFamily: '"Press Start 2P", monospace',
-          boxShadow: '4px 4px 0px #000000',
+          boxShadow: '4px 4px 0px #000000, 6px 6px 0px rgba(255,215,0,0.2)',
         }}
       >
         {/* Left: How to Play */}
-        <div style={{ paddingRight: '20px' }}>
-          <div style={{ color: '#FFD700', fontSize: '11px', marginBottom: '12px', textShadow: '1px 1px 0 #4A0315' }}>
+        <div style={{ borderRight: '2px solid rgba(255,215,0,0.3)', paddingRight: '32px' }}>
+          <div style={{ color: '#FFD700', fontSize: '10px', marginBottom: '12px', textShadow: '2px 2px 0 rgba(0,0,0,0.5)' }}>
             How to Play:
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -363,24 +363,21 @@ export default function Home() {
               'Level up to move on to the next map',
               'Press C to view your collection',
             ].map((text) => (
-              <div key={text} style={{ display: 'flex', alignItems: 'flex-start', color: 'rgba(255,255,255,0.85)', fontSize: '9px', lineHeight: 1.7 }}>
-                <span style={{ color: 'rgba(255,255,255,0.6)', marginRight: '8px', fontSize: '12px', flexShrink: 0, lineHeight: 1 }}>▪</span>
+              <div key={text} style={{ display: 'flex', alignItems: 'center', color: '#ffffff', fontSize: '9px', lineHeight: 1.6 }}>
+                <span style={{ color: '#FFD700', marginRight: '8px', fontSize: '10px', flexShrink: 0, lineHeight: 1 }}>▪</span>
                 <span>{text}</span>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Divider */}
-        <div style={{ background: 'rgba(255,215,0,0.2)', margin: '0 4px' }} />
-
         {/* Right: About */}
-        <div style={{ paddingLeft: '20px' }}>
-          <div style={{ color: '#FFD700', fontSize: '11px', marginBottom: '12px', textShadow: '1px 1px 0 #4A0315' }}>
+        <div>
+          <div style={{ color: '#FFD700', fontSize: '10px', marginBottom: '12px', textShadow: '2px 2px 0 rgba(0,0,0,0.5)' }}>
             About this game:
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '9px', color: 'rgba(255,255,255,0.85)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '9px', color: '#ffffff' }}>
               <span>Showcases content from</span>
               <span style={{ position: 'relative', cursor: 'pointer' }}
                 onMouseEnter={() => setShowTooltip(true)}
@@ -419,7 +416,7 @@ export default function Home() {
                 )}
               </span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '9px', color: 'rgba(255,255,255,0.85)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '9px', color: '#ffffff' }}>
               <span>Made by</span>
               <div style={{ width: '44px', height: '44px', flexShrink: 0, borderRadius: '4px', border: '2px solid #FFD700', overflow: 'hidden' }}>
                 <img src="/assets/sprites/player-male/front.png" alt="David" style={{ width: '88px', height: 'auto', marginLeft: '0px', marginTop: '-12px', imageRendering: 'pixelated', display: 'block' }} />
