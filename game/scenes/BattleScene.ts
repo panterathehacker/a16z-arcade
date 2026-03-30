@@ -207,9 +207,9 @@ export class BattleScene extends Phaser.Scene {
       .setDisplaySize(W, bgH)
       .setDepth(0);
 
-    this._gpX = W * 0.64;
-    this._gpY = H * 0.44;
-    this._ppX = W * 0.32;
+    this._gpX = W * 0.67;
+    this._gpY = H * 0.40;
+    this._ppX = W * 0.36;
     this._ppY = H * 0.50;
   }
 
@@ -289,7 +289,7 @@ export class BattleScene extends Phaser.Scene {
     playerBox.id = 'a16z-player-hp';
     playerBox.style.cssText = `
       position: fixed;
-      left: ${canvasRect.left + canvasRect.width * 0.28}px;
+      left: ${canvasRect.left + canvasRect.width * 0.36}px;
       bottom: ${window.innerHeight - canvasRect.bottom + 100}px;
       width: 240px;
       background: white;
