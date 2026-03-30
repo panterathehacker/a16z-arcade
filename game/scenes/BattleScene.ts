@@ -131,7 +131,10 @@ export class BattleScene extends Phaser.Scene {
     this.children.removeAll(true);
     
     // Start battle music (LennyRPG volume: 0.5)
-    if (this.sound && !this.sound.get('battle-music')) {
+    if (this.sound) {
+      // Always restart battle music (stop first in case it's still cached)
+      const bt = this.sound.get('battle-music');
+      if (bt) bt.stop();
       this.sound.play('battle-music', { loop: true, volume: 0.5 });
     }
 

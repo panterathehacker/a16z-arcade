@@ -72,6 +72,10 @@ export class BootScene extends Phaser.Scene {
     this.generatePlayerTextures();
     this.generateNPCTextures();
     this.generateUITextures();
+    // Start overworld music immediately (plays during title screen and map)
+    if (this.sound && !this.sound.get('overworld-music')) {
+      this.sound.play('overworld-music', { loop: true, volume: 0.4 });
+    }
     this.scene.start('WorldScene');
   }
 
