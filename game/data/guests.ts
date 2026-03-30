@@ -939,6 +939,222 @@ export const GUESTS: Guest[] = [
     ],
   },
   {
+    id: 'olivia-moore',
+    name: 'Olivia Moore',
+    title: 'Partner, a16z (AI Apps)',
+    color: 0xFF69B4,
+    px: 240, py: 112,
+    x: 7,   y: 3,
+    youtubeUrl: 'https://www.youtube.com/watch?v=U-TSafAIzXw',
+    questions: [
+      {
+        text: "Which AI product was highlighted as having the largest global user base according to Olivia Moore?",
+        options: ["ChatGPT", "Claude", "Gemini", "Atlas"],
+        correct: 0,
+      },
+      {
+        text: "What was a significant trend mentioned in the podcast regarding AI usage in consumer applications?",
+        options: ["AI is primarily used in enterprise settings", "There's a decrease in AI use in creative tools", "There's an expansion of AI in non-AI native products", "AI is only used for basic tasks"],
+        correct: 2,
+      },
+      {
+        text: "According to the podcast, which country has the highest per capita adoption of AI?",
+        options: ["United States", "Singapore", "China", "India"],
+        correct: 1,
+      },
+      {
+        text: "What distinguishes Manus as a successful AI product?",
+        options: ["It focuses on image generation", "It's a consumer-grade agent capable of operating autonomously", "It is primarily used for enterprise applications", "It integrates with social media platforms"],
+        correct: 1,
+      },
+      {
+        text: "In the context of AI models, what is a key advantage of having a memory function?",
+        options: ["It reduces the need for data privacy", "It enhances the personalization of user experience", "It increases the speed of data processing", "It simplifies the AI development process"],
+        correct: 1,
+      },
+    ],
+  },
+  {
+    id: 'magic-johnson',
+    name: 'Magic Johnson',
+    title: 'NBA Legend & Athlete Investor',
+    color: 0xFFD700,
+    px: 720, py: 80,
+    x: 22,  y: 2,
+    youtubeUrl: 'https://www.youtube.com/watch?v=uDuQKsdYfZw',
+    questions: [
+      {
+        text: "According to Magic Johnson, what was a major factor in the increase of the Dodgers' valuation from $2.2 billion to $8 billion?",
+        options: ["Investing in the fan experience and stadium improvements", "Cutting player salaries to save costs", "Focusing only on television broadcast rights", "Reducing the number of games to create scarcity"],
+        correct: 0,
+      },
+      {
+        text: "What is Magic Johnson's approach to business partnerships?",
+        options: ["He insists on being the sole decision-maker", "He focuses on playing a specific role and over-delivering in partnerships", "He only partners with celebrities and athletes", "He avoids long-term partnerships to maintain flexibility"],
+        correct: 1,
+      },
+      {
+        text: "What is one of the key insights shared by Magic Johnson regarding investments in sports teams?",
+        options: ["Sports teams are not a viable long-term investment", "Sports will continue to be a high-value asset class because Americans will always watch sports", "Investing in sports teams is only profitable if the team consistently wins championships", "The value of sports teams will stagnate due to oversaturation"],
+        correct: 1,
+      },
+      {
+        text: "What critical advice did Michael Ovitz give to Magic Johnson about building a business?",
+        options: ["Focus only on businesses that are trendy and popular", "Invest solely in entertainment businesses", "Build a strong network and always be learning", "Rely on endorsements rather than equity deals"],
+        correct: 2,
+      },
+      {
+        text: "What lesson about investments is emphasized through Magic Johnson's early encounter with Nike?",
+        options: ["Always take the largest upfront payment offered", "Equity can be more valuable than cash in the long run", "Avoid investments in companies that are not well-established", "Focus on short-term gains rather than long-term growth"],
+        correct: 1,
+      },
+    ],
+  },
+  {
+    id: 'eugenia-kuyda',
+    name: 'Eugenia Kuyda',
+    title: 'CEO & Founder, Replika/Wabi',
+    color: 0x9B59B6,
+    px: 400, py: 160,
+    x: 12,  y: 5,
+    youtubeUrl: 'https://www.youtube.com/watch?v=-KfrrWRl3FA',
+    questions: [
+      {
+        text: "What is the main theme Eugenia Kuyda identifies as a through line in her career?",
+        options: ["Being consistently early in the AI space", "Focusing on hardware development", "Prioritizing profitability over innovation", "Avoiding risk in business decisions"],
+        correct: 0,
+      },
+      {
+        text: "According to Eugenia Kuyda, what was a surprising realization about how users engaged with AI models?",
+        options: ["Users primarily used AI for complex, niche applications", "There was little interest in AI for personal use", "Users mainly utilized AI for simple tasks like writing and search", "The majority of users created their own AI applications"],
+        correct: 2,
+      },
+      {
+        text: "What metaphor does Eugenia Kuyda use to describe the current state of chatbot interfaces?",
+        options: ["They are like the Windows 95 era for AI", "They resemble the Microsoft DOS era for AI interfaces", "They are equivalent to modern mobile apps", "They are as advanced as current operating systems"],
+        correct: 1,
+      },
+      {
+        text: "What is Eugenia Kuyda's prediction about the future of app development?",
+        options: ["Apps will become more standardized and less personalized", "Professional developers will dominate the app market", "Apps will be built by everyone, including AI, for personal use", "The app market will shrink due to AI advancements"],
+        correct: 2,
+      },
+      {
+        text: "What is one reason Eugenia Kuyda criticizes the use of voice as the main interface for AI devices?",
+        options: ["Voice interfaces are not advanced enough technologically", "Voice interfaces cannot be used in many common situations", "Voice interfaces are too expensive to implement", "Voice interfaces are not popular among users"],
+        correct: 1,
+      },
+    ],
+  },
+  {
+    id: 'anish-acharya',
+    name: 'Anish Acharya',
+    title: 'General Partner, a16z',
+    color: 0x1ABC9C,
+    px: 960, py: 128,
+    x: 30,  y: 4,
+    youtubeUrl: 'https://www.youtube.com/watch?v=tJdtt8n0Kgw',
+    questions: [
+      {
+        text: "According to Anish Acharya, what is a crucial aspect for founders to consider when building a tool?",
+        options: ["Ensuring the tool is feature-rich from the start", "Thinking about the network that can emerge from it", "Focusing solely on user acquisition initially", "Prioritizing low-cost development"],
+        correct: 1,
+      },
+      {
+        text: "What tactic did Anish Acharya mention regarding Instagram's initial growth strategy?",
+        options: ["Relying solely on paid advertisements", "Building a strong customer service team", "Piggybacking off existing networks like Twitter", "Launching a large-scale TV campaign"],
+        correct: 2,
+      },
+      {
+        text: "In the context of AI product development, what concern does Anish Acharya highlight about consumer tools?",
+        options: ["They are easily copied by competitors", "They often lack an obvious network to build around", "They require excessive funding to develop", "They are typically not user-friendly"],
+        correct: 1,
+      },
+      {
+        text: "What does Anish Acharya suggest is a potential outcome for consumer disposable income due to software advancements?",
+        options: ["Software will become the largest expense", "Software will be a negligible part of expenses", "Software will subsume many other discretionary spends", "Software prices will drastically decrease over time"],
+        correct: 2,
+      },
+      {
+        text: "How does Anish Acharya view the emergence of 'narrow startups' in the software industry?",
+        options: ["They will struggle to compete with larger companies", "They will deliver high value and charge high prices", "They will focus heavily on securing large amounts of funding", "They will not be sustainable in the long run"],
+        correct: 1,
+      },
+    ],
+  },
+  {
+    id: 'martin-casado',
+    name: 'Martin Casado',
+    title: 'General Partner, a16z (Enterprise)',
+    color: 0x2ECC71,
+    px: 560, py: 208,
+    x: 17,  y: 6,
+    youtubeUrl: 'https://www.youtube.com/watch?v=4XgSfhj-LQU',
+    questions: [
+      {
+        text: "What is one reason Martin Casado suggests why venture capitalists should build their own media platforms?",
+        options: ["Traditional media has turned against tech, making it dangerous to rely on them for positive coverage.", "It is cheaper to build a media platform than to hire PR firms.", "Venture capitalists need to be in the public eye to attract investments.", "Media platforms can be monetized to create additional revenue streams."],
+        correct: 0,
+      },
+      {
+        text: "According to Martin Casado, why is specialization becoming more necessary in venture capital firms?",
+        options: ["The market for technology is shrinking, requiring more focused expertise.", "The historical model of venture capital is outdated due to the growth of the tech market.", "There is a lack of generalists capable of handling new tech developments.", "Investors prefer to work with firms that have a narrow focus."],
+        correct: 1,
+      },
+      {
+        text: "Why does Martin Casado believe infrastructure companies often have higher multiples than application companies?",
+        options: ["Infrastructure companies have fewer competitors.", "They are the source of technical differentiation that supports applications.", "They have better marketing strategies.", "They receive more government incentives."],
+        correct: 1,
+      },
+      {
+        text: "In the context of AI, which type of market does Martin Casado mention as clearly working due to the reduction of marginal costs?",
+        options: ["Automating legal and financial services", "Creating digital content like images and music", "Developing new hardware for AI models", "Building AI-driven healthcare solutions"],
+        correct: 1,
+      },
+      {
+        text: "What does Martin Casado identify as a necessary quality for a venture capital firm to maintain competitiveness as the market grows?",
+        options: ["A large network of industry contacts", "The ability to offer a wide range of financial products", "A high number of generalists in the team", "Strong ties with government policymakers"],
+        correct: 0,
+      },
+    ],
+  },
+  {
+    id: 'justine-moore-guest',
+    name: 'Justine Moore',
+    title: 'Partner, a16z (Consumer & Creator)',
+    color: 0xE91E63,
+    px: 840, py: 176,
+    x: 26,  y: 5,
+    youtubeUrl: 'https://www.youtube.com/watch?v=74Yk7mbbQ0g',
+    questions: [
+      {
+        text: "What is one of the main challenges with current affiliate marketing models as discussed in the podcast?",
+        options: ["Affiliate marketing often leads to irrelevant product recommendations.", "Affiliate marketing is based on outdated technology like cookies and pixels.", "Affiliate marketing relies on last-click attribution, which can be misleading.", "Affiliate marketing cannot adapt to new AI technologies."],
+        correct: 2,
+      },
+      {
+        text: "Why is the worldwide web described as 'unhealthy' in the podcast?",
+        options: ["It has too many social media platforms.", "It is dominated by a few large corporations.", "It is filled with low-quality content optimized for search engines.", "It lacks innovation in technology and services."],
+        correct: 2,
+      },
+      {
+        text: "What is a primary reason that AI has not significantly penetrated the e-commerce market according to Justine Moore?",
+        options: ["AI technology is not advanced enough for e-commerce applications.", "There are few startups attempting to integrate AI into e-commerce.", "Consumers prefer traditional shopping experiences over AI-driven ones.", "AI cannot handle the complexity of modern e-commerce systems."],
+        correct: 1,
+      },
+      {
+        text: "According to the podcast, what is a significant limitation of AI in influencing consumer purchases?",
+        options: ["AI struggles to provide accurate product recommendations.", "AI cannot effectively create new consumer demand.", "AI lacks the ability to process large datasets.", "AI's decision-making process is not transparent to users."],
+        correct: 1,
+      },
+      {
+        text: "How does Costco's business model differ from typical e-commerce platforms like Amazon?",
+        options: ["Costco focuses on high gross margins for each product.", "Costco prioritizes member trust over maximizing profit margins per product.", "Costco relies on a large variety of low-quality products.", "Costco uses AI to recommend personalized shopping lists to members."],
+        correct: 1,
+      },
+    ],
+  },
+  {
     id: 'player',
     name: 'You',
     title: 'Tech Trivia Challenger',

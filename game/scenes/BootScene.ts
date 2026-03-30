@@ -38,6 +38,12 @@ export class BootScene extends Phaser.Scene {
       'nicole-brichtova',
       'keith-rabois',
       'benedict-evans',
+      'olivia-moore',
+      'magic-johnson',
+      'eugenia-kuyda',
+      'anish-acharya',
+      'martin-casado',
+      'justine-moore-guest',
     ];
     guestFiles.forEach((id, i) => {
       this.load.image(`npc_ai_${i}`, `/assets/sprites/guests/${id}.png`);
