@@ -575,8 +575,14 @@ export class BattleScene extends Phaser.Scene {
     if (this.domQText) this.domQText.textContent = q.text;
     if (this.domQNum) this.domQNum.textContent = `Q${this.currentQ + 1}/${this.questions.length}`;
     q.options.forEach((opt, i) => {
+      // Set via DOM ID
       const el = document.getElementById('battle-answer-text-' + i);
       if (el) el.textContent = opt;
+      // Also set via direct reference (belt+suspenders for retry)
+      if (this.domAnswerBtns[i]) {
+        const textSpan = this.domAnswerBtns[i].querySelector('span:last-child');
+        if (textSpan) textSpan.textContent = opt;
+      }
     });
 
     // Reset answer button styles and show menu
