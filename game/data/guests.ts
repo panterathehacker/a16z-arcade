@@ -27,8 +27,8 @@ export const GUESTS: Guest[] = [
     name: 'Marc Andreessen',
     title: 'Co-Founder, a16z',
     color: 0x4169E1,
-    px: 176,  py: 624,
-    x: 5,   y: 19,
+    px: 304,  py: 944,
+    x: 9,   y: 29,
     youtubeUrl: 'https://www.youtube.com/watch?v=CEOiwEemiTA',
     questions: [
       {
@@ -64,8 +64,8 @@ export const GUESTS: Guest[] = [
     name: 'Ben Horowitz',
     title: 'Co-Founder, a16z',
     color: 0x8B0000,
-    px: 720,  py: 848,
-    x: 22,   y: 26,
+    px: 144,  py: 1136,
+    x: 4,   y: 35,
     youtubeUrl: 'https://www.youtube.com/watch?v=CEOiwEemiTA',
     questions: [
       {
@@ -175,8 +175,8 @@ export const GUESTS: Guest[] = [
     name: 'Alexandr Wang',
     title: 'CEO, Scale AI',
     color: 0x00CED1,
-    px: 592,  py: 624,
-    x: 18,   y: 19,
+    px: 368,  py: 848,
+    x: 11,   y: 26,
     youtubeUrl: 'https://www.youtube.com/watch?v=HSeE40X60rA',
     questions: [
       {
@@ -613,8 +613,8 @@ export const GUESTS: Guest[] = [
     name: 'Wade Foster',
     title: 'CEO & Co-Founder, Zapier',
     color: 0xFF4A00,
-    px: 1200,  py: 560,
-    x: 37,   y: 17,
+    px: 208,  py: 880,
+    x: 6,   y: 27,
     youtubeUrl: 'https://www.youtube.com/watch?v=98Afn21BFxE',
     questions: [
       {
@@ -941,7 +941,7 @@ export const GUESTS: Guest[] = [
   {
     id: 'olivia-moore',
     name: 'Olivia Moore',
-    title: 'Partner, a16z (AI Apps)',
+    title: 'Partner, a16z',
     color: 0xFF69B4,
     px: 720,  py: 432,
     x: 22,   y: 13,
@@ -1085,7 +1085,7 @@ export const GUESTS: Guest[] = [
   {
     id: 'martin-casado',
     name: 'Martin Casado',
-    title: 'General Partner, a16z (Enterprise)',
+    title: 'General Partner, a16z',
     color: 0x2ECC71,
     px: 304,  py: 560,
     x: 9,   y: 17,
@@ -1121,10 +1121,10 @@ export const GUESTS: Guest[] = [
   {
     id: 'justine-moore-guest',
     name: 'Justine Moore',
-    title: 'Partner, a16z (Consumer & Creator)',
+    title: 'Partner, a16z',
     color: 0xE91E63,
-    px: 624,  py: 560,
-    x: 19,   y: 17,
+    px: 272,  py: 784,
+    x: 8,   y: 24,
     youtubeUrl: 'https://www.youtube.com/watch?v=74Yk7mbbQ0g',
     questions: [
       {
