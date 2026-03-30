@@ -421,7 +421,7 @@ export default function Home() {
               </a>
             </div>
             <div style={{ fontSize: '6px', color: 'rgba(255,255,255,0.5)', lineHeight: 2, marginTop: '2px' }}>
-              Inspired by <a href="https://www.lennysnewsletter.com/p/how-i-built-lennyrpg" target="_blank" rel="noopener noreferrer" style={{color:"#FFD700",textDecoration:"none"}}>LennyRPG</a> by Ben Shih.<br/>Fan project. Not affiliated with a16z.<br />Some art is AI-generated.
+              Inspired by <a href="https://www.lennysnewsletter.com/p/how-i-built-lennyrpg" target="_blank" rel="noopener noreferrer" style={{color:"#FFD700",textDecoration:"none"}}>LennyRPG</a> by Ben Shih.<br/>Fan project. Not affiliated with a16z.<br />Some art and all music is AI-generated.
             </div>
           </div>
         </div>
