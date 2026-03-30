@@ -129,6 +129,11 @@ export class BattleScene extends Phaser.Scene {
   create() {
     this.time.removeAllEvents();
     this.children.removeAll(true);
+    
+    // Start battle music (LennyRPG volume: 0.5)
+    if (this.sound && !this.sound.get('battle-music')) {
+      this.sound.play('battle-music', { loop: true, volume: 0.5 });
+    }
 
     const W = this.cameras.main.width;
     const H = this.cameras.main.height;
@@ -730,6 +735,14 @@ export class BattleScene extends Phaser.Scene {
   }
 
   private captureGuest() {
+    // Play victory music (LennyRPG volume: 0.6), stop battle
+    if (this.sound) {
+      const bTrack = this.sound.get('battle-music');
+      if (bTrack) bTrack.stop();
+      if (!this.sound.get('victory-music')) {
+        this.sound.play('victory-music', { loop: false, volume: 0.6 });
+      }
+    }
     const captured: string[] = JSON.parse(localStorage.getItem('a16z_captured') || '[]');
     if (!captured.includes(this.guest.id)) {
       captured.push(this.guest.id);
@@ -1068,6 +1081,12 @@ export class BattleScene extends Phaser.Scene {
     const rEl = document.getElementById('a16z-battle-result-overlay');
     if (rEl) rEl.remove();
 
+    // Stop all battle audio
+    if (this.sound) {
+      ['battle-music', 'victory-music'].forEach(key => {
+        const t = this.sound.get(key); if (t) t.stop();
+      });
+    }
     const worldScene = this.scene.get('WorldScene') as any;
     if (worldScene) {
       worldScene.inBattleTransition = false;

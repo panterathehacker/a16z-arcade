@@ -58,6 +58,11 @@ export class BootScene extends Phaser.Scene {
       }
     }
     
+    // Audio
+    this.load.audio('overworld-music', '/assets/audio/overworld.mp3');
+    this.load.audio('battle-music', '/assets/audio/battle.mp3');
+    this.load.audio('victory-music', '/assets/audio/victory.mp3');
+    
     // Battle scene assets
     this.load.image('battle-bg', '/assets/battle/bg-meadow.png');
     this.load.image('battle-player-back', '/assets/battle/player-back.png');

@@ -177,6 +177,11 @@ export class WorldScene extends Phaser.Scene {
 
     // ── Camera ────────────────────────────────────────────────────────────
     this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
+    
+    // Start overworld music (LennyRPG volume: 0.4)
+    if (this.sound && !this.sound.get('overworld-music')) {
+      this.sound.play('overworld-music', { loop: true, volume: 0.4 });
+    }
     this.cameras.main.setZoom(1.5);
 
     // ── Input ─────────────────────────────────────────────────────────────
@@ -209,6 +214,12 @@ export class WorldScene extends Phaser.Scene {
   private startBattleTransition(guest: Guest) {
     if (this.inBattleTransition) return;
     this.inBattleTransition = true;
+    
+    // Stop overworld music when battle starts
+    if (this.sound) {
+      const track = this.sound.get('overworld-music');
+      if (track) track.stop();
+    }
     
     // CRITICAL: Remove ALL dialogue overlays before battle starts
     this.dialogueVisible = false;

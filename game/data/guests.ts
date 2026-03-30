@@ -138,8 +138,8 @@ export const GUESTS: Guest[] = [
     name: 'Lisa Su',
     title: 'CEO, AMD',
     color: 0xFF6B00,
-    px: 560,  py: 1136,
-    x: 17,   y: 35,
+    px: 400,  py: 688,
+    x: 12,   y: 21,
     youtubeUrl: 'https://www.youtube.com/watch?v=kY3B7V0L27c',
     questions: [
       {
@@ -175,8 +175,8 @@ export const GUESTS: Guest[] = [
     name: 'Alexandr Wang',
     title: 'CEO, Scale AI',
     color: 0x00CED1,
-    px: 368,  py: 848,
-    x: 11,   y: 26,
+    px: 432,  py: 1200,
+    x: 13,   y: 37,
     youtubeUrl: 'https://www.youtube.com/watch?v=HSeE40X60rA',
     questions: [
       {
@@ -393,7 +393,7 @@ export const GUESTS: Guest[] = [
     id: 'chris-dixon',
     youtubeUrl: 'https://www.youtube.com/watch?v=tJdtt8n0Kgw',
     name: 'Chris Dixon',
-    title: 'General Partner, a16z Crypto',
+    title: 'General Partner, a16z',
     color: 0xF7931A,
     px: 1008,  py: 624,
     x: 31,   y: 19,
@@ -468,8 +468,8 @@ export const GUESTS: Guest[] = [
     name: 'Mark Zuckerberg',
     title: 'CEO, Meta',
     color: 0x1877F2,
-    px: 80,  py: 848,
-    x: 2,   y: 26,
+    px: 1040,  py: 912,
+    x: 32,   y: 28,
     questions: [
       {
         text: "What is the main strategy of the Chan Zuckerberg Initiative (CZI) to accelerate the pace of scientific discovery?",
@@ -575,7 +575,7 @@ export const GUESTS: Guest[] = [
     id: 'david',
     youtubeUrl: 'https://www.youtube.com/watch?v=rSohMpT24SI',
     name: 'David George',
-    title: 'General Partner, a16z Growth',
+    title: 'General Partner, a16z',
     color: 0xDC143C,
     px: 400,  py: 1008,
     x: 12,   y: 31,
@@ -798,8 +798,8 @@ export const GUESTS: Guest[] = [
     name: 'Steve Wozniak',
     title: 'Co-Founder, Apple',
     color: 0xA2AAAD,
-    px: 496,  py: 144,
-    x: 15,   y: 4,
+    px: 144,  py: 688,
+    x: 4,   y: 21,
     questions: [
       {
         text: "What was Steve Wozniak's primary motivation for starting Apple?",
@@ -908,8 +908,8 @@ export const GUESTS: Guest[] = [
     name: 'Benedict Evans',
     title: 'Tech Analyst',
     color: 0x34495E,
-    px: 560,  py: 304,
-    x: 17,   y: 9,
+    px: 1136,  py: 560,
+    x: 35,   y: 17,
     questions: [
       {
         text: "According to Benedict Evans, what is a common pattern observed when new, exciting, world-changing technologies emerge?",
@@ -1123,8 +1123,8 @@ export const GUESTS: Guest[] = [
     name: 'Justine Moore',
     title: 'Partner, a16z',
     color: 0xE91E63,
-    px: 272,  py: 784,
-    x: 8,   y: 24,
+    px: 912,  py: 976,
+    x: 28,   y: 30,
     youtubeUrl: 'https://www.youtube.com/watch?v=74Yk7mbbQ0g',
     questions: [
       {

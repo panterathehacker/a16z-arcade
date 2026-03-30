@@ -89,7 +89,7 @@ export default function Home() {
         paddingTop: 'max(env(safe-area-inset-top), 12px)',
         justifyContent: 'flex-start',
         paddingBottom: '8px',
-        background: '#1a0008',
+        background: '#2d0010',
         backgroundImage: `
           linear-gradient(45deg, #2a0010 25%, transparent 25%),
           linear-gradient(-45deg, #2a0010 25%, transparent 25%),
@@ -109,7 +109,7 @@ export default function Home() {
           style={{
             position: 'fixed',
             inset: 0,
-            background: '#1a0008',
+            background: '#2d0010',
             zIndex: 99999,
             display: 'flex',
             alignItems: 'center',
@@ -375,7 +375,7 @@ export default function Home() {
                     position: 'absolute',
                     bottom: '130%',
                     left: '0',
-                    background: '#1a0008',
+                    background: '#2d0010',
                     border: '3px solid #FFD700',
                     borderRadius: '4px',
                     padding: '14px 16px',
