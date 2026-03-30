@@ -865,7 +865,6 @@ export class BattleScene extends Phaser.Scene {
 
     const totalQ = this.correctAnswers + this.wrongAnswers;
     const accuracy = totalQ > 0 ? Math.round((this.correctAnswers / totalQ) * 100) : 0;
-    const globalXP = this.playerStats.xp + (this.playerStats.level - 1) * 150;
     const episodeUrl = this.guest.youtubeUrl;
 
     const overlay = document.createElement('div');
@@ -883,7 +882,7 @@ export class BattleScene extends Phaser.Scene {
           <div class="stat-row"><span class="stat-label">Correct Answers:</span><span class="stat-value correct">${this.correctAnswers}</span></div>
           <div class="stat-row"><span class="stat-label">Wrong Answers:</span><span class="stat-value wrong">${this.wrongAnswers}</span></div>
           <div class="stat-row"><span class="stat-label">Accuracy:</span><span class="stat-value">${accuracy}%</span></div>
-          <div class="stat-row"><span class="stat-label">Total XP:</span><span class="stat-value">${globalXP}</span></div>
+          <div class="stat-row"><span class="stat-label">Level XP:</span><span class="stat-value">${this.playerStats.xp}/${this.playerStats.xpToNext}</span></div>
           <div class="stat-row highlight"><span class="stat-label">XP Increased:</span><span class="stat-value xp">+${this.xpGainedThisBattle}</span></div>
           ${this.isPerfectCapture ? '<div class="perfect-badge">⭐ PERFECT CAPTURE! HP +20 ⭐</div>' : ''}
         </div>
@@ -921,7 +920,6 @@ export class BattleScene extends Phaser.Scene {
 
     const totalQ = this.correctAnswers + this.wrongAnswers;
     const accuracy = totalQ > 0 ? Math.round((this.correctAnswers / totalQ) * 100) : 0;
-    const globalXP = this.playerStats.xp + (this.playerStats.level - 1) * 150;
     const episodeUrl = this.guest.youtubeUrl;
 
     const overlay = document.createElement('div');
@@ -939,7 +937,7 @@ export class BattleScene extends Phaser.Scene {
           <div class="stat-row"><span class="stat-label">Correct Answers:</span><span class="stat-value correct">${this.correctAnswers}</span></div>
           <div class="stat-row"><span class="stat-label">Wrong Answers:</span><span class="stat-value wrong">${this.wrongAnswers}</span></div>
           <div class="stat-row"><span class="stat-label">Accuracy:</span><span class="stat-value">${accuracy}%</span></div>
-          <div class="stat-row"><span class="stat-label">Total XP:</span><span class="stat-value">${globalXP}</span></div>
+          <div class="stat-row"><span class="stat-label">Level XP:</span><span class="stat-value">${this.playerStats.xp}/${this.playerStats.xpToNext}</span></div>
         </div>
         ${episodeUrl ? `<div class="episode-link-row"><a class="episode-link" href="${episodeUrl}" target="_blank" rel="noopener noreferrer">🎧 Listen to the episode</a></div>` : ''}
         <div class="result-btn-row">
