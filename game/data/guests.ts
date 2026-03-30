@@ -15,6 +15,7 @@ export interface Guest {
   // Keep x/y for legacy compatibility (tile coords approximated)
   x: number;
   y: number;
+  youtubeUrl?: string; // specific a16z episode URL
   questions: Question[];
 }
 
@@ -28,6 +29,7 @@ export const GUESTS: Guest[] = [
     color: 0x4169E1,
     px: 144,  py: 944,
     x: 4,   y: 29,
+    youtubeUrl: 'https://www.youtube.com/watch?v=CEOiwEemiTA',
     questions: [
       {
         text: "What is one of the main differences between old media and new media as discussed in the podcast?",
@@ -64,6 +66,7 @@ export const GUESTS: Guest[] = [
     color: 0x8B0000,
     px: 1200,  py: 656,
     x: 37,   y: 20,
+    youtubeUrl: 'https://www.youtube.com/watch?v=CEOiwEemiTA',
     questions: [
       {
         text: "What is one key difference between old media and new media according to Ben Horowitz?",
@@ -100,6 +103,7 @@ export const GUESTS: Guest[] = [
     color: 0x76B900,
     px: 528,  py: 112,
     x: 16,   y: 3,
+    youtubeUrl: 'https://www.youtube.com/watch?v=Ww9SkW0Em58',
     questions: [
       {
         text: "According to Jensen Huang, why is AI considered a general purpose technology?",
@@ -136,6 +140,7 @@ export const GUESTS: Guest[] = [
     color: 0xFF6B00,
     px: 816,  py: 1136,
     x: 25,   y: 35,
+    youtubeUrl: 'https://www.youtube.com/watch?v=kY3B7V0L27c',
     questions: [
       {
         text: "What is one of the key strategies Lisa Su mentions for AMD in the context of AI development?",
@@ -172,6 +177,7 @@ export const GUESTS: Guest[] = [
     color: 0x00CED1,
     px: 80,  py: 368,
     x: 2,   y: 11,
+    youtubeUrl: 'https://www.youtube.com/watch?v=HSeE40X60rA',
     questions: [
       {
         text: "What are the three pillars of AI that Alexandr Wang discusses as crucial for AI development?",
@@ -208,6 +214,7 @@ export const GUESTS: Guest[] = [
     color: 0x1A1A2E,
     px: 848,  py: 400,
     x: 26,   y: 12,
+    youtubeUrl: 'https://www.youtube.com/watch?v=xm91o6beTmA',
     questions: [
       {
         text: "What does Sam Altman describe as the core mission of OpenAI?",
@@ -349,6 +356,7 @@ export const GUESTS: Guest[] = [
     color: 0xCC785C,
     px: 912,  py: 784,
     x: 28,   y: 24,
+    youtubeUrl: 'https://www.youtube.com/watch?v=1CpCdolHdeA',
     questions: [
       {
         text: "What was the significant moment for Dario Amodei that led to the belief in the potential of scaling laws in AI?",
@@ -598,6 +606,7 @@ export const GUESTS: Guest[] = [
     color: 0xFF4A00,
     px: 464,  py: 1040,
     x: 14,   y: 32,
+    youtubeUrl: 'https://www.youtube.com/watch?v=98Afn21BFxE',
     questions: [
       {
         text: "What was one of the key strategies Wade Foster used to acquire early customers for Zapier?",
@@ -634,6 +643,7 @@ export const GUESTS: Guest[] = [
     color: 0xF45D48,
     px: 80,  py: 720,
     x: 2,   y: 22,
+    youtubeUrl: 'https://www.youtube.com/watch?v=jfQszP-zXNc',
     questions: [
       {
         text: "What was the initial target customer segment for Gusto when they first launched?",

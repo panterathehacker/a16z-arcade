@@ -98,6 +98,12 @@ export class BattleScene extends Phaser.Scene {
     space: Phaser.Input.Keyboard.Key;
   };
 
+  // Battle result tracking (LennyRPG-style)
+  private xpGainedThisBattle = 0;
+  private isPerfectCapture = false;
+  private battleResultOverlay: HTMLDivElement | null = null;
+  private battleResultKeyHandler: ((e: KeyboardEvent) => void) | null = null;
+
   constructor() {
     super({ key: 'BattleScene' });
   }
@@ -114,6 +120,10 @@ export class BattleScene extends Phaser.Scene {
     this.wrongAnswers = 0;
     this.waitingForNext = false;
     this.battleOver = false;
+    this.xpGainedThisBattle = 0;
+    this.isPerfectCapture = false;
+    this.battleResultOverlay = null;
+    this.battleResultKeyHandler = null;
   }
 
   create() {
@@ -647,6 +657,7 @@ export class BattleScene extends Phaser.Scene {
       this.statusText.setVisible(true);
 
       const xpGain = 10; // Fixed 10 XP per correct answer
+      this.xpGainedThisBattle += xpGain;
       this.playerStats.xp += xpGain;
       while (this.playerStats.xp >= this.playerStats.xpToNext) {
         this.playerStats.xp -= this.playerStats.xpToNext;
@@ -718,119 +729,259 @@ export class BattleScene extends Phaser.Scene {
       captured.push(this.guest.id);
       localStorage.setItem('a16z_captured', JSON.stringify(captured));
     }
-    this.playerStats.hp = this.playerStats.maxHp;
+    // Perfect capture: won with no wrong answers
+    this.isPerfectCapture = this.wrongAnswers === 0;
+    const hpBonus = this.isPerfectCapture ? 20 : 0;
+    this.playerStats.hp = Math.min(this.playerStats.maxHp + hpBonus, this.playerStats.maxHp + hpBonus);
+    if (this.isPerfectCapture) {
+      this.playerStats.maxHp += 20;
+      this.playerStats.hp = this.playerStats.maxHp;
+    } else {
+      this.playerStats.hp = this.playerStats.maxHp;
+    }
     savePlayerStats(this.playerStats);
     saveCapture(this.playerId, this.guest.id).catch((err) => {
       console.warn('Failed to save capture to Supabase:', err);
     });
   }
 
+  private injectBattleResultStyles() {
+    if (document.getElementById('a16z-battle-result-styles')) return;
+    const style = document.createElement('style');
+    style.id = 'a16z-battle-result-styles';
+    style.textContent = `
+      @keyframes brFadeIn { from{opacity:0} to{opacity:1} }
+      @keyframes brSlideIn { from{transform:translateY(-50px) scale(0.8);opacity:0} to{transform:translateY(0) scale(1);opacity:1} }
+      @keyframes brPulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.05)} }
+      .battle-result-overlay {
+        position:fixed;top:0;left:0;width:100%;height:100%;
+        background:rgba(0,0,0,0.9);display:flex;align-items:center;
+        justify-content:center;z-index:2000;animation:brFadeIn 0.3s ease;
+      }
+      .result-container {
+        background:linear-gradient(135deg, #2C3E50 0%, #34495E 100%);
+        border:8px solid #4CAF50;border-radius:20px;padding:40px;
+        max-width:600px;width:90%;
+        animation:brSlideIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        max-height:90vh;overflow-y:auto;box-sizing:border-box;
+      }
+      .result-container.defeat {
+        border-color:#FF6B6B;
+        background:linear-gradient(160deg, #3b1f2a 0%, #2a0f16 45%, #1f0b12 100%);
+      }
+      .result-header { text-align:center;margin-bottom:30px; }
+      .result-title {
+        font-family:"Press Start 2P",monospace;font-size:42px;color:#4CAF50;
+        text-shadow:3px 3px 0 #000;animation:brPulse 2s ease-in-out infinite;
+        margin:0 0 10px 0;
+      }
+      .result-container.defeat .result-title { color:#FF6B6B; }
+      .result-subtitle {
+        font-family:"Press Start 2P",monospace;font-size:14px;color:#ECF0F1;
+        text-shadow:2px 2px 0 #000;
+      }
+      .stats-container {
+        background:rgba(0,0,0,0.4);border-radius:12px;padding:20px;margin-bottom:30px;
+        position:relative;
+      }
+      .stat-row {
+        display:flex;justify-content:space-between;align-items:center;
+        padding:10px 0;border-bottom:2px solid rgba(255,255,255,0.1);
+        font-family:"Press Start 2P",monospace;font-size:12px;
+      }
+      .stat-row:last-child { border-bottom:none; }
+      .stat-row.highlight {
+        background:rgba(76,175,80,0.2);padding:15px;margin:10px -10px -10px -10px;
+        border-radius:0 0 8px 8px;border-bottom:none;
+      }
+      .stat-label { font-size:12px;color:#BDC3C7; }
+      .stat-value { font-size:14px;color:#ECF0F1;font-weight:bold; }
+      .stat-value.correct { color:#4CAF50; }
+      .stat-value.wrong { color:#FF6B6B; }
+      .stat-value.xp { color:#FFD700;font-size:18px; }
+      .perfect-badge {
+        background:#FFD700;color:#000;padding:12px 20px;border-radius:8px;
+        text-align:center;font-size:14px;font-family:"Press Start 2P",monospace;
+        margin-top:12px;
+      }
+      .episode-link-row {
+        display:flex;justify-content:center;margin:12px 0 18px;
+      }
+      .episode-link {
+        color:#60A0FF;text-decoration:none;font-size:11px;
+        display:flex;align-items:center;gap:8px;
+        font-family:"Press Start 2P",monospace;
+      }
+      .episode-link:hover { color:#90C0FF; }
+      .result-btn-row {
+        display:flex;gap:15px;margin-top:20px;
+      }
+      .result-btn-row.single { justify-content:center; }
+      .continue-btn {
+        background:#4CAF50;color:#000;border:none;padding:14px 32px;
+        font-family:"Press Start 2P",monospace;font-size:14px;cursor:pointer;
+        border-radius:8px;flex:1;
+      }
+      .retry-btn {
+        background:#FF6B6B;color:#000;border:none;padding:14px 32px;
+        font-family:"Press Start 2P",monospace;font-size:14px;cursor:pointer;
+        border-radius:8px;flex:1;
+      }
+      .continue-btn:hover { background:#45A049; }
+      .retry-btn:hover { background:#E74C3C; }
+      .keyboard-hint {
+        margin-top:15px;font-family:"Press Start 2P",monospace;font-size:8px;
+        color:rgba(255,255,255,0.5);text-align:center;
+      }
+      @media (max-width:600px) {
+        .result-container { padding:24px 16px; }
+        .result-title { font-size:28px; }
+        .result-subtitle { font-size:10px; }
+        .stat-row { font-size:10px; }
+        .continue-btn, .retry-btn { font-size:10px;padding:10px 16px; }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
   private showVictory() {
+    this.injectBattleResultStyles();
+
     // Animate guest HP to 0
     if (this.domGuestHPBar) {
       this.domGuestHPBar.style.transition = 'width 0.8s ease';
       this.domGuestHPBar.style.width = '0%';
     }
-    const W = this.cameras.main.width;
-    const H = this.cameras.main.height;
-    const menuY = H * 0.65;
-    const menuH = H - menuY;
 
-    const victoryBg = this.add.graphics().setDepth(20);
-    victoryBg.fillStyle(0x003000, 0.97);
-    victoryBg.fillRect(0, menuY, W, menuH);
-    victoryBg.lineStyle(4, 0xFFD700, 1.0);
-    victoryBg.strokeRect(0, menuY, W, menuH);
+    const totalQ = this.correctAnswers + this.wrongAnswers;
+    const accuracy = totalQ > 0 ? Math.round((this.correctAnswers / totalQ) * 100) : 0;
+    const globalXP = this.playerStats.xp + (this.playerStats.level - 1) * 150;
+    const episodeUrl = this.guest.youtubeUrl;
 
-    const captured: string[] = JSON.parse(localStorage.getItem('a16z_captured') || '[]');
-    const total = captured.length;
+    const overlay = document.createElement('div');
+    overlay.id = 'a16z-battle-result-overlay';
+    overlay.className = 'battle-result-overlay';
 
-    this.add.text(W / 2, menuY + 12, '🎉 VICTORY!', {
-      fontFamily: '"Press Start 2P"',
-      fontSize: '14px',
-      color: '#FFD700',
-      resolution: 2,
-    }).setOrigin(0.5, 0).setDepth(21);
+    overlay.innerHTML = `
+      <div class="result-container victory">
+        <div class="result-header">
+          <h1 class="result-title">VICTORY!</h1>
+          <div class="result-subtitle">You captured ${this.guest.name}!</div>
+        </div>
+        <div class="stats-container">
+          <div class="stat-row"><span class="stat-label">Questions Answered:</span><span class="stat-value">${totalQ}</span></div>
+          <div class="stat-row"><span class="stat-label">Correct Answers:</span><span class="stat-value correct">${this.correctAnswers}</span></div>
+          <div class="stat-row"><span class="stat-label">Wrong Answers:</span><span class="stat-value wrong">${this.wrongAnswers}</span></div>
+          <div class="stat-row"><span class="stat-label">Accuracy:</span><span class="stat-value">${accuracy}%</span></div>
+          <div class="stat-row"><span class="stat-label">Total XP:</span><span class="stat-value">${globalXP}</span></div>
+          <div class="stat-row highlight"><span class="stat-label">XP Increased:</span><span class="stat-value xp">+${this.xpGainedThisBattle}</span></div>
+          ${this.isPerfectCapture ? '<div class="perfect-badge">⭐ PERFECT CAPTURE! HP +20 ⭐</div>' : ''}
+        </div>
+        ${episodeUrl ? `<div class="episode-link-row"><a class="episode-link" href="${episodeUrl}" target="_blank" rel="noopener noreferrer">🎧 Listen to the episode</a></div>` : ''}
+        <div class="result-btn-row single">
+          <button class="continue-btn" id="a16z-result-continue">▶ Continue</button>
+        </div>
+        <div class="keyboard-hint">ENTER to continue</div>
+      </div>
+    `;
 
-    this.add.text(W / 2, menuY + 40, `${this.guest.name} captured!`, {
-      fontFamily: '"Press Start 2P"',
-      fontSize: '12px',
-      color: '#FFFFFF',
-      resolution: 2,
-    }).setOrigin(0.5, 0).setDepth(21);
+    document.body.appendChild(overlay);
+    this.battleResultOverlay = overlay;
 
-    this.add.text(W / 2, menuY + 64, `Total: ${total}/25 captured`, {
-      fontFamily: '"Press Start 2P"',
-      fontSize: '11px',
-      color: '#80FF80',
-      resolution: 2,
-    }).setOrigin(0.5, 0).setDepth(21);
+    document.getElementById('a16z-result-continue')?.addEventListener('click', () => this.returnToWorld());
 
-    const pb = this.add.image(W / 2, menuY + 100, 'pokeball');
-    pb.setOrigin(0.5).setScale(2).setDepth(21);
-    this.tweens.add({
-      targets: pb,
-      angle: 360,
-      duration: 1500,
-      repeat: 1,
-      ease: 'Linear',
-    });
-
-    this.add.text(W / 2, menuY + 136, 'Press SPACE to continue', {
-      fontFamily: '"Press Start 2P"',
-      fontSize: '11px',
-      color: '#AAAAAA',
-      resolution: 2,
-    }).setOrigin(0.5, 0).setDepth(21);
-
-    this.time.delayedCall(500, () => {
-      this.keys.space.on('down', () => this.returnToWorld());
-      this.input.on('pointerdown', () => this.returnToWorld());
-    });
+    const keyHandler = (e: KeyboardEvent) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        this.returnToWorld();
+      }
+    };
+    this.battleResultKeyHandler = keyHandler;
+    window.addEventListener('keydown', keyHandler);
   }
 
   private showDefeat() {
+    this.injectBattleResultStyles();
+
     // Animate player HP to 0
     if (this.domPlayerHPBar) {
       this.domPlayerHPBar.style.transition = 'width 0.8s ease';
       this.domPlayerHPBar.style.width = '0%';
     }
-    const W = this.cameras.main.width;
-    const H = this.cameras.main.height;
-    const menuY = H * 0.65;
-    const menuH = H - menuY;
 
-    const defeatBg = this.add.graphics().setDepth(20);
-    defeatBg.fillStyle(0x200000, 0.97);
-    defeatBg.fillRect(0, menuY, W, menuH);
-    defeatBg.lineStyle(4, 0xFFD700, 1.0);
-    defeatBg.strokeRect(0, menuY, W, menuH);
+    const totalQ = this.correctAnswers + this.wrongAnswers;
+    const accuracy = totalQ > 0 ? Math.round((this.correctAnswers / totalQ) * 100) : 0;
+    const globalXP = this.playerStats.xp + (this.playerStats.level - 1) * 150;
+    const episodeUrl = this.guest.youtubeUrl;
 
-    this.add.text(W / 2, menuY + 20, 'You lost...', {
-      fontFamily: '"Press Start 2P"',
-      fontSize: '14px',
-      color: '#FF4040',
-      resolution: 2,
-    }).setOrigin(0.5, 0).setDepth(21);
+    const overlay = document.createElement('div');
+    overlay.id = 'a16z-battle-result-overlay';
+    overlay.className = 'battle-result-overlay';
 
-    this.add.text(W / 2, menuY + 50, 'Study harder and try again!', {
-      fontFamily: '"Press Start 2P"',
-      fontSize: '11px',
-      color: '#AAAAAA',
-      resolution: 2,
-    }).setOrigin(0.5, 0).setDepth(21);
+    overlay.innerHTML = `
+      <div class="result-container defeat">
+        <div class="result-header">
+          <h1 class="result-title">DEFEAT</h1>
+          <div class="result-subtitle">You lost to ${this.guest.name}!</div>
+        </div>
+        <div class="stats-container">
+          <div class="stat-row"><span class="stat-label">Questions Answered:</span><span class="stat-value">${totalQ}</span></div>
+          <div class="stat-row"><span class="stat-label">Correct Answers:</span><span class="stat-value correct">${this.correctAnswers}</span></div>
+          <div class="stat-row"><span class="stat-label">Wrong Answers:</span><span class="stat-value wrong">${this.wrongAnswers}</span></div>
+          <div class="stat-row"><span class="stat-label">Accuracy:</span><span class="stat-value">${accuracy}%</span></div>
+          <div class="stat-row"><span class="stat-label">Total XP:</span><span class="stat-value">${globalXP}</span></div>
+        </div>
+        ${episodeUrl ? `<div class="episode-link-row"><a class="episode-link" href="${episodeUrl}" target="_blank" rel="noopener noreferrer">🎧 Listen to the episode</a></div>` : ''}
+        <div class="result-btn-row">
+          <button class="retry-btn" id="a16z-result-retry">↩ Try Again</button>
+          <button class="continue-btn" id="a16z-result-return">▶ Return</button>
+        </div>
+        <div class="keyboard-hint">← → Arrow keys | ENTER</div>
+      </div>
+    `;
 
-    this.add.text(W / 2, menuY + 80, ('ontouchstart' in window ? 'TAP to return' : 'Press SPACE to return'), {
-      fontFamily: '"Press Start 2P"',
-      fontSize: '11px',
-      color: '#888888',
-      resolution: 2,
-    }).setOrigin(0.5, 0).setDepth(21);
+    document.body.appendChild(overlay);
+    this.battleResultOverlay = overlay;
 
-    this.time.delayedCall(500, () => {
-      this.keys.space.on('down', () => this.returnToWorld());
-      this.input.on('pointerdown', () => this.returnToWorld());
-    });
+    document.getElementById('a16z-result-retry')?.addEventListener('click', () => this.retryBattle());
+    document.getElementById('a16z-result-return')?.addEventListener('click', () => this.returnToWorld());
+
+    let selectedBtn = 0; // 0 = retry, 1 = return
+    const updateBtnHighlight = () => {
+      const retryBtn = document.getElementById('a16z-result-retry') as HTMLButtonElement | null;
+      const returnBtn = document.getElementById('a16z-result-return') as HTMLButtonElement | null;
+      if (retryBtn) retryBtn.style.outline = selectedBtn === 0 ? '3px solid #FFD700' : 'none';
+      if (returnBtn) returnBtn.style.outline = selectedBtn === 1 ? '3px solid #FFD700' : 'none';
+    };
+    updateBtnHighlight();
+
+    const keyHandler = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft') { selectedBtn = 0; updateBtnHighlight(); e.preventDefault(); }
+      else if (e.key === 'ArrowRight') { selectedBtn = 1; updateBtnHighlight(); e.preventDefault(); }
+      else if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        if (selectedBtn === 0) this.retryBattle();
+        else this.returnToWorld();
+      }
+    };
+    this.battleResultKeyHandler = keyHandler;
+    window.addEventListener('keydown', keyHandler);
+  }
+
+  private retryBattle() {
+    // Remove result overlay and keyboard handler
+    if (this.battleResultOverlay) {
+      this.battleResultOverlay.remove();
+      this.battleResultOverlay = null;
+    }
+    if (this.battleResultKeyHandler) {
+      window.removeEventListener('keydown', this.battleResultKeyHandler);
+      this.battleResultKeyHandler = null;
+    }
+    // Restart the battle with same guest
+    const guest = this.guest;
+    const playerId = this.playerId;
+    this.scene.restart({ guest, playerId });
   }
 
   private showGameOver() {
@@ -890,14 +1041,25 @@ export class BattleScene extends Phaser.Scene {
     this.domGuestHPBar = null;
     this.domPlayerHPBar = null;
     this.domPlayerHPText = null;
+    // Remove battle result overlay
+    if (this.battleResultOverlay) { this.battleResultOverlay.remove(); this.battleResultOverlay = null; }
+    if (this.battleResultKeyHandler) { window.removeEventListener('keydown', this.battleResultKeyHandler); this.battleResultKeyHandler = null; }
     // Also clean up by ID as fallback
     const gEl = document.getElementById('a16z-guest-hp');
     if (gEl) gEl.remove();
     const pEl = document.getElementById('a16z-player-hp');
     if (pEl) pEl.remove();
+    const rEl = document.getElementById('a16z-battle-result-overlay');
+    if (rEl) rEl.remove();
   }
 
   private returnToWorld() {
+    // Clean up result overlay and keyboard handler
+    if (this.battleResultOverlay) { this.battleResultOverlay.remove(); this.battleResultOverlay = null; }
+    if (this.battleResultKeyHandler) { window.removeEventListener('keydown', this.battleResultKeyHandler); this.battleResultKeyHandler = null; }
+    const rEl = document.getElementById('a16z-battle-result-overlay');
+    if (rEl) rEl.remove();
+
     const worldScene = this.scene.get('WorldScene') as any;
     if (worldScene) {
       worldScene.inBattleTransition = false;
