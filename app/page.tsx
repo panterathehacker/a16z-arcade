@@ -103,81 +103,73 @@ export default function Home() {
         overflow: 'hidden',
       }}
     >
-      {/* Mobile desktop recommendation popup */}
+      {/* Mobile - desktop only block */}
       {typeof window !== 'undefined' && /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(typeof navigator !== 'undefined' ? navigator.userAgent : '') && (
         <div
-          id="mobile-hint"
-          className="sm:hidden"
           style={{
             position: 'fixed',
             inset: 0,
-            background: 'rgba(26, 0, 8, 0.96)',
+            background: '#000000',
             zIndex: 99999,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             padding: '24px',
           }}
-          onClick={(e) => {
-            if ((e.target as HTMLElement).id === 'mobile-hint') {
-              (e.target as HTMLElement).style.display = 'none';
-            }
-          }}
         >
           <div style={{
             border: '3px solid #FFD700',
             borderRadius: '8px',
-            padding: '28px 24px',
-            maxWidth: '340px',
+            padding: '32px 28px',
+            maxWidth: '360px',
             textAlign: 'center',
-            background: '#1a0008',
-            boxShadow: '0 0 30px rgba(255,215,0,0.2)',
+            background: '#0d0004',
+            boxShadow: '0 0 40px rgba(255,215,0,0.3), 4px 4px 0 #000',
           }}>
-            <div style={{ fontSize: '40px', marginBottom: '16px' }}>🎮</div>
             <div style={{
               fontFamily: '"Press Start 2P", monospace',
-              fontSize: '13px',
+              fontSize: '14px',
               color: '#FFD700',
-              marginBottom: '16px',
+              marginBottom: '20px',
               lineHeight: 1.8,
-              textShadow: '1px 1px 0 #4A0315',
+              textShadow: '2px 2px 0 #4A0315',
             }}>
-              Best on Desktop
+              Best on desktop
             </div>
             <div style={{
               fontFamily: '"Press Start 2P", monospace',
               fontSize: '8px',
               color: '#FFD700',
-              lineHeight: 2,
-              marginBottom: '24px',
+              lineHeight: 2.2,
+              marginBottom: '28px',
             }}>
-              a16z Arcade is designed for desktop. For the best experience, play on a laptop or computer.
+              a16z Arcade is designed for desktop play. For the best experience, continue on a computer.
             </div>
-            <button
-              onClick={() => {
-                const el = document.getElementById('mobile-hint');
-                if (el) el.style.display = 'none';
-              }}
+            <a
+              href="https://x.com/davidpantera_"
+              target="_blank"
+              rel="noopener noreferrer"
               style={{
+                display: 'block',
                 fontFamily: '"Press Start 2P", monospace',
                 fontSize: '9px',
-                background: '#4A0315',
-                color: '#FFD700',
+                background: '#FFD700',
+                color: '#000000',
                 border: '2px solid #FFD700',
                 borderRadius: '4px',
-                padding: '12px 24px',
-                cursor: 'pointer',
-                width: '100%',
-                textShadow: '1px 1px 0 #000',
+                padding: '14px 24px',
+                textDecoration: 'none',
+                fontWeight: 'bold',
+                boxShadow: '0 4px 0 rgba(0,0,0,0.5)',
               }}
             >
-              Play Anyway →
-            </button>
+              Follow @davidpantera_ →
+            </a>
           </div>
         </div>
       )}
 
-      {/* Retro scanline texture overlay */}
+            {/* Retro scanline texture overlay */}
       <div
         style={{
           position: 'fixed',
