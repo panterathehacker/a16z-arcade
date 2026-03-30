@@ -1086,8 +1086,11 @@ export class BattleScene extends Phaser.Scene {
 
     // Stop all battle audio and restart overworld music
     if (this.sound) {
+      // Stop ALL sounds except overworld
+      this.sound.stopAll?.();
+      // OR stop individually
       ['battle-music', 'victory-music'].forEach(key => {
-        const t = this.sound.get(key); if (t) t.stop();
+        const t = this.sound.get(key); if (t && t.isPlaying) t.stop();
       });
       // Restart overworld music (WorldScene is still running, just silent)
       const overworldTrack = this.sound.get('overworld-music');

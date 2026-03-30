@@ -68,6 +68,7 @@ export class WorldScene extends Phaser.Scene {
   private moveDelay = 120;
   private lastMoveTime = 0;
   private isMoving = false;
+  private blackOverlay: Phaser.GameObjects.Rectangle | null = null;
 
   // Encounter messages pool (LennyRPG-style randomized)
   private readonly encounterMessages = [
@@ -630,10 +631,21 @@ export class WorldScene extends Phaser.Scene {
     document.body.appendChild(overlay);
     this.usernameOverlay = overlay;
     
-    // Start overworld music on title screen (LennyRPG approach)
-    if (this.sound && !this.sound.get('overworld-music')) {
-      this.sound.play('overworld-music', { loop: true, volume: 0.4 });
-    }
+    // Start overworld music on FIRST interaction (browser requires user gesture)
+    const startMusicOnInteraction = () => {
+      if (this.sound && !this.sound.get('overworld-music')?.isPlaying) {
+        const t = this.sound.get('overworld-music');
+        if (t && !t.isPlaying) t.play({ loop: true, volume: 0.4 });
+        else if (!t) this.sound.play('overworld-music', { loop: true, volume: 0.4 });
+      }
+      // Remove listener after first trigger
+      overlay.removeEventListener('click', startMusicOnInteraction);
+      overlay.removeEventListener('keydown', startMusicOnInteraction);
+      document.removeEventListener('keydown', startMusicOnInteraction);
+    };
+    // Listen for ANY click on the overlay OR any key press
+    overlay.addEventListener('click', startMusicOnInteraction);
+    document.addEventListener('keydown', startMusicOnInteraction, { once: true });
 
     setTimeout(() => input.focus(), 100);
   }
