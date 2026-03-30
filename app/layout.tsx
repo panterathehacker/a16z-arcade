@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "a16z Arcade",
-  description: "A Pokémon Diamond/Pearl style RPG featuring a16z podcast guests",
+  description: "Learn from the best, one battle at a time.",
 };
 
 export default function RootLayout({
