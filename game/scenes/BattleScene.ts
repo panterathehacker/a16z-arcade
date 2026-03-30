@@ -715,7 +715,8 @@ export class BattleScene extends Phaser.Scene {
     if (this.battleMenuEl) this.battleMenuEl.style.display = 'none';
     if (this.statusText) this.statusText.setVisible(false);
 
-    if (this.playerHP > 50) {
+    // Victory = captured 3+ correct answers. Defeat = did not.
+    if (this.correctAnswers >= 3) {
       this.captureGuest();
       this.showVictory();
     } else {
@@ -731,14 +732,18 @@ export class BattleScene extends Phaser.Scene {
     }
     // Perfect capture: won with no wrong answers
     this.isPerfectCapture = this.wrongAnswers === 0;
-    const hpBonus = this.isPerfectCapture ? 20 : 0;
-    this.playerStats.hp = Math.min(this.playerStats.maxHp + hpBonus, this.playerStats.maxHp + hpBonus);
+    
+    // Fix 5: DON'T reset HP to max - keep current battle HP
+    this.playerStats.hp = Math.max(0, this.playerHP);
+    
+    // Fix 1: +20 HP only on perfect capture, capped at maxHp (Fix 3)
     if (this.isPerfectCapture) {
-      this.playerStats.maxHp += 20;
-      this.playerStats.hp = this.playerStats.maxHp;
-    } else {
-      this.playerStats.hp = this.playerStats.maxHp;
+      this.playerStats.hp = Math.min(this.playerStats.hp + 20, this.playerStats.maxHp);
+      // Fix 2: Perfect XP bonus = 30 extra (total 60: 30 earned + 30 bonus = double)
+      this.xpGainedThisBattle += 30;
+      this.playerStats.xp += 30;
     }
+    
     savePlayerStats(this.playerStats);
     saveCapture(this.playerId, this.guest.id).catch((err) => {
       console.warn('Failed to save capture to Supabase:', err);
