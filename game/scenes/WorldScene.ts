@@ -58,6 +58,10 @@ export class WorldScene extends Phaser.Scene {
   // Battle transition flag to prevent double-trigger
   private inBattleTransition = false;
 
+  // Level gate locked message (LennyRPG style)
+  private lockedMessageText: Phaser.GameObjects.Text | null = null;
+  private lockedMessageTimer: Phaser.Time.TimerEvent | null = null;
+
   // Tile-based movement (LennyRPG style)
   private playerTileX = 11;
   private playerTileY = 38;
@@ -150,6 +154,21 @@ export class WorldScene extends Phaser.Scene {
 
     // ── Tilemap collision with player ─────────────────────────────────────
     this.physics.add.collider(this.player, this.worldLayer);
+
+    // ── Level 2 boundary visual indicator ────────────────────────────────────
+    const LEVEL_GATE_ROW = 18;
+    const boundaryY = LEVEL_GATE_ROW * 32;
+    this.add.text(640, boundaryY - 20, '[ LEVEL 2 AREA ]', {
+      fontSize: '8px',
+      fontFamily: '"Press Start 2P", monospace',
+      color: '#FFD700',
+      stroke: '#000000',
+      strokeThickness: 2,
+    }).setOrigin(0.5).setDepth(10);
+    const boundaryLine = this.add.graphics();
+    boundaryLine.lineStyle(3, 0xFFD700, 0.6);
+    boundaryLine.lineBetween(0, boundaryY, 1280, boundaryY);
+    boundaryLine.setDepth(9);
 
     // ── Spawn NPCs ────────────────────────────────────────────────────────
     this.npcGroup = this.physics.add.staticGroup();
@@ -283,6 +302,60 @@ export class WorldScene extends Phaser.Scene {
     };
     
     requestAnimationFrame(animate);
+  }
+
+  // ─── Level gate helpers (LennyRPG style) ─────────────────────────────────
+  private getPlayerLevel(): number {
+    try {
+      const raw = localStorage.getItem('a16z_player_stats');
+      if (raw) return JSON.parse(raw).level || 1;
+    } catch (_) {}
+    return 1;
+  }
+
+  private showLockedMessage(message?: string) {
+    const msg = message || 'LEVEL UP to explore further!';
+
+    if (!this.lockedMessageText || !this.lockedMessageText.active) {
+      this.lockedMessageText = this.add.text(
+        this.cameras.main.width / 2,
+        60,
+        msg,
+        {
+          fontSize: '10px',
+          fontFamily: '"Press Start 2P", monospace',
+          color: '#FFD700',
+          stroke: '#000000',
+          strokeThickness: 3,
+          align: 'center',
+          backgroundColor: 'rgba(26,0,8,0.85)',
+          padding: { x: 12, y: 8 },
+        }
+      );
+      this.lockedMessageText.setOrigin(0.5);
+      this.lockedMessageText.setScrollFactor(0);
+      this.lockedMessageText.setDepth(2000);
+    } else {
+      this.lockedMessageText.setText(msg);
+      this.lockedMessageText.setAlpha(1);
+      this.lockedMessageText.setVisible(true);
+    }
+
+    if (this.lockedMessageTimer) {
+      this.lockedMessageTimer.remove(false);
+    }
+    this.lockedMessageTimer = this.time.delayedCall(2000, () => {
+      if (this.lockedMessageText) {
+        this.tweens.add({
+          targets: this.lockedMessageText,
+          alpha: 0,
+          duration: 500,
+          onComplete: () => {
+            if (this.lockedMessageText) this.lockedMessageText.setVisible(false);
+          }
+        });
+      }
+    });
   }
 
   private async initPlayer() {
@@ -1149,6 +1222,17 @@ export class WorldScene extends Phaser.Scene {
         const tileBlocked = tile ? tile.collides : false;
 
         if (inBounds && !tileBlocked) {
+          // Level gate: top half of map requires level 2
+          const LEVEL_GATE_ROW = 18;
+          if (newTY < LEVEL_GATE_ROW) {
+            const playerLevel = this.getPlayerLevel();
+            if (playerLevel < 2) {
+              this.showLockedMessage('LEVEL 2 REQUIRED\nBattle more to level up!');
+              this.lastMoveTime = time;
+              return; // block movement
+            }
+          }
+
           this.playerTileX = newTX;
           this.playerTileY = newTY;
           this.isMoving = true;
