@@ -178,6 +178,25 @@ export class WorldScene extends Phaser.Scene {
     // ── Camera ────────────────────────────────────────────────────────────
     this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
     
+    // Listen for mute toggle from React UI
+    window.addEventListener('a16z-set-mute', (e: CustomEvent) => {
+      if (this.sound) this.sound.mute = e.detail.muted;
+    } as EventListener);
+    
+    // Pause music when tab hidden
+    window.addEventListener('a16z-tab-visibility', (e: CustomEvent) => {
+      if (e.detail.hidden) {
+        if (this.sound) this.sound.pauseAll?.();
+      } else {
+        if (this.sound) this.sound.resumeAll?.();
+      }
+    } as EventListener);
+    
+    // Apply mute if already set
+    if (localStorage.getItem('a16z-arcade-muted') === 'true') {
+      if (this.sound) this.sound.mute = true;
+    }
+    
     // Start overworld music (LennyRPG volume: 0.4)
     if (this.sound && !this.sound.get('overworld-music')) {
       this.sound.play('overworld-music', { loop: true, volume: 0.4 });
