@@ -147,7 +147,7 @@ export default function Home() {
             <div style={{
               fontFamily: '"Press Start 2P", monospace',
               fontSize: '8px',
-              color: 'rgba(255,215,0,0.75)',
+              color: '#FFD700',
               lineHeight: 2,
               marginBottom: '24px',
             }}>
@@ -216,7 +216,7 @@ export default function Home() {
           style={{
             fontFamily: '"Press Start 2P", monospace',
             fontSize: 'clamp(7px, 1.5vw, 11px)',
-            color: 'rgba(255,215,0,0.7)',
+            color: '#FFD700',
             textShadow: '1px 1px 0px #4A0315',
             whiteSpace: 'nowrap',
             overflow: 'hidden',

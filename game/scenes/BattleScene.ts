@@ -18,7 +18,12 @@ interface PlayerStats {
 function loadPlayerStats(): PlayerStats {
   try {
     const raw = localStorage.getItem('a16z_player_stats');
-    if (raw) return JSON.parse(raw);
+    if (raw) {
+      const stats = JSON.parse(raw);
+      // Always recalculate xpToNext from current level (fixes stale cached values)
+      stats.xpToNext = xpToNextLevel(stats.level || 1);
+      return stats;
+    }
   } catch (_) { /* */ }
   return { level: 1, xp: 0, xpToNext: 150, hp: 100, maxHp: 100 };
 }
