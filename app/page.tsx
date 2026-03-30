@@ -25,7 +25,7 @@ interface PlayerStats {
   maxHp: number;
 }
 
-const DEFAULT_STATS: PlayerStats = { level: 1, xp: 0, xpToNext: 200, hp: 100, maxHp: 100 };
+const DEFAULT_STATS: PlayerStats = { level: 1, xp: 0, xpToNext: 150, hp: 100, maxHp: 100 };
 
 export default function Home() {
   const [stats, setStats] = useState<PlayerStats>(DEFAULT_STATS);

@@ -289,7 +289,7 @@ export class BattleScene extends Phaser.Scene {
     playerBox.id = 'a16z-player-hp';
     playerBox.style.cssText = `
       position: fixed;
-      left: ${canvasRect.left + canvasRect.width * 0.42}px;
+      left: ${canvasRect.left + canvasRect.width * 0.28}px;
       bottom: ${window.innerHeight - canvasRect.bottom + 100}px;
       width: 240px;
       background: white;
@@ -640,7 +640,7 @@ export class BattleScene extends Phaser.Scene {
 
     if (correct) {
       this.correctAnswers++;
-      this.guestHP -= 20;
+      this.guestHP -= 34; // 3 correct = ~100% drain
       this.updateHPBars();
       this.statusText.setText('✓ Correct!\nGuest HP -20');
       this.statusText.setStyle({ ...this.statusText.style, color: '#00aa00' });
