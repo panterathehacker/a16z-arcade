@@ -29,6 +29,7 @@ const DEFAULT_STATS: PlayerStats = { level: 1, xp: 0, xpToNext: 150, hp: 100, ma
 
 export default function Home() {
   const [stats, setStats] = useState<PlayerStats>(DEFAULT_STATS);
+  const [isMuted, setIsMuted] = useState(false);
   const [captured, setCaptured] = useState(0);
   const [showTooltip, setShowTooltip] = useState(false);
   const [hoveredLink, setHoveredLink] = useState<string | null>(null);
